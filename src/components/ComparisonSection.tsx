@@ -118,16 +118,7 @@ export default function ComparisonSection() {
           ))}
         </div>
 
-        {/* Key Insight */}
-        <div className="mt-8 sm:mt-12 bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl sm:rounded-lg p-4 sm:p-6 md:p-8">
-          <div className="text-center">
-            <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4">Key Insight</h3>
-            <p className="text-sm sm:text-base md:text-lg text-gray-300 max-w-3xl mx-auto">
-              FlowSight is the only tool that combines <strong className="text-teal-400">privacy</strong> + <strong className="text-teal-400">automatic tracking</strong> + <strong className="text-teal-400">context understanding</strong>.
-              Everyone else makes you choose.
-            </p>
-          </div>
-        </div>
+
       </div>
     </section>
   )

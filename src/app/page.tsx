@@ -3,7 +3,6 @@
 import HeroSection from '@/components/HeroSection'
 import ProblemSection from '@/components/ProblemSection'
 import SolutionSection from '@/components/SolutionSection'
-import ProblemSolvedSection from '@/components/ProblemSolvedSection'
 import MarketPerfectStormSection from '@/components/MarketPerfectStormSection'
 import PricingSection from '@/components/PricingSection'
 import ComparisonSection from '@/components/ComparisonSection'
@@ -19,7 +18,6 @@ export default function Home() {
       <ProblemSection />
       <MarketPerfectStormSection />
       <SolutionSection />
-      <ProblemSolvedSection />
       <PricingSection  />
       <ComparisonSection />
       <FaqSection />

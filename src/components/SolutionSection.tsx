@@ -34,50 +34,7 @@ export default function SolutionSection() {
     return () => clearInterval(interval)
   }, [])
 
-  const pillars = [
-    {
-      headline: "Know What Your Team Is Working On",
-      content: "Local LLM + RAG infers tasks from activity patterns. Zero manual input required. Task mapping updates in real-time.",
-      stat: "90%+ accuracy",
-      icon: (
-        <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-        </svg>
-      ),
-      gradient: "from-teal-900/20 to-cyan-900/20",
-      borderColor: "border-teal-500/30",
-      accentColor: "bg-teal-500",
-      textColor: "text-teal-400"
-    },
-    {
-      headline: "Understand WHY Your Team Is Busy",
-      content: "AI understands context: 'Debugging API timeout' vs. 'Waiting for design approval'. PM sees actionable insights.",
-      stat: "87% context accuracy",
-      icon: (
-        <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-        </svg>
-      ),
-      gradient: "from-blue-900/20 to-indigo-900/20",
-      borderColor: "border-blue-500/30",
-      accentColor: "bg-blue-500",
-      textColor: "text-blue-400"
-    },
-    {
-      headline: "Traceability Without Surveillance",
-      content: "All processing on developer's machine. Only aggregated summaries go to PM dashboard. GDPR/CCPA compliant.",
-      stat: "100% local processing",
-      icon: (
-        <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-        </svg>
-      ),
-      gradient: "from-green-900/20 to-emerald-900/20",
-      borderColor: "border-green-500/30",
-      accentColor: "bg-green-500",
-      textColor: "text-green-400"
-    }
-  ]
+  
 
   const flowSteps = [
     { 
@@ -131,47 +88,7 @@ export default function SolutionSection() {
           </p>
         </div>
 
-        {/* Three Pillars */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 mb-12 md:mb-20">
-          {pillars.map((pillar, index) => (
-            <div
-              key={index}
-              data-index={index}
-              className={`group relative bg-slate-800/50 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border ${pillar.borderColor} transform hover:-translate-y-3 ${
-                visibleCards.includes(index) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-              }`}
-              style={{ transitionDelay: `${index * 200}ms` }}
-            >
-              {/* Background Gradient */}
-              <div className={`absolute inset-0 bg-gradient-to-br ${pillar.gradient} rounded-2xl sm:rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300`}></div>
-
-              {/* Content */}
-              <div className="relative z-10">
-                <div className={`inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 ${pillar.accentColor} rounded-2xl sm:rounded-3xl mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
-                  <div className="text-white">
-                    {pillar.icon}
-                  </div>
-                </div>
-
-                <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-3 sm:mb-4 group-hover:text-gray-100 transition-colors leading-tight">
-                  {pillar.headline}
-                </h3>
-
-                <p className="text-sm sm:text-base text-gray-400 mb-4 sm:mb-6 leading-relaxed group-hover:text-gray-300 transition-colors">
-                  {pillar.content}
-                </p>
-
-                <div className={`inline-flex items-center px-3 sm:px-4 py-1.5 sm:py-2 bg-slate-900/50 rounded-lg sm:rounded-xl border ${pillar.borderColor} ${pillar.textColor} font-bold text-sm sm:text-base md:text-lg shadow-sm`}>
-                  {pillar.stat}
-                </div>
-              </div>
-
-              {/* Hover Effect Elements */}
-              <div className={`absolute -top-2 -right-2 w-4 h-4 sm:w-6 sm:h-6 ${pillar.accentColor} rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-ping`}></div>
-              <div className={`absolute -top-2 -right-2 w-4 h-4 sm:w-6 sm:h-6 ${pillar.accentColor} rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300`}></div>
-            </div>
-          ))}
-        </div>
+       
 
         {/* Visual Flow Animation */}
         <div className="bg-gradient-to-r from-slate-800/50 to-slate-700/50 rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-12 shadow-inner border border-slate-700">
