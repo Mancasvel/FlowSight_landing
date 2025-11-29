@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 
 export default function HeroSection() {
@@ -8,6 +8,8 @@ export default function HeroSection() {
   const [codeLines, setCodeLines] = useState<number>(0)
   const [taskProgress, setTaskProgress] = useState(0)
   const [currentStatus, setCurrentStatus] = useState('analyzing')
+  const [isAnimationComplete, setIsAnimationComplete] = useState(false)
+  const restartIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
   // Real TypeScript authentication code
   const codeSnippets = [
@@ -79,6 +81,31 @@ export default function HeroSection() {
     else if (taskProgress < 75) setCurrentStatus('linking')
     else setCurrentStatus('complete')
   }, [taskProgress])
+
+  // Detect when animation is complete and start repeating after 5 seconds
+  useEffect(() => {
+    if (taskProgress === 100 && !isAnimationComplete) {
+      setIsAnimationComplete(true)
+
+      // Wait 5 seconds after completion, then restart animation
+      setTimeout(() => {
+        // Reset all animation states to start over
+        setCodeLines(0)
+        setTaskProgress(0)
+        setCurrentStatus('analyzing')
+        setIsAnimationComplete(false)
+      }, 5000)
+    }
+  }, [taskProgress, isAnimationComplete])
+
+  // Cleanup interval on unmount
+  useEffect(() => {
+    return () => {
+      if (restartIntervalRef.current) {
+        clearInterval(restartIntervalRef.current)
+      }
+    }
+  }, [])
 
   const getTokenColor = (type: string) => {
     switch (type) {
