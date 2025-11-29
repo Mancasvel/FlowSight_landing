@@ -11,6 +11,10 @@ export const metadata: Metadata = {
   description: 'Automatic task traceability powered by AI context understanding. Replace invasive time tracking and manual task updates with privacy-first architecture.',
   keywords: 'task traceability, developer productivity, AI context understanding, privacy-first, B2B SaaS, organizational intelligence',
   authors: [{ name: 'Manuel Castillejo' }],
+  icons: {
+    icon: '/flowsight_sinfondo.png',
+    apple: '/flowsight_sinfondo.png',
+  },
   openGraph: {
     title: 'FlowSight - Task Visibility Without Developer Surveillance',
     description: 'Automatic task traceability powered by AI context understanding. Replace invasive time tracking and manual task updates with privacy-first architecture.',
