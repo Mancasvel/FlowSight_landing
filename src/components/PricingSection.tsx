@@ -15,7 +15,7 @@ export default function PricingSection() {
         "Dedicated Support": "Community"
       },
       cta: "Create Free Account",
-      ctaClass: "btn-outline"
+      ctaClass: "border-2 border-slate-600 text-gray-300 hover:border-teal-500 hover:text-teal-400 font-semibold px-6 py-3 rounded-xl transition-all duration-200"
     },
     {
       tier: "Pro",
@@ -32,7 +32,7 @@ export default function PricingSection() {
         "Dedicated Support": "Email"
       },
       cta: "Start 14-Day Trial",
-      ctaClass: "btn-primary",
+      ctaClass: "bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white font-semibold px-6 py-3 rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-teal-500/25",
       popular: true
     },
     {
@@ -50,37 +50,37 @@ export default function PricingSection() {
         "Dedicated Support": "Slack + engineer"
       },
       cta: "Contact Sales",
-      ctaClass: "text-navy-900 hover:text-navy-700 font-medium underline"
+      ctaClass: "border-2 border-slate-600 text-gray-300 hover:border-teal-500 hover:text-teal-400 font-semibold px-6 py-3 rounded-xl transition-all duration-200"
     }
   ]
 
   const features = Object.keys(pricing[0].features)
 
   return (
-    <section className="bg-gray-50 section-padding" id="pricing">
-      <div className="container-max">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+    <section className="bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 section-padding" id="pricing">
+      <div className="container-max px-4 sm:px-6 lg:px-12">
+        <div className="text-center mb-10 md:mb-16">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-3 sm:mb-4 px-2">
             Pricing That Makes Sense
           </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg text-gray-400 max-w-2xl mx-auto px-4">
             Start free, scale as you grow. No hidden fees, no surprise bills.
           </p>
         </div>
 
         {/* Pricing - Desktop Table */}
         <div className="hidden lg:block overflow-x-auto">
-          <table className="w-full bg-white rounded-lg shadow-sm border border-gray-200">
+          <table className="w-full bg-slate-800/50 backdrop-blur-sm rounded-lg shadow-sm border border-slate-700">
             <thead>
-              <tr className="border-b border-gray-200">
-                <th className="text-left p-6 font-bold text-gray-900">Feature</th>
+              <tr className="border-b border-slate-700">
+                <th className="text-left p-6 font-bold text-white">Feature</th>
                 {pricing.map((tier, index) => (
                   <th key={index} className="text-center p-6">
                     <div className="space-y-2">
-                      <div className="text-lg font-bold text-gray-900">{tier.tier}</div>
-                      <div className="text-2xl font-bold text-teal-600">{tier.price}</div>
+                      <div className="text-lg font-bold text-white">{tier.tier}</div>
+                      <div className="text-2xl font-bold text-teal-400">{tier.price}</div>
                       {tier.popular && (
-                        <div className="text-xs bg-teal-500 text-white px-2 py-1 rounded-full">
+                        <div className="text-xs bg-teal-500 text-white px-2 py-1 rounded-full inline-block">
                           Most Popular
                         </div>
                       )}
@@ -91,10 +91,10 @@ export default function PricingSection() {
             </thead>
             <tbody>
               {features.map((feature, featureIndex) => (
-                <tr key={feature} className={featureIndex % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
-                  <td className="p-6 font-medium text-gray-900">{feature}</td>
+                <tr key={feature} className={featureIndex % 2 === 0 ? 'bg-slate-800/30' : 'bg-slate-800/50'}>
+                  <td className="p-6 font-medium text-white">{feature}</td>
                   {pricing.map((tier, tierIndex) => (
-                    <td key={tierIndex} className="p-6 text-center text-gray-600">
+                    <td key={tierIndex} className="p-6 text-center text-gray-400">
                       {tier.features[feature as keyof typeof tier.features]}
                     </td>
                   ))}
@@ -105,31 +105,31 @@ export default function PricingSection() {
         </div>
 
         {/* Pricing - Mobile Cards */}
-        <div className="lg:hidden space-y-6">
+        <div className="lg:hidden space-y-4 sm:space-y-6">
           {pricing.map((tier, index) => (
-            <div key={index} className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
-              <div className="text-center mb-6">
+            <div key={index} className={`bg-slate-800/50 backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-lg border ${tier.popular ? 'border-teal-500' : 'border-slate-700'} p-4 sm:p-6`}>
+              <div className="text-center mb-4 sm:mb-6">
                 <div className="flex items-center justify-center mb-2">
-                  <h3 className="text-xl font-bold text-gray-900 mr-3">{tier.tier}</h3>
+                  <h3 className="text-lg sm:text-xl font-bold text-white mr-2 sm:mr-3">{tier.tier}</h3>
                   {tier.popular && (
-                    <div className="text-xs bg-teal-500 text-white px-3 py-1 rounded-full">
+                    <div className="text-xs bg-teal-500 text-white px-2 sm:px-3 py-1 rounded-full">
                       Most Popular
                     </div>
                   )}
                 </div>
-                <div className="text-3xl font-bold text-teal-600 mb-4">{tier.price}</div>
+                <div className="text-2xl sm:text-3xl font-bold text-teal-400 mb-3 sm:mb-4">{tier.price}</div>
               </div>
 
-              <div className="space-y-3 mb-6">
+              <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
                 {features.map((feature, featureIndex) => (
-                  <div key={featureIndex} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
-                    <span className="text-sm font-medium text-gray-700">{feature}</span>
-                    <span className="text-sm text-gray-600">{tier.features[feature as keyof typeof tier.features]}</span>
+                  <div key={featureIndex} className="flex justify-between items-center py-1.5 sm:py-2 border-b border-slate-700 last:border-b-0">
+                    <span className="text-xs sm:text-sm font-medium text-gray-300">{feature}</span>
+                    <span className="text-xs sm:text-sm text-gray-400 text-right ml-2">{tier.features[feature as keyof typeof tier.features]}</span>
                   </div>
                 ))}
               </div>
 
-              <button className={tier.ctaClass + " w-full"}>
+              <button className={tier.ctaClass + " w-full text-sm sm:text-base"}>
                 {tier.cta}
               </button>
             </div>
@@ -146,8 +146,8 @@ export default function PricingSection() {
         </div>
 
         {/* Pricing Note */}
-        <div className="text-center mt-8">
-          <p className="text-gray-600">
+        <div className="text-center mt-6 sm:mt-8 px-4">
+          <p className="text-sm sm:text-base text-gray-400">
             Annual billing available—save 20%. Volume discounts for teams 500+.
           </p>
         </div>

@@ -4,8 +4,7 @@ import HeroSection from '@/components/HeroSection'
 import ProblemSection from '@/components/ProblemSection'
 import SolutionSection from '@/components/SolutionSection'
 import ProblemSolvedSection from '@/components/ProblemSolvedSection'
-import TractionSection from '@/components/TractionSection'
-import WhyNowSection from '@/components/WhyNowSection'
+import MarketPerfectStormSection from '@/components/MarketPerfectStormSection'
 import PricingSection from '@/components/PricingSection'
 import ComparisonSection from '@/components/ComparisonSection'
 import FaqSection from '@/components/FaqSection'
@@ -18,10 +17,9 @@ export default function Home() {
     <main className="min-h-screen">
       <HeroSection />
       <ProblemSection />
+      <MarketPerfectStormSection />
       <SolutionSection />
       <ProblemSolvedSection />
-      <TractionSection />
-      <WhyNowSection />
       <PricingSection  />
       <ComparisonSection />
       <FaqSection />

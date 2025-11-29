@@ -18,7 +18,7 @@ export default function Navigation() {
   const navItems = [
     { name: 'Problem', href: '#problem' },
     { name: 'Solution', href: '#solution' },
-    { name: 'How It Works', href: '#how-it-works' },
+    { name: 'Dashboard', href: '#market-storm' },
     { name: 'Pricing', href: '#pricing' },
     { name: 'Team', href: '#team' },
   ]
@@ -26,7 +26,7 @@ export default function Navigation() {
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
       isScrolled
-        ? 'bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-100'
+        ? 'bg-slate-900/95 backdrop-blur-md shadow-lg border-b border-slate-700'
         : 'bg-transparent'
     }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
@@ -40,7 +40,7 @@ export default function Navigation() {
               height={32}
               className="h-8 w-auto"
             />
-            <span className="text-xl font-bold text-gray-900">FlowSight</span>
+            <span className={`text-xl font-bold transition-colors ${isScrolled ? 'text-white' : 'text-white'}`}>FlowSight</span>
           </div>
 
           {/* Desktop Navigation */}
@@ -49,7 +49,11 @@ export default function Navigation() {
               <a
                 key={item.name}
                 href={item.href}
-                className="text-navy-700 hover:text-teal-600 font-medium transition-colors duration-200"
+                className={`font-medium transition-colors duration-200 ${
+                  isScrolled 
+                    ? 'text-gray-300 hover:text-teal-400' 
+                    : 'text-gray-300 hover:text-teal-400'
+                }`}
               >
                 {item.name}
               </a>
@@ -58,7 +62,7 @@ export default function Navigation() {
 
           {/* CTA Button */}
           <div className="hidden lg:block">
-            <button className="bg-teal-500 hover:bg-teal-600 text-white px-6 py-2.5 rounded-lg font-medium transition-all duration-200 hover:shadow-lg">
+            <button className="bg-teal-500 hover:bg-teal-600 text-white px-6 py-2.5 rounded-lg font-medium transition-all duration-200 hover:shadow-lg hover:shadow-teal-500/25">
               Get Started Free
             </button>
           </div>
@@ -66,7 +70,7 @@ export default function Navigation() {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="lg:hidden p-2 rounded-lg text-navy-700 hover:text-navy-900 hover:bg-gray-100 transition-colors"
+            className="lg:hidden p-2 rounded-lg text-gray-300 hover:text-white hover:bg-slate-700 transition-colors"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               {isMobileMenuOpen ? (
@@ -80,13 +84,13 @@ export default function Navigation() {
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden border-t border-gray-100 bg-white/95 backdrop-blur-md">
+          <div className="lg:hidden border-t border-slate-700 bg-slate-900/95 backdrop-blur-md">
             <div className="px-4 py-6 space-y-4">
               {navItems.map((item) => (
                 <a
                   key={item.name}
                   href={item.href}
-                  className="block text-navy-700 hover:text-teal-600 font-medium py-2 transition-colors"
+                  className="block text-gray-300 hover:text-teal-400 font-medium py-2 transition-colors"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {item.name}

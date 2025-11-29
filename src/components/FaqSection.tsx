@@ -8,15 +8,15 @@ export default function FaqSection() {
   const faqs = [
     {
       question: "Is this just another time tracking tool?",
-      answer: "No. Time tracking tools (Clockify, Toggl) are invasive and capture raw activity. FlowSight infers task context automatically—you never enter time manually, and developers never feel surveilled. It's the inverse of traditional time tracking."
+      answer: "No. Time tracking tools (Clockify, Toggl) are invasive and capture raw activity. FlowSight infers task context automatically—you never enter time manually, and developers never feel surveilled."
     },
     {
       question: "Does FlowSight collect my code or screenshots?",
-      answer: "No. 100% of processing on your local machine. We never capture screenshots, code, logs, or raw activity. Only task inference results leave your machine (and only if you enable cloud sync). You always have control."
+      answer: "No. 100% of processing on your local machine. We never capture screenshots, code, logs, or raw activity. Only task inference results leave your machine (and only if you enable cloud sync)."
     },
     {
       question: "How is this different from Jira / Linear dashboards?",
-      answer: "Jira and Linear rely on manual task updates. Developers forget to update status, so dashboards are 24 hours behind reality. FlowSight automatically infers task context in real-time. If developer is working on TASK-482, we know it instantly."
+      answer: "Jira and Linear rely on manual task updates. Developers forget to update status, so dashboards are 24 hours behind reality. FlowSight automatically infers task context in real-time."
     },
     {
       question: "What are the hardware requirements?",
@@ -45,30 +45,30 @@ export default function FaqSection() {
   }
 
   return (
-    <section className="bg-gray-50 section-padding">
-      <div className="container-max">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl lg:text-5xl font-bold text-navy-900 mb-4">
+    <section className="bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 section-padding">
+      <div className="container-max px-4 sm:px-6 lg:px-12">
+        <div className="text-center mb-10 md:mb-16">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-3 sm:mb-4 px-2">
             Frequently Asked Questions
           </h2>
-          <p className="text-xl text-muted max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-gray-400 max-w-2xl mx-auto px-4">
             Everything you need to know about FlowSight
           </p>
         </div>
 
-        <div className="max-w-4xl mx-auto space-y-4">
+        <div className="max-w-4xl mx-auto space-y-3 sm:space-y-4">
           {faqs.map((faq, index) => (
-            <div key={index} className="bg-white rounded-lg border border-gray-200">
+            <div key={index} className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700 overflow-hidden">
               <button
                 onClick={() => toggleFaq(index)}
-                className="w-full text-left p-6 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-inset"
+                className="w-full text-left p-4 sm:p-6 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-inset"
               >
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-navy-900 pr-4">
+                  <h3 className="text-sm sm:text-base md:text-lg font-semibold text-white pr-4 leading-tight">
                     {faq.question}
                   </h3>
                   <svg
-                    className={`w-5 h-5 text-navy-500 transform transition-transform duration-200 ${
+                    className={`w-4 h-4 sm:w-5 sm:h-5 text-gray-400 transform transition-transform duration-200 flex-shrink-0 ${
                       openIndex === index ? 'rotate-180' : ''
                     }`}
                     fill="currentColor"
@@ -80,8 +80,8 @@ export default function FaqSection() {
               </button>
 
               {openIndex === index && (
-                <div className="px-6 pb-6">
-                  <p className="text-muted leading-relaxed">
+                <div className="px-4 sm:px-6 pb-4 sm:pb-6">
+                  <p className="text-sm sm:text-base text-gray-400 leading-relaxed">
                     {faq.answer}
                   </p>
                 </div>
