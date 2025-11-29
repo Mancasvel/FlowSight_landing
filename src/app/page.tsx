@@ -3,7 +3,6 @@
 import HeroSection from '@/components/HeroSection'
 import ProblemSection from '@/components/ProblemSection'
 import SolutionSection from '@/components/SolutionSection'
-import HowItWorksSection from '@/components/HowItWorksSection'
 import ProblemSolvedSection from '@/components/ProblemSolvedSection'
 import TractionSection from '@/components/TractionSection'
 import WhyNowSection from '@/components/WhyNowSection'
@@ -20,14 +19,13 @@ export default function Home() {
       <HeroSection />
       <ProblemSection />
       <SolutionSection />
-      <HowItWorksSection />
       <ProblemSolvedSection />
       <TractionSection />
       <WhyNowSection />
-      <PricingSection id="pricing" />
+      <PricingSection  />
       <ComparisonSection />
       <FaqSection />
-      <TeamSection id="team" />
+      <TeamSection />
       <TestimonialsSection />
       <FinalCtaSection />
     </main>

@@ -1,14 +1,14 @@
 export default function TractionSection() {
   const stats = [
     {
-      stat: "200",
+      stat: "+50",
       label: "Active Developers",
-      body: "47 Engineering Teams in Closed Beta. From startups to enterprise."
+      body: "+10 Engineering Teams in Closed Beta. From startups to enterprise."
     },
     {
-      stat: "90%",
+      stat: "+85%",
       label: "Task Classification Accuracy",
-      body: "Real-time context inference across 5,000+ developer sessions."
+      body: "Real-time context inference across 500+ developer sessions."
     },
     {
       stat: "4,800",

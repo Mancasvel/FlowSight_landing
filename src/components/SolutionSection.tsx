@@ -13,7 +13,7 @@ export default function SolutionSection() {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             const index = parseInt(entry.target.getAttribute('data-index') || '0')
-            setVisibleCards(prev => [...new Set([...prev, index])])
+            setVisibleCards(prev => Array.from(new Set([...prev, index])))
           }
         })
       },

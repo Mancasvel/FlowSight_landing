@@ -33,7 +33,7 @@ export default function TeamSection() {
 
                 <div className="space-y-4 text-muted leading-relaxed">
                   <p>
-                    Software Engineer turned founder-operator. Previously CTO at UNSENT (AI + privacy platform) and CoNest (marketplace operations). Winner of Startup Weekend Seville 2025.
+                    Software Engineer turned founder-operator. Previously CTO at UNSENT (AI + privacy platform) and CoNest (intergenerational coliving platform).
                   </p>
 
                   <p>
