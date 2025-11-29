@@ -32,7 +32,7 @@ export default function Navigation() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
-          <div className="flex items-center space-x-3">
+          <a href="/" className="flex items-center space-x-3">
             <Image
               src="/flowsight_sinfondo.png"
               alt="FlowSight Logo"
@@ -41,7 +41,7 @@ export default function Navigation() {
               className="h-8 w-auto"
             />
             <span className={`text-xl font-bold transition-colors ${isScrolled ? 'text-white' : 'text-white'}`}>FlowSight</span>
-          </div>
+          </a>
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-8">

@@ -3,28 +3,28 @@ import Image from 'next/image'
 export default function Footer() {
   const footerLinks = {
     product: [
-      { name: 'Features', href: '#features' },
-      { name: 'Pricing', href: '#pricing' },
-      { name: 'Security', href: '#security' },
-      { name: 'Integrations', href: '#integrations' },
+      { name: 'Features', href: '/features' },
+      { name: 'Pricing', href: '/pricing' },
+      { name: 'Security', href: '/security' },
+      { name: 'Integrations', href: '/integrations' },
     ],
     company: [
-      { name: 'About', href: '#about' },
-      { name: 'Team', href: '#team' },
-      { name: 'Careers', href: '#careers' },
-      { name: 'Contact', href: '#contact' },
+      { name: 'About', href: '/about' },
+      { name: 'Team', href: '/team' },
+      { name: 'Careers', href: '/careers' },
+      { name: 'Contact', href: '/contact' },
     ],
     resources: [
-      { name: 'Documentation', href: '#docs' },
-      { name: 'API Reference', href: '#api' },
-      { name: 'Blog', href: '#blog' },
-      { name: 'Support', href: '#support' },
+      { name: 'Documentation', href: '/documentation' },
+      { name: 'API Reference', href: '/api-reference' },
+      { name: 'Blog', href: '/blog' },
+      { name: 'Support', href: '/support' },
     ],
     legal: [
-      { name: 'Privacy Policy', href: '#privacy' },
-      { name: 'Terms of Service', href: '#terms' },
-      { name: 'GDPR', href: '#gdpr' },
-      { name: 'Security', href: '#security' },
+      { name: 'Privacy Policy', href: '/privacy-policy' },
+      { name: 'Terms of Service', href: '/terms-of-service' },
+      { name: 'GDPR', href: '/gdpr' },
+      { name: 'Security', href: '/legal-security' },
     ],
   }
 
@@ -146,7 +146,7 @@ export default function Footer() {
         {/* Bottom Footer */}
         <div className="border-t border-slate-800 pt-6 sm:pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="text-gray-400 text-xs sm:text-sm">
-            © 2024 FlowSight. All rights reserved.
+            © 2026 FlowSight. All rights reserved.
           </div>
           <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 md:gap-6 text-xs sm:text-sm text-gray-400">
             <span>Privacy-first by design</span>
