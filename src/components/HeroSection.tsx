@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 
 export default function HeroSection() {
   const [isVisible, setIsVisible] = useState(false)
@@ -79,9 +80,11 @@ export default function HeroSection() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center p-1.5">
-                        <img 
-                          src="/flowsight_sinfondo.png" 
-                          alt="FlowSight" 
+                        <Image
+                          src="/flowsight_sinfondo.png"
+                          alt="FlowSight"
+                          width={32}
+                          height={32}
                           className="w-full h-full object-contain"
                         />
                       </div>

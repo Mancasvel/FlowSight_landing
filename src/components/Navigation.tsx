@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 
 export default function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false)
@@ -32,9 +33,11 @@ export default function Navigation() {
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
           <div className="flex items-center space-x-3">
-            <img 
-              src="/flowsight_sinfondo.png" 
-              alt="FlowSight Logo" 
+            <Image
+              src="/flowsight_sinfondo.png"
+              alt="FlowSight Logo"
+              width={32}
+              height={32}
               className="h-8 w-auto"
             />
             <span className="text-xl font-bold text-gray-900">FlowSight</span>

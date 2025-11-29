@@ -1,3 +1,5 @@
+import Image from 'next/image'
+
 export default function TeamSection() {
   return (
     <section className="bg-white section-padding">
@@ -15,9 +17,11 @@ export default function TeamSection() {
           <div className="bg-gray-50 rounded-lg p-8 border border-gray-200">
             <div className="flex flex-col md:flex-row items-start space-y-6 md:space-y-0 md:space-x-8">
               <div className="flex-shrink-0">
-                <img
+                <Image
                   src="/mc_profile.jpg"
                   alt="Manuel Castillejo - Founder & CEO"
+                  width={128}
+                  height={128}
                   className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg"
                 />
               </div>
