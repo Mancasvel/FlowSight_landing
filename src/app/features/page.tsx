@@ -198,9 +198,12 @@ export default function FeaturesPage() {
                   >
                     Start Free Trial
                   </button>
-                  <button className="border-2 border-slate-600 text-gray-300 hover:border-teal-500 hover:text-teal-400 font-semibold px-8 py-4 rounded-xl transition-all duration-200 hover:shadow-lg transform hover:-translate-y-1">
+                  <a
+                    href="/pricing"
+                    className="border-2 border-slate-600 text-gray-300 hover:border-teal-500 hover:text-teal-400 font-semibold px-8 py-4 rounded-xl transition-all duration-200 hover:shadow-lg transform hover:-translate-y-1"
+                  >
                     View Pricing
-                  </button>
+                  </a>
                 </div>
               </div>
             </div>

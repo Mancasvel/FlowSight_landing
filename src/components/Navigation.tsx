@@ -2,10 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
+import BetaSignupModal from './BetaSignupModal'
+import { useBetaModal } from '@/hooks/useBetaModal'
 
 export default function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const { isOpen, openModal, closeModal } = useBetaModal()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -62,7 +65,10 @@ export default function Navigation() {
 
           {/* CTA Button */}
           <div className="hidden lg:block">
-            <button className="bg-teal-500 hover:bg-teal-600 text-white px-6 py-2.5 rounded-lg font-medium transition-all duration-200 hover:shadow-lg hover:shadow-teal-500/25">
+            <button
+              onClick={openModal}
+              className="bg-teal-500 hover:bg-teal-600 text-white px-6 py-2.5 rounded-lg font-medium transition-all duration-200 hover:shadow-lg hover:shadow-teal-500/25"
+            >
               Get Started Free
             </button>
           </div>
@@ -96,13 +102,22 @@ export default function Navigation() {
                   {item.name}
                 </a>
               ))}
-              <button className="w-full bg-teal-500 hover:bg-teal-600 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200">
+              <button
+                onClick={() => {
+                  setIsMobileMenuOpen(false)
+                  openModal()
+                }}
+                className="w-full bg-teal-500 hover:bg-teal-600 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200"
+              >
                 Get Started Free
               </button>
             </div>
           </div>
         )}
       </div>
+
+      {/* Beta Signup Modal */}
+      <BetaSignupModal isOpen={isOpen} onClose={closeModal} />
     </nav>
   )
 }

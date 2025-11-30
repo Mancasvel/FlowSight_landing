@@ -34,7 +34,7 @@ export default function BetaSignupModal({ isOpen, onClose }: BetaSignupModalProp
 
       if (response.ok) {
         setMessageType('success')
-        setMessage('¡Gracias por registrarte! Te contactaremos pronto con acceso a la beta.')
+        setMessage('Thank you for signing up! We\'ll contact you soon with beta access.')
         setName('')
         setEmail('')
 
@@ -46,11 +46,11 @@ export default function BetaSignupModal({ isOpen, onClose }: BetaSignupModalProp
         }, 3000)
       } else {
         setMessageType('error')
-        setMessage(data.error || 'Ocurrió un error. Por favor intenta de nuevo.')
+        setMessage(data.error || 'An error occurred. Please try again.')
       }
     } catch (error) {
       setMessageType('error')
-      setMessage('Error de conexión. Por favor verifica tu conexión a internet e intenta de nuevo.')
+      setMessage('Connection error. Please check your internet connection and try again.')
     } finally {
       setIsLoading(false)
     }
@@ -81,7 +81,7 @@ export default function BetaSignupModal({ isOpen, onClose }: BetaSignupModalProp
               />
               <div>
                 <h3 className="text-xl font-bold text-white">FlowSight Beta</h3>
-                <p className="text-sm text-gray-300">Acceso anticipado exclusivo</p>
+                <p className="text-sm text-gray-300">Exclusive early access</p>
               </div>
             </div>
 
@@ -100,10 +100,10 @@ export default function BetaSignupModal({ isOpen, onClose }: BetaSignupModalProp
           <div className="px-6 py-6">
             <div className="text-center mb-6">
               <h4 className="text-lg font-semibold text-white mb-2">
-                Únete a la Beta Exclusiva
+                Join the Exclusive Beta
               </h4>
               <p className="text-sm text-gray-400">
-                Sé uno de los primeros en probar FlowSight y dar forma al futuro del desarrollo.
+                Be one of the first to try FlowSight and shape the future of development.
               </p>
             </div>
 
@@ -111,7 +111,7 @@ export default function BetaSignupModal({ isOpen, onClose }: BetaSignupModalProp
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-1">
-                  Nombre completo
+                  Full Name
                 </label>
                 <input
                   type="text"
@@ -119,7 +119,7 @@ export default function BetaSignupModal({ isOpen, onClose }: BetaSignupModalProp
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-teal-500 transition-colors"
-                  placeholder="Tu nombre"
+                  placeholder="Your name"
                   required
                   disabled={isLoading}
                 />
@@ -127,7 +127,7 @@ export default function BetaSignupModal({ isOpen, onClose }: BetaSignupModalProp
 
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1">
-                  Correo electrónico
+                  Email Address
                 </label>
                 <input
                   type="email"
@@ -135,7 +135,7 @@ export default function BetaSignupModal({ isOpen, onClose }: BetaSignupModalProp
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-teal-500 transition-colors"
-                  placeholder="tu@email.com"
+                  placeholder="your@email.com"
                   required
                   disabled={isLoading}
                 />
@@ -164,10 +164,10 @@ export default function BetaSignupModal({ isOpen, onClose }: BetaSignupModalProp
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    Registrando...
+                    Registering...
                   </div>
                 ) : (
-                  'Solicitar Acceso Beta'
+                  'Request Beta Access'
                 )}
               </button>
             </form>
@@ -175,7 +175,7 @@ export default function BetaSignupModal({ isOpen, onClose }: BetaSignupModalProp
             {/* Footer */}
             <div className="mt-6 pt-4 border-t border-slate-700">
               <p className="text-xs text-gray-400 text-center">
-                Tu información está segura y nunca será compartida con terceros.
+                Your information is secure and will never be shared with third parties.
               </p>
             </div>
           </div>

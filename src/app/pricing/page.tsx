@@ -151,7 +151,7 @@ export default function PricingPage() {
                   </div>
 
                   <button
-                    onClick={tier.cta === "Start 14-Day Trial" ? openModal : undefined}
+                    onClick={tier.cta !== "Contact Sales" ? openModal : undefined}
                     className={tier.ctaClass + " w-full text-sm sm:text-base"}
                   >
                     {tier.cta}
@@ -165,7 +165,7 @@ export default function PricingPage() {
               {pricing.map((tier, index) => (
                 <button
                   key={index}
-                  onClick={tier.cta === "Start 14-Day Trial" ? openModal : undefined}
+                  onClick={tier.cta !== "Contact Sales" ? openModal : undefined}
                   className={tier.ctaClass}
                 >
                   {tier.cta}

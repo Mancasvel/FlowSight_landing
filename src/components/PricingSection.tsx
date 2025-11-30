@@ -1,4 +1,10 @@
+'use client'
+
+import BetaSignupModal from './BetaSignupModal'
+import { useBetaModal } from '@/hooks/useBetaModal'
+
 export default function PricingSection() {
+  const { isOpen, openModal, closeModal } = useBetaModal()
   const pricing = [
     {
       tier: "Basic",
@@ -129,7 +135,10 @@ export default function PricingSection() {
                 ))}
               </div>
 
-              <button className={tier.ctaClass + " w-full text-sm sm:text-base"}>
+              <button
+                onClick={tier.cta !== "Contact Sales" ? openModal : undefined}
+                className={tier.ctaClass + " w-full text-sm sm:text-base"}
+              >
                 {tier.cta}
               </button>
             </div>
@@ -139,7 +148,11 @@ export default function PricingSection() {
         {/* CTA Buttons - Desktop Only */}
         <div className="hidden lg:flex justify-center gap-4 mt-12">
           {pricing.map((tier, index) => (
-            <button key={index} className={tier.ctaClass}>
+            <button
+              key={index}
+              onClick={tier.cta !== "Contact Sales" ? openModal : undefined}
+              className={tier.ctaClass}
+            >
               {tier.cta}
             </button>
           ))}
@@ -152,6 +165,9 @@ export default function PricingSection() {
           </p>
         </div>
       </div>
+
+      {/* Beta Signup Modal */}
+      <BetaSignupModal isOpen={isOpen} onClose={closeModal} />
     </section>
   )
 }

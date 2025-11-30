@@ -1,6 +1,41 @@
+'use client'
+
+import { useState } from 'react'
 import Image from 'next/image'
 
 export default function Footer() {
+  const [email, setEmail] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
+    setMessage(null)
+
+    try {
+      const res = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        setMessage({ type: 'success', text: 'Successfully subscribed!' })
+        setEmail('')
+      } else {
+        setMessage({ type: 'error', text: data.error || 'Error subscribing' })
+      }
+    } catch {
+      setMessage({ type: 'error', text: 'Connection error' })
+    } finally {
+      setIsLoading(false)
+    }
+  }
   const footerLinks = {
     product: [
       { name: 'Features', href: '/features' },
@@ -130,16 +165,28 @@ export default function Footer() {
           <div className="max-w-md">
             <h3 className="text-sm sm:text-lg font-semibold mb-2 sm:mb-4">Stay Updated</h3>
             <p className="text-xs sm:text-sm text-gray-400 mb-4 sm:mb-6">Get the latest updates on FlowSight features and releases.</p>
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+            <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-2 sm:gap-3">
               <input
                 type="email"
                 placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
                 className="flex-1 px-3 sm:px-4 py-2 sm:py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-teal-500 transition-colors text-sm"
               />
-              <button className="bg-teal-500 hover:bg-teal-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium transition-colors duration-200 text-sm sm:text-base">
-                Subscribe
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="bg-teal-500 hover:bg-teal-600 disabled:bg-teal-500/50 disabled:cursor-not-allowed text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium transition-colors duration-200 text-sm sm:text-base"
+              >
+                {isLoading ? 'Subscribing...' : 'Subscribe'}
               </button>
-            </div>
+            </form>
+            {message && (
+              <p className={`mt-3 text-sm ${message.type === 'success' ? 'text-green-400' : 'text-red-400'}`}>
+                {message.text}
+              </p>
+            )}
           </div>
         </div>
 

@@ -12,3 +12,5 @@ export function useBetaModal() {
     closeModal,
   }
 }
+
+export default useBetaModal

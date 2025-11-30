@@ -1,12 +1,15 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import BetaSignupModal from './BetaSignupModal'
+import { useBetaModal } from '@/hooks/useBetaModal'
 
 interface CostCalculatorProps {
   onClose: () => void
 }
 
 export default function CostCalculator({ onClose }: CostCalculatorProps) {
+  const { isOpen, openModal, closeModal } = useBetaModal()
   const [teamSize, setTeamSize] = useState<number>(10)
   const [meetingHours, setMeetingHours] = useState<number>(10)
   const [toolCosts, setToolCosts] = useState<number>(700)
@@ -174,12 +177,18 @@ export default function CostCalculator({ onClose }: CostCalculatorProps) {
             >
               Close Calculator
             </button>
-            <button className="flex-1 bg-gradient-to-r from-teal-500 to-teal-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-teal-600 hover:to-teal-700 transition-all duration-200">
+            <button
+              onClick={openModal}
+              className="flex-1 bg-gradient-to-r from-teal-500 to-teal-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-teal-600 hover:to-teal-700 transition-all duration-200"
+            >
               Get Started with FlowSight
             </button>
           </div>
         </div>
       </div>
+
+      {/* Beta Signup Modal */}
+      <BetaSignupModal isOpen={isOpen} onClose={closeModal} />
     </div>
   )
 }
