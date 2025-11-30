@@ -1,7 +1,12 @@
+'use client'
+
 import Navigation from '@/components/Navigation'
 import Footer from '@/components/Footer'
+import BetaSignupModal from '@/components/BetaSignupModal'
+import { useBetaModal } from '@/hooks/useBetaModal'
 
 export default function PricingPage() {
+  const { isOpen, openModal, closeModal } = useBetaModal()
   const pricing = [
     {
       tier: "Basic",
@@ -145,7 +150,10 @@ export default function PricingPage() {
                     ))}
                   </div>
 
-                  <button className={tier.ctaClass + " w-full text-sm sm:text-base"}>
+                  <button
+                    onClick={tier.cta === "Start 14-Day Trial" ? openModal : undefined}
+                    className={tier.ctaClass + " w-full text-sm sm:text-base"}
+                  >
                     {tier.cta}
                   </button>
                 </div>
@@ -155,7 +163,11 @@ export default function PricingPage() {
             {/* CTA Buttons - Desktop Only */}
             <div className="hidden lg:flex justify-center gap-4 mt-12">
               {pricing.map((tier, index) => (
-                <button key={index} className={tier.ctaClass}>
+                <button
+                  key={index}
+                  onClick={tier.cta === "Start 14-Day Trial" ? openModal : undefined}
+                  className={tier.ctaClass}
+                >
                   {tier.cta}
                 </button>
               ))}
@@ -203,6 +215,10 @@ export default function PricingPage() {
           </div>
         </section>
       </main>
+
+      {/* Beta Signup Modal */}
+      <BetaSignupModal isOpen={isOpen} onClose={closeModal} />
+
       <Footer />
     </>
   )

@@ -1,8 +1,13 @@
+'use client'
+
 import Navigation from '@/components/Navigation'
 import Footer from '@/components/Footer'
 import Image from 'next/image'
+import BetaSignupModal from '@/components/BetaSignupModal'
+import { useBetaModal } from '@/hooks/useBetaModal'
 
 export default function FeaturesPage() {
+  const { isOpen, openModal, closeModal } = useBetaModal()
   return (
     <>
       <Navigation />
@@ -187,7 +192,10 @@ export default function FeaturesPage() {
                   Join thousands of developers who have transformed their workflow with FlowSight.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <button className="bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white font-semibold px-8 py-4 rounded-xl transition-all duration-200 hover:shadow-xl hover:shadow-teal-500/25 transform hover:-translate-y-1">
+                  <button
+                    onClick={openModal}
+                    className="bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white font-semibold px-8 py-4 rounded-xl transition-all duration-200 hover:shadow-xl hover:shadow-teal-500/25 transform hover:-translate-y-1"
+                  >
                     Start Free Trial
                   </button>
                   <button className="border-2 border-slate-600 text-gray-300 hover:border-teal-500 hover:text-teal-400 font-semibold px-8 py-4 rounded-xl transition-all duration-200 hover:shadow-lg transform hover:-translate-y-1">
@@ -199,7 +207,12 @@ export default function FeaturesPage() {
           </div>
         </section>
       </main>
+
+      {/* Beta Signup Modal */}
+      <BetaSignupModal isOpen={isOpen} onClose={closeModal} />
+
       <Footer />
     </>
   )
 }
+

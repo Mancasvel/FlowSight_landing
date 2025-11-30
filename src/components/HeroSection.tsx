@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
+import BetaSignupModal from './BetaSignupModal'
+import { useBetaModal } from '@/hooks/useBetaModal'
 
 export default function HeroSection() {
   const [isVisible, setIsVisible] = useState(false)
@@ -10,6 +12,7 @@ export default function HeroSection() {
   const [currentStatus, setCurrentStatus] = useState('analyzing')
   const [isAnimationComplete, setIsAnimationComplete] = useState(false)
   const restartIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const { isOpen, openModal, closeModal } = useBetaModal()
 
   // Real TypeScript authentication code
   const codeSnippets = [
@@ -361,7 +364,10 @@ export default function HeroSection() {
         {/* Bottom CTA */}
         <div className={`text-center mt-8 md:mt-12 transition-all duration-1000 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
-            <button className="group bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white font-semibold px-6 sm:px-8 py-3 sm:py-4 rounded-xl transition-all duration-200 hover:shadow-xl hover:shadow-teal-500/25 transform hover:-translate-y-1">
+            <button
+              onClick={openModal}
+              className="group bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white font-semibold px-6 sm:px-8 py-3 sm:py-4 rounded-xl transition-all duration-200 hover:shadow-xl hover:shadow-teal-500/25 transform hover:-translate-y-1"
+            >
               <span className="flex items-center justify-center text-sm sm:text-base">
                 Start Free Trial
                 <svg className="w-4 h-4 sm:w-5 sm:h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -369,7 +375,10 @@ export default function HeroSection() {
                 </svg>
               </span>
             </button>
-            <button className="group border-2 border-slate-600 text-gray-300 hover:border-teal-500 hover:text-teal-400 font-semibold px-6 sm:px-8 py-3 sm:py-4 rounded-xl transition-all duration-200 hover:shadow-lg transform hover:-translate-y-1 text-sm sm:text-base">
+            <button
+              onClick={openModal}
+              className="group border-2 border-slate-600 text-gray-300 hover:border-teal-500 hover:text-teal-400 font-semibold px-6 sm:px-8 py-3 sm:py-4 rounded-xl transition-all duration-200 hover:shadow-lg transform hover:-translate-y-1 text-sm sm:text-base"
+            >
               See Live Demo
             </button>
           </div>
@@ -392,6 +401,9 @@ export default function HeroSection() {
           </div>
         </div>
       </div>
+
+      {/* Beta Signup Modal */}
+      <BetaSignupModal isOpen={isOpen} onClose={closeModal} />
     </section>
   )
 }
