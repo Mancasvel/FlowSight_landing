@@ -98,6 +98,8 @@ dist
 # Serverless directories
 .serverless/
 
+.env
+
 # FuseBox cache
 .fusebox/
 
