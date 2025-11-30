@@ -19,6 +19,27 @@ export const metadata: Metadata = {
     title: 'FlowSight - Task Visibility Without Developer Surveillance',
     description: 'Automatic task traceability powered by AI context understanding. Replace invasive time tracking and manual task updates with privacy-first architecture.',
     type: 'website',
+    images: [
+      {
+        url: '/flowsight_screen.png',
+        width: 1200,
+        height: 630,
+        alt: 'FlowSight - Task Visibility Without Developer Surveillance',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'FlowSight - Task Visibility Without Developer Surveillance',
+    description: 'Automatic task traceability powered by AI context understanding. Replace invasive time tracking and manual task updates with privacy-first architecture.',
+    images: ['/flowsight_screen.png'],
+  },
+  other: {
+    'og:image': '/flowsight_screen.png',
+    'og:image:width': '1200',
+    'og:image:height': '630',
+    'og:image:alt': 'FlowSight - Task Visibility Without Developer Surveillance',
+    'twitter:image': '/flowsight_screen.png',
   },
 }
 
