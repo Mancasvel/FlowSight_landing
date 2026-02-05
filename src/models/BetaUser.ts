@@ -36,3 +36,4 @@ const BetaUser: Model<IBetaUser> =
   mongoose.models.BetaUser || mongoose.model<IBetaUser>('BetaUser', BetaUserSchema)
 
 export default BetaUser
+

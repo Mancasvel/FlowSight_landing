@@ -30,3 +30,4 @@ const NewsletterSubscriberSchema = new mongoose.Schema(
 export default mongoose.models.NewsletterSubscriber ||
   mongoose.model('NewsletterSubscriber', NewsletterSubscriberSchema)
 
+
