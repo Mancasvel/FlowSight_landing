@@ -69,7 +69,7 @@ jspm_packages/
 
 # Yarn Integrity file
 .yarn-integrity
-
+/debug
 # dotenv environment variables file
 .env
 .env.local
