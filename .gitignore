@@ -163,3 +163,8 @@ coverage/
 .out
 .storybook-out
 storybook-static
+
+# AI/Agent artifacts
+.gemini/
+.agent/
+brain/
