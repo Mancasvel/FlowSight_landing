@@ -34,7 +34,7 @@ export function PrivacySection() {
                             Your screenshots never leave the laptop
                         </h2>
                         <p className="text-lg text-slate-500 mb-10 leading-relaxed">
-                            We processed activity locally using <span className="font-semibold text-secondary-navy">Qwen3-VL 2B</span>.
+                            We processed activity locally using <span className="font-semibold text-secondary-navy">Local light AI</span>.
                             Images are analyzed and immediately deleted.
                             Only encrypted text metadata touches our servers.
                         </p>
