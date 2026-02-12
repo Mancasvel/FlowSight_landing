@@ -5,7 +5,7 @@ export default function ComparisonSection() {
       "Automatic Tracking": ["❌", "❌", "❌", "⚠️", "✅"],
       "Context Understanding": ["❌", "⚠️", "⚠️", "❌", "✅"],
       "Time Tracking": ["✅", "❌", "❌", "❌", "✅"],
-      "Developer Experience": ["❌", "✅", "✅", "✅", "✅"],
+      "Member Experience": ["❌", "✅", "✅", "✅", "✅"],
       "PM Visibility": ["✅", "✅", "✅", "⚠️", "✅"],
       "Compliance Ready": ["❌", "⚠️", "⚠️", "⚠️", "✅"]
     },
@@ -67,13 +67,12 @@ export default function ComparisonSection() {
                 <tr key={feature} className={featureIndex % 2 === 0 ? 'bg-slate-800/30' : 'bg-slate-800/50'}>
                   <td className="p-4 sm:p-6 font-medium text-white">{feature}</td>
                   {comparison.features[feature as keyof typeof comparison.features].map((value, valueIndex) => (
-                    <td key={valueIndex} className={`p-4 sm:p-6 text-center font-medium ${
-                      comparison.tools[valueIndex] === 'FlowSight' && value === '✅' ? 'text-green-400' :
-                      comparison.tools[valueIndex] === 'FlowSight' && value === '❌' ? 'text-red-400' :
-                      value === '✅' ? 'text-green-500' :
-                      value === '❌' ? 'text-red-500' :
-                      'text-yellow-500'
-                    }`}>
+                    <td key={valueIndex} className={`p-4 sm:p-6 text-center font-medium ${comparison.tools[valueIndex] === 'FlowSight' && value === '✅' ? 'text-green-400' :
+                        comparison.tools[valueIndex] === 'FlowSight' && value === '❌' ? 'text-red-400' :
+                          value === '✅' ? 'text-green-500' :
+                            value === '❌' ? 'text-red-500' :
+                              'text-yellow-500'
+                      }`}>
                       {getIcon(value)}
                     </td>
                   ))}
@@ -102,13 +101,12 @@ export default function ComparisonSection() {
                 {features.map((feature, featureIndex) => (
                   <div key={featureIndex} className="flex items-center justify-between py-2 sm:py-3 border-b border-slate-700 last:border-b-0">
                     <span className="text-xs sm:text-sm font-medium text-gray-300 flex-1">{feature}</span>
-                    <div className={`ml-4 ${
-                      tool === 'FlowSight' && comparison.features[feature as keyof typeof comparison.features][toolIndex] === '✅' ? 'text-green-400' :
-                      tool === 'FlowSight' && comparison.features[feature as keyof typeof comparison.features][toolIndex] === '❌' ? 'text-red-400' :
-                      comparison.features[feature as keyof typeof comparison.features][toolIndex] === '✅' ? 'text-green-500' :
-                      comparison.features[feature as keyof typeof comparison.features][toolIndex] === '❌' ? 'text-red-500' :
-                      'text-yellow-500'
-                    }`}>
+                    <div className={`ml-4 ${tool === 'FlowSight' && comparison.features[feature as keyof typeof comparison.features][toolIndex] === '✅' ? 'text-green-400' :
+                        tool === 'FlowSight' && comparison.features[feature as keyof typeof comparison.features][toolIndex] === '❌' ? 'text-red-400' :
+                          comparison.features[feature as keyof typeof comparison.features][toolIndex] === '✅' ? 'text-green-500' :
+                            comparison.features[feature as keyof typeof comparison.features][toolIndex] === '❌' ? 'text-red-500' :
+                              'text-yellow-500'
+                      }`}>
                       {getIcon(comparison.features[feature as keyof typeof comparison.features][toolIndex])}
                     </div>
                   </div>

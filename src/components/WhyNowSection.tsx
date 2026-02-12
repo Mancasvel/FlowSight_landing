@@ -2,7 +2,7 @@ export default function WhyNowSection() {
   const reasons = [
     {
       title: "Enterprise Mandate: Zero Surveillance Infrastructure",
-      content: "GDPR fines reach 4–6% of annual revenue. CCPA enforcement accelerates. CISOs now require: developer data never leaves corporate infrastructure. FlowSight's local-first architecture eliminates compliance risk entirely.",
+      content: "GDPR fines reach 4–6% of annual revenue. CCPA enforcement accelerates. CISOs now require: employee data never leaves corporate infrastructure. FlowSight's local-first architecture eliminates compliance risk entirely.",
       stat: "100% GDPR/CCPA compliant by design"
     },
     {
@@ -11,9 +11,9 @@ export default function WhyNowSection() {
       stat: "10x faster than 2023 alternatives"
     },
     {
-      title: "Developer Productivity Is Now Venture-Scale",
-      content: "Every major VC targets developer infrastructure. GitHub, Vercel, Linear reached $3B+ valuations. Developer productivity is direct business multiplier. The gap: task visibility + privacy simultaneously (nobody solves both).",
-      stat: "$100B+ total developer tools market"
+      title: "Remote Productivity Is Now Venture-Scale",
+      content: "Every major VC targets workforce productivity. Slack, zoom, Vercel reached $3B+ valuations. Employee productivity is a direct business multiplier. The gap: task visibility + privacy simultaneously (nobody solves both).",
+      stat: "$100B+ total productivity tools market"
     }
   ]
 
@@ -25,7 +25,7 @@ export default function WhyNowSection() {
             Why Now: Market Perfect Storm
           </h2>
           <p className="text-xl text-muted max-w-2xl mx-auto">
-            Privacy regulation, AI maturity, and developer tools economics align perfectly
+            Privacy regulation, AI maturity, and productivity economics align perfectly
           </p>
         </div>
 

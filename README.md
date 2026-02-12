@@ -1,128 +1,73 @@
 # FlowSight Landing Page
 
-A modern, responsive landing page for FlowSight built with Next.js, TypeScript, and Tailwind CSS.
+A modern, high-performance landing page for **FlowSight** - the privacy-first AI project manager that runs locally on your device. Built with Next.js 14, TypeScript, Tailwind CSS, and Framer Motion.
 
-## 🚀 Getting Started
+## 🚀 Features
 
-### Prerequisites
+- **Privacy-First Architecture**: Emphasizes local processing (Qwen3-VL 2B) and GDPR compliance.
+- **Interactive Flow**: "Zero Friction" section with animated mockups (Agent, AI, Dashboard, Privacy).
+- ** responsive Design**: Fully optimized for Mobile, Tablet, and Desktop.
+- **Dark & Light Modes**: Clean, professional UI with slate/navy accents.
+- **Performance**: Optimized Core Web Vitals with Next.js Image and dynamic imports.
 
-- Node.js 18+
-- npm or yarn
+## 🛠️ Tech Stack
 
-### Installation
+- **Framework**: [Next.js 14](https://nextjs.org/) (App Directory)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **Animations**: [Framer Motion](https://www.framer.com/motion/)
+- **Icons**: [Lucide React](https://lucide.dev/)
 
-```bash
-npm install
-```
-
-### Development
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-### Build
-
-```bash
-npm run build
-npm start
-```
-
-## 📁 Project Structure
+## 📂 Project Structure
 
 ```
 src/
-├── app/                 # Next.js app directory
-│   ├── globals.css     # Global styles
+├── app/                 # Next.js App Router
+│   ├── features/       # Features page
+│   ├── invite/         # Invite flow
+│   ├── login/          # Login page
+│   ├── pricing/        # Pricing page
 │   ├── layout.tsx      # Root layout
-│   └── page.tsx        # Home page
-├── components/         # React components
-│   ├── HeroSection.tsx
-│   ├── ProblemSection.tsx
-│   ├── SolutionSection.tsx
-│   └── ...
-public/                 # Static assets
-├── flowsight_sinfondo.png
-├── mc_profile.jpg
-└── ...
+│   └── page.tsx        # Homepage
+├── components/         # UI Components
+│   ├── Hero.tsx        # Main hero with animated canvas
+│   ├── FlowSection.tsx # "Zero Friction" animated steps
+│   ├── ComparisonTable.tsx # Feature comparison
+│   ├── Pricing.tsx     # Pricing tiers
+│   └── ui/             # Reusable UI elements (buttons, etc.)
+└── lib/                # Utilities & Supabase client
 ```
 
-## 🎨 Features
+## 🚀 Getting Started
 
-- **Responsive Design**: Mobile-first approach with responsive components
-- **Modern UI**: Clean design inspired by Atlassian/Jira
-- **TypeScript**: Full type safety
-- **Optimized Images**: Using Next.js Image component
-- **Accessibility**: Semantic HTML and ARIA attributes
-- **Performance**: Optimized for Core Web Vitals
+1. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
-## 🚀 Deployment
+2. **Run development server:**
+   ```bash
+   npm run dev
+   ```
 
-### Vercel
+3. **Open:** [http://localhost:3000](http://localhost:3000)
 
-1. Connect your GitHub repository to Vercel
-2. Vercel will automatically detect Next.js and configure the build settings
-3. Images are served from the `public` directory
+## 📦 Build & Deploy
 
-### Manual Deployment
-
+To create a production build:
 ```bash
 npm run build
 npm start
 ```
 
-## 🔧 Configuration
+## 🔐 Environment Variables
 
-### Environment Variables
-
-Create a `.env.local` file in the root directory:
-
+Create a `.env.local` file for local development:
 ```env
-NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_key
 ```
-
-### Image Configuration
-
-All images are stored in the `public` directory and served from the root path. The `next/image` component is used for optimization.
-
-## 📱 Responsive Design
-
-The landing page is fully responsive with the following breakpoints:
-
-- **Mobile**: < 768px
-- **Tablet**: 768px - 1024px
-- **Desktop**: > 1024px
-
-Components automatically adapt their layout based on screen size.
-
-## 🎯 Components
-
-- **Navigation**: Sticky navigation with mobile menu
-- **Hero**: Main landing section with CTA
-- **Problem**: Problem statement with animated cards
-- **Solution**: Solution overview with visual flow
-- **Pricing**: Responsive pricing table/cards
-- **Comparison**: Feature comparison table/cards
-- **Team**: Founder profile section
-- **Footer**: Comprehensive footer with links
-
-## 📊 Performance
-
-- Lighthouse scores: 90+ on all metrics
-- Optimized images with next/image
-- Code splitting and lazy loading
-- Minimal bundle size
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
 
 ## 📄 License
 
-This project is private and proprietary to FlowSight.
+Proprietary software. All rights reserved.

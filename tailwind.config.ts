@@ -1,85 +1,85 @@
-import type { Config } from 'tailwindcss'
+import type { Config } from "tailwindcss";
 
 const config: Config = {
   content: [
-    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
+    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
       colors: {
-        // FlowSight Design System Colors
-        navy: {
-          50: '#f0f4f8',
-          100: '#d9e2ec',
-          200: '#bcccdc',
-          300: '#9fb3c8',
-          400: '#829ab1',
-          500: '#627d98',
-          600: '#486581',
-          700: '#334e68',
-          800: '#243b53',
-          900: '#102a43',
-          DEFAULT: '#102a43', // Primary navy
+        primary: {
+          cyan: "#38bdf8",
+          teal: "#00B8A9",
+          brightCyan: "#00D9FF",
+          blue: "#3B82F6",
         },
-        teal: {
-          50: '#e6fffa',
-          100: '#b2f5ea',
-          200: '#81e6d9',
-          300: '#4fd1c9',
-          400: '#38b2ac',
-          500: '#319795',
-          600: '#2c7a7b',
-          700: '#285e61',
-          800: '#234e52',
-          900: '#1a202c',
-          DEFAULT: '#319795', // Primary teal
+        secondary: {
+          navy: "#0f172a",
+          navyAlt: "#0A0A0F",
         },
-        muted: '#627d98', // Muted text color
-        success: '#38a169', // Success green
-        gray: {
-          50: '#f7fafc',
-          100: '#edf2f7',
-          200: '#e2e8f0',
-          300: '#cbd5e0',
-          400: '#a0aec0',
-          500: '#718096',
-          600: '#4a5568',
-          700: '#2d3748',
-          800: '#1a202c',
-          900: '#171923',
-        }
+        accent: {
+          green: "#10B981",
+          orange: "#F59E0B",
+          red: "#EF4444",
+        },
+        background: {
+          offWhite: "#f8f9fa",
+          darkNavy: "#0f172a",
+        },
+        dashboard: {
+          bg: "#0F172A",
+          card: "#1E293B",
+          border: "#334155",
+          text: "#F8FAFC",
+          muted: "#94A3B8",
+        },
+        category: {
+          coding: "#10B981",
+          design: "#8B5CF6",
+          communication: "#3B82F6",
+          meeting: "#F59E0B",
+          browsing: "#6B7280",
+          sales: "#EC4899",
+          other: "#94A3B8",
+        },
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-      },
-      fontSize: {
-        'xs': ['0.75rem', { lineHeight: '1rem' }],
-        'sm': ['0.875rem', { lineHeight: '1.25rem' }],
-        'base': ['1rem', { lineHeight: '1.5rem' }],
-        'lg': ['1.125rem', { lineHeight: '1.75rem' }],
-        'xl': ['1.25rem', { lineHeight: '1.75rem' }],
-        '2xl': ['1.5rem', { lineHeight: '2rem' }],
-        '3xl': ['1.875rem', { lineHeight: '2.25rem' }],
-        '4xl': ['2.25rem', { lineHeight: '2.5rem' }],
-        '5xl': ['3rem', { lineHeight: '1' }],
-        '6xl': ['3.75rem', { lineHeight: '1' }],
-        '7xl': ['4.5rem', { lineHeight: '1' }],
-        '8xl': ['6rem', { lineHeight: '1' }],
-        '9xl': ['8rem', { lineHeight: '1' }],
-      },
-      spacing: {
-        '18': '4.5rem',
-        '88': '22rem',
-        '112': '28rem',
-        '128': '32rem',
+        sans: ["var(--font-inter)", "sans-serif"],
+        heading: ["var(--font-satoshi)", "sans-serif"],
       },
       animation: {
-        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        "fade-in": "fadeIn 0.8s ease-out forwards",
+        "fade-in-up": "fadeInUp 0.8s ease-out forwards",
+        "pulse-slow": "pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        "morph": "morph 8s ease-in-out infinite",
+        "scroll": "scroll 40s linear infinite",
+      },
+      keyframes: {
+        fadeIn: {
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" },
+        },
+        fadeInUp: {
+          "0%": { opacity: "0", transform: "translateY(20px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        morph: {
+          "0%, 100%": { borderRadius: "60% 40% 30% 70% / 60% 30% 70% 40%" },
+          "50%": { borderRadius: "30% 60% 70% 40% / 50% 60% 30% 60%" },
+        },
+        scroll: {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-50%)" },
+        },
+      },
+      backgroundImage: {
+        "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
+        "hero-mesh": "radial-gradient(at 27% 37%, #38bdf8 0px, transparent 50%), radial-gradient(at 97% 21%, #00B8A9 0px, transparent 50%), radial-gradient(at 52% 99%, #00D9FF 0px, transparent 50%), radial-gradient(at 10% 29%, #0ea5e9 0px, transparent 50%)",
       },
     },
   },
   plugins: [],
-}
-export default config
+};
+export default config;

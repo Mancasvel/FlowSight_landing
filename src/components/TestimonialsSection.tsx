@@ -8,7 +8,7 @@ export default function TestimonialsSection() {
       rating: 5
     },
     {
-      quote: "\"Our CTO rejected Clockify for privacy reasons. FlowSight gave us visibility without the surveillance. Deployed to 50 developers in one week.\"",
+      quote: "\"Our CTO rejected Clockify for privacy reasons. FlowSight gave us visibility without the surveillance. Deployed to 50 remote workers in one week.\"",
       attribution: "Security Lead at EnterpriseY",
       rating: 5
     },

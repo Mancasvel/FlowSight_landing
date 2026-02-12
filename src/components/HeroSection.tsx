@@ -66,7 +66,7 @@ export default function HeroSection() {
       const timer = setTimeout(() => {
         setCodeLines(prev => prev + 1)
       }, 300 + Math.random() * 150)
-      
+
       return () => clearTimeout(timer)
     }
   }, [codeLines])
@@ -134,7 +134,7 @@ export default function HeroSection() {
       <div className="relative z-10 container-max px-4 sm:px-6 lg:px-12">
         {/* Top Header Text */}
         <div className={`text-center mb-8 md:mb-12 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          
+
           <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white leading-tight mb-4 px-2">
             Code Naturally
             <span className="block bg-gradient-to-r from-teal-400 to-blue-400 bg-clip-text text-transparent">
@@ -143,14 +143,14 @@ export default function HeroSection() {
           </h1>
 
           <p className="text-base sm:text-lg md:text-xl text-gray-400 leading-relaxed max-w-3xl mx-auto px-4">
-            Write code as you always do. FlowSight automatically understands context, 
+            Write code as you always do. FlowSight automatically understands context,
             links to tasks, and updates progress: all locally, with zero interruption.
           </p>
         </div>
 
         {/* Two macOS Windows Side by Side */}
         <div className={`grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 lg:gap-8 transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          
+
           {/* Left: Code Editor (VS Code style) */}
           <div className="w-full">
             {/* macOS Window Chrome */}
@@ -162,7 +162,7 @@ export default function HeroSection() {
               </div>
               <div className="flex items-center space-x-2 text-gray-400 text-xs sm:text-sm">
                 <svg className="w-3 h-3 sm:w-4 sm:h-4 hidden sm:block" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M23.15 2.587L18.21.21a1.494 1.494 0 0 0-1.705.29l-9.46 8.63-4.12-3.128a.999.999 0 0 0-1.276.057L.327 7.261A1 1 0 0 0 .326 8.74L3.899 12 .326 15.26a1 1 0 0 0 .001 1.479L1.65 17.94a.999.999 0 0 0 1.276.057l4.12-3.128 9.46 8.63a1.492 1.492 0 0 0 1.704.29l4.942-2.377A1.5 1.5 0 0 0 24 20.06V3.939a1.5 1.5 0 0 0-.85-1.352zm-5.146 14.861L10.826 12l7.178-5.448v10.896z"/>
+                  <path d="M23.15 2.587L18.21.21a1.494 1.494 0 0 0-1.705.29l-9.46 8.63-4.12-3.128a.999.999 0 0 0-1.276.057L.327 7.261A1 1 0 0 0 .326 8.74L3.899 12 .326 15.26a1 1 0 0 0 .001 1.479L1.65 17.94a.999.999 0 0 0 1.276.057l4.12-3.128 9.46 8.63a1.492 1.492 0 0 0 1.704.29l4.942-2.377A1.5 1.5 0 0 0 24 20.06V3.939a1.5 1.5 0 0 0-.85-1.352zm-5.146 14.861L10.826 12l7.178-5.448v10.896z" />
                 </svg>
                 <span className="truncate">auth.service.ts</span>
               </div>
@@ -175,11 +175,10 @@ export default function HeroSection() {
                 {/* Line Numbers */}
                 <div className="bg-[#1e1e1e] text-gray-500 text-xs sm:text-sm font-mono py-3 sm:py-4 px-2 sm:px-3 select-none border-r border-gray-800 flex-shrink-0">
                   {allCodeLines.map((_, index) => (
-                    <div 
-                      key={index} 
-                      className={`leading-5 sm:leading-6 text-right pr-1 sm:pr-2 transition-opacity duration-300 ${
-                        index < codeLines ? 'opacity-100' : 'opacity-30'
-                      }`}
+                    <div
+                      key={index}
+                      className={`leading-5 sm:leading-6 text-right pr-1 sm:pr-2 transition-opacity duration-300 ${index < codeLines ? 'opacity-100' : 'opacity-30'
+                        }`}
                     >
                       {index + 1}
                     </div>
@@ -189,15 +188,14 @@ export default function HeroSection() {
                 {/* Code Content */}
                 <div className="flex-1 py-3 sm:py-4 px-2 sm:px-4 font-mono text-xs sm:text-sm overflow-hidden">
                   {allCodeLines.map((tokens, lineIndex) => (
-                    <div 
-                      key={lineIndex} 
-                      className={`leading-5 sm:leading-6 whitespace-pre transition-all duration-300 ${
-                        lineIndex < codeLines 
-                          ? 'opacity-100' 
-                          : lineIndex === codeLines 
-                            ? 'opacity-50' 
+                    <div
+                      key={lineIndex}
+                      className={`leading-5 sm:leading-6 whitespace-pre transition-all duration-300 ${lineIndex < codeLines
+                          ? 'opacity-100'
+                          : lineIndex === codeLines
+                            ? 'opacity-50'
                             : 'opacity-0'
-                      }`}
+                        }`}
                     >
                       {lineIndex < codeLines ? (
                         tokens.length > 0 ? (
@@ -272,11 +270,10 @@ export default function HeroSection() {
                       <p className="text-xs sm:text-sm text-gray-400 truncate">Implement user authentication</p>
                     </div>
                   </div>
-                  <div className={`px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-full border self-start sm:self-auto whitespace-nowrap transition-all duration-500 ${
-                    taskProgress >= 100 
-                      ? 'bg-green-500/20 text-green-300 border-green-500/30' 
+                  <div className={`px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-full border self-start sm:self-auto whitespace-nowrap transition-all duration-500 ${taskProgress >= 100
+                      ? 'bg-green-500/20 text-green-300 border-green-500/30'
                       : 'bg-teal-500/20 text-teal-300 border-teal-500/30'
-                  }`}>
+                    }`}>
                     {taskProgress >= 100 ? 'Completed' : 'In Progress'}
                   </div>
                 </div>
@@ -288,7 +285,7 @@ export default function HeroSection() {
                     <span className="text-teal-400 font-medium">{taskProgress}%</span>
                   </div>
                   <div className="w-full bg-slate-700 rounded-full h-1.5 sm:h-2">
-                    <div 
+                    <div
                       className="bg-gradient-to-r from-teal-500 to-blue-500 h-1.5 sm:h-2 rounded-full transition-all duration-300"
                       style={{ width: `${taskProgress}%` }}
                     ></div>
@@ -305,26 +302,24 @@ export default function HeroSection() {
               {/* Activity Feed */}
               <div>
                 <h4 className="text-gray-400 text-xs sm:text-sm font-medium mb-4 sm:mb-3">Live Activity</h4>
-                
+
                 <div className="space-y-2.5">
                   {statusMessages.map((item, index) => {
                     const isActive = item.status === currentStatus
                     const isPast = statusMessages.findIndex(s => s.status === currentStatus) > index
-                    
+
                     return (
-                      <div 
+                      <div
                         key={item.status}
-                        className={`flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 rounded-lg transition-all duration-500 ${
-                          isActive 
-                            ? 'bg-teal-500/20 border border-teal-500/30' 
-                            : isPast 
-                              ? 'bg-slate-800/50 opacity-70' 
+                        className={`flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 rounded-lg transition-all duration-500 ${isActive
+                            ? 'bg-teal-500/20 border border-teal-500/30'
+                            : isPast
+                              ? 'bg-slate-800/50 opacity-70'
                               : 'bg-slate-800/30 opacity-40'
-                        }`}
+                          }`}
                       >
-                        <div className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-xs flex-shrink-0 ${
-                          isActive ? 'bg-teal-500/30 text-teal-300' : isPast ? 'bg-green-500/20 text-green-400' : 'bg-slate-700 text-gray-500'
-                        }`}>
+                        <div className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-xs flex-shrink-0 ${isActive ? 'bg-teal-500/30 text-teal-300' : isPast ? 'bg-green-500/20 text-green-400' : 'bg-slate-700 text-gray-500'
+                          }`}>
                           {isPast ? (
                             <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -375,12 +370,7 @@ export default function HeroSection() {
                 </svg>
               </span>
             </button>
-            <button
-              onClick={openModal}
-              className="group border-2 border-slate-600 text-gray-300 hover:border-teal-500 hover:text-teal-400 font-semibold px-6 sm:px-8 py-3 sm:py-4 rounded-xl transition-all duration-200 hover:shadow-lg transform hover:-translate-y-1 text-sm sm:text-base"
-            >
-              See Live Demo
-            </button>
+
           </div>
 
           {/* Trust Indicators */}

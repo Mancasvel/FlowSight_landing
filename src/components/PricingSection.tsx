@@ -8,14 +8,14 @@ export default function PricingSection() {
   const pricing = [
     {
       tier: "Basic",
-      price: "€12/dev/mo",
+      price: "€12/user/mo",
       features: {
         "Task Traceability": "Local only",
         "Local Storage": "7 days",
         "PM Dashboard": "Not available",
         "Context Intelligence": "Basic (rules)",
         "Integrations": "None",
-        "Max Team Size": "10 devs",
+        "Max Team Size": "10 members",
         "SSO (SAML)": "No",
         "Cloud Sync": "Not available",
         "Dedicated Support": "Community"
@@ -25,7 +25,7 @@ export default function PricingSection() {
     },
     {
       tier: "Pro",
-      price: "€19/dev/mo",
+      price: "€19/user/mo",
       features: {
         "Task Traceability": "Full + cloud sync",
         "Local Storage": "90 days",

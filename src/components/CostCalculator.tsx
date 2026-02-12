@@ -30,7 +30,7 @@ export default function CostCalculator({ onClose }: CostCalculatorProps) {
     const annualMeetings = monthlyMeetings * 12
     const annualToolCosts = toolCosts * 12
     const totalAnnualCost = annualMeetings * 50 + annualToolCosts // Assuming €50/hour for meetings
-    const flowsightSavings = totalAnnualCost - (teamSize * 12 * 12) // €12/dev/mo * 12 months
+    const flowsightSavings = totalAnnualCost - (teamSize * 12 * 12) // €12/member/mo * 12 months
 
     setResults({
       weeklyMeetings,
@@ -84,7 +84,7 @@ export default function CostCalculator({ onClose }: CostCalculatorProps) {
                 onChange={(e) => setTeamSize(Math.max(1, parseInt(e.target.value) || 1))}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors"
               />
-              <p className="text-xs text-gray-500">Number of developers</p>
+              <p className="text-xs text-gray-500">Number of team members</p>
             </div>
 
             <div className="space-y-2">

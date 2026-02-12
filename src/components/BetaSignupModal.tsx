@@ -103,7 +103,7 @@ export default function BetaSignupModal({ isOpen, onClose }: BetaSignupModalProp
                 Join the Exclusive Beta
               </h4>
               <p className="text-sm text-gray-400">
-                Be one of the first to try FlowSight and shape the future of development.
+                Be one of the first to try FlowSight and shape the future of work.
               </p>
             </div>
 
@@ -143,11 +143,10 @@ export default function BetaSignupModal({ isOpen, onClose }: BetaSignupModalProp
 
               {/* Message */}
               {message && (
-                <div className={`p-3 rounded-lg text-sm ${
-                  messageType === 'success'
+                <div className={`p-3 rounded-lg text-sm ${messageType === 'success'
                     ? 'bg-green-500/20 text-green-400 border border-green-500/30'
                     : 'bg-red-500/20 text-red-400 border border-red-500/30'
-                }`}>
+                  }`}>
                   {message}
                 </div>
               )}

@@ -80,9 +80,6 @@ export default function PricingPage() {
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
                 Pricing That Makes Sense
               </h1>
-              <p className="text-base sm:text-lg text-gray-400 max-w-2xl mx-auto px-4">
-                Start free, scale as you grow. No hidden fees, no surprise bills.
-              </p>
             </div>
           </div>
         </section>

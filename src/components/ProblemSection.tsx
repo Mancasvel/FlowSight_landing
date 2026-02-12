@@ -29,9 +29,9 @@ export default function ProblemSection() {
 
   const problems = [
     {
-      title: "PMs Spend 40% of Their Time Guessing Task Status",
+      title: "Managers Spend 40% of Their Time Guessing Task Status",
       metric: "10+ hours per week in 'are you working on X?' meetings",
-      body: "Jira updates are manual, often 24 hours behind reality. Linear dashboards rely on developer discipline. GitHub tracks commits, not context.",
+      body: "Jira updates are manual, often 24 hours behind reality. Linear dashboards rely on employee discipline. GitHub tracks commits, not context.",
       citation: "Stack Overflow 2024 Developer Survey",
       icon: (
         <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -43,9 +43,9 @@ export default function ProblemSection() {
       accentColor: "bg-red-500"
     },
     {
-      title: "Time Tracking Tools Degrade Developer Morale",
-      metric: "67% of developers hate Clockify/Toggl",
-      body: "Invasive monitoring tools create psychological safety issues. Developers feel spied on. Retention suffers. Culture suffers.",
+      title: "Time Tracking Tools Degrade Morale",
+      metric: "67% of workers hate Clockify/Toggl",
+      body: "Invasive monitoring tools create psychological safety issues. Employees feel spied on. Retention suffers. Culture suffers.",
       citation: "Blind 2024 Developer Satisfaction Index",
       icon: (
         <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -82,8 +82,8 @@ export default function ProblemSection() {
             The Task Traceability Crisis
           </h2>
           <p className="text-base sm:text-lg md:text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed px-4">
-            Teams lose visibility without sacrificing developer trust.
-            Current tools either spy on developers or provide incomplete data.
+            Teams lose visibility without sacrificing employee trust.
+            Current tools either spy on workers or provide incomplete data.
           </p>
         </div>
 
@@ -92,9 +92,8 @@ export default function ProblemSection() {
             <div
               key={index}
               data-index={index}
-              className={`group relative bg-slate-800/50 backdrop-blur-sm rounded-2xl p-4 sm:p-6 md:p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border ${problem.borderColor} transform hover:-translate-y-2 ${
-                visibleCards.includes(index) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-              }`}
+              className={`group relative bg-slate-800/50 backdrop-blur-sm rounded-2xl p-4 sm:p-6 md:p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border ${problem.borderColor} transform hover:-translate-y-2 ${visibleCards.includes(index) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+                }`}
             >
               {/* Background Gradient */}
               <div className={`absolute inset-0 bg-gradient-to-br ${problem.gradient} rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300`}></div>
@@ -125,9 +124,8 @@ export default function ProblemSection() {
               </div>
 
               {/* Hover Effect Line */}
-              <div className={`absolute bottom-0 left-0 h-1 ${problem.accentColor} rounded-b-2xl transition-all duration-300 ${
-                visibleCards.includes(index) ? 'w-full' : 'w-0'
-              }`}></div>
+              <div className={`absolute bottom-0 left-0 h-1 ${problem.accentColor} rounded-b-2xl transition-all duration-300 ${visibleCards.includes(index) ? 'w-full' : 'w-0'
+                }`}></div>
             </div>
           ))}
         </div>

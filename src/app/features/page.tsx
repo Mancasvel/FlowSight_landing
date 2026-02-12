@@ -115,7 +115,7 @@ export default function FeaturesPage() {
               <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-2xl p-6 sm:p-8 border border-slate-700/50 hover:border-teal-500/30 transition-all duration-300 group">
                 <div className="w-12 h-12 sm:w-14 sm:h-14 bg-indigo-500/20 rounded-xl flex items-center justify-center mb-6 group-hover:bg-indigo-500/30 transition-colors">
                   <svg className="w-6 h-6 sm:w-7 sm:h-7 text-indigo-400" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M11.571 4.714h1.715v5.143H11.57zm-4.286.428h1.715v5.143H7.285zM20 12c0 4.418-4.03 8-9 8-4.97 0-9-3.582-9-8s4.03-8 9-8c4.97 0 9 3.582 9 8zm-9 6c3.859 0 7-2.56 7-6s-3.141-6-7-6-7 2.56-7 6 3.141 6 7 6z"/>
+                    <path d="M11.571 4.714h1.715v5.143H11.57zm-4.286.428h1.715v5.143H7.285zM20 12c0 4.418-4.03 8-9 8-4.97 0-9-3.582-9-8s4.03-8 9-8c4.97 0 9 3.582 9 8zm-9 6c3.859 0 7-2.56 7-6s-3.141-6-7-6-7 2.56-7 6 3.141 6 7 6z" />
                   </svg>
                 </div>
                 <h3 className="text-lg sm:text-xl font-bold text-white mb-4">Jira Integration</h3>
@@ -198,12 +198,7 @@ export default function FeaturesPage() {
                   >
                     Start Free Trial
                   </button>
-                  <a
-                    href="/pricing"
-                    className="border-2 border-slate-600 text-gray-300 hover:border-teal-500 hover:text-teal-400 font-semibold px-8 py-4 rounded-xl transition-all duration-200 hover:shadow-lg transform hover:-translate-y-1"
-                  >
-                    View Pricing
-                  </a>
+
                 </div>
               </div>
             </div>

@@ -8,7 +8,7 @@ export default function FaqSection() {
   const faqs = [
     {
       question: "Is this just another time tracking tool?",
-      answer: "No. Time tracking tools (Clockify, Toggl) are invasive and capture raw activity. FlowSight infers task context automatically—you never enter time manually, and developers never feel surveilled."
+      answer: "No. Time tracking tools (Clockify, Toggl) are invasive and capture raw activity. FlowSight infers task context automatically—you never enter time manually, and employees never feel surveilled."
     },
     {
       question: "Does FlowSight collect my code or screenshots?",
@@ -16,7 +16,7 @@ export default function FaqSection() {
     },
     {
       question: "How is this different from Jira / Linear dashboards?",
-      answer: "Jira and Linear rely on manual task updates. Developers forget to update status, so dashboards are 24 hours behind reality. FlowSight automatically infers task context in real-time."
+      answer: "Jira and Linear rely on manual task updates. Employees forget to update status, so dashboards are 24 hours behind reality. FlowSight automatically infers task context in real-time."
     },
     {
       question: "What are the hardware requirements?",
@@ -68,9 +68,8 @@ export default function FaqSection() {
                     {faq.question}
                   </h3>
                   <svg
-                    className={`w-4 h-4 sm:w-5 sm:h-5 text-gray-400 transform transition-transform duration-200 flex-shrink-0 ${
-                      openIndex === index ? 'rotate-180' : ''
-                    }`}
+                    className={`w-4 h-4 sm:w-5 sm:h-5 text-gray-400 transform transition-transform duration-200 flex-shrink-0 ${openIndex === index ? 'rotate-180' : ''
+                      }`}
                     fill="currentColor"
                     viewBox="0 0 20 20"
                   >
