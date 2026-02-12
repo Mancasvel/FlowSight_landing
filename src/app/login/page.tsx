@@ -74,11 +74,7 @@ function LoginContent() {
             transition={{ duration: 0.5 }}
             className="w-full max-w-md relative z-10"
         >
-            {/* Logo and Title */}
-            <div className="text-center mb-8">
 
-                <h1 className="text-xl text-dashboard-muted">Project Manager Portal</h1>
-            </div>
 
             {/* Login Card */}
             <div className="dashboard-card p-8 backdrop-blur-xl bg-dashboard-card/80">
@@ -209,9 +205,7 @@ function LoginContent() {
 function LoginFallback() {
     return (
         <div className="w-full max-w-md relative z-10">
-            <div className="text-center mb-8">
-                <h1 className="text-xl text-dashboard-muted">Project Manager Portal</h1>
-            </div>
+
             <div className="dashboard-card p-8 backdrop-blur-xl bg-dashboard-card/80 flex items-center justify-center">
                 <Loader2 className="animate-spin text-primary-blue" size={32} />
             </div>
