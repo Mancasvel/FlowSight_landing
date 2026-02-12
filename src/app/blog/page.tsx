@@ -4,14 +4,14 @@ import Footer from '@/components/Footer'
 export default function BlogPage() {
   const posts = [
     {
-      title: 'The Future of AI-Powered Development Workflows',
-      excerpt: 'How FlowSight is revolutionizing how developers track and manage their work.',
+      title: 'The Future of AI-Powered Workflows',
+      excerpt: 'How FlowSight is revolutionizing how teams track and manage their work.',
       date: 'November 29, 2025',
       readTime: '5 min read'
     },
     {
-      title: 'Privacy-First Development Tools: A New Paradigm',
-      excerpt: 'Why local processing and zero data collection are the future of developer tools.',
+      title: 'Privacy-First Workforce Tools: A New Paradigm',
+      excerpt: 'Why local processing and zero data collection are the future of work tools.',
       date: 'November 25, 2025',
       readTime: '4 min read'
     },
@@ -43,7 +43,7 @@ export default function BlogPage() {
                 </span>
               </h1>
               <p className="text-lg sm:text-xl text-gray-400 leading-relaxed max-w-3xl mx-auto px-4">
-                Insights, updates, and thoughts on the future of development workflow management.
+                Insights, updates, and thoughts on the future of workforce management.
               </p>
             </div>
           </div>

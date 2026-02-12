@@ -24,12 +24,12 @@ export default function FeaturesPage() {
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
                 Powerful Features for
                 <span className="block bg-gradient-to-r from-teal-400 to-blue-400 bg-clip-text text-transparent">
-                  Seamless Development
+                  Seamless Workflow
                 </span>
               </h1>
 
               <p className="text-lg sm:text-xl text-gray-400 leading-relaxed max-w-3xl mx-auto px-4">
-                Discover how FlowSight's intelligent features transform your development workflow
+                Discover how FlowSight's intelligent features transform your team's workflow
                 with zero interruption and complete privacy.
               </p>
             </div>
@@ -50,7 +50,7 @@ export default function FeaturesPage() {
                 </div>
                 <h3 className="text-lg sm:text-xl font-bold text-white mb-4">Automatic Task Detection</h3>
                 <p className="text-gray-400 leading-relaxed">
-                  AI-powered context understanding automatically identifies and tracks development tasks
+                  AI-powered context understanding automatically identifies and tracks tasks
                   as you work, eliminating manual time entry and status updates.
                 </p>
               </div>
@@ -78,7 +78,7 @@ export default function FeaturesPage() {
                 </div>
                 <h3 className="text-lg sm:text-xl font-bold text-white mb-4">Intelligent Context Analysis</h3>
                 <p className="text-gray-400 leading-relaxed">
-                  Advanced AI understands your code changes, comments, and development patterns
+                  Advanced AI understands your work changes, documents, and work patterns
                   to provide accurate task tracking and progress updates.
                 </p>
               </div>
@@ -92,8 +92,8 @@ export default function FeaturesPage() {
                 </div>
                 <h3 className="text-lg sm:text-xl font-bold text-white mb-4">Seamless Integration</h3>
                 <p className="text-gray-400 leading-relaxed">
-                  Works with your existing tools and workflows. No changes to your development
-                  process required - just install and start coding naturally.
+                  Works with your existing tools and workflows. No changes to your
+                  process required - just install and start working naturally.
                 </p>
               </div>
 
@@ -136,7 +136,7 @@ export default function FeaturesPage() {
                 How FlowSight Works
               </h2>
               <p className="text-lg text-gray-400 max-w-2xl mx-auto">
-                Experience the future of development workflow management
+                Experience the future of workforce management
               </p>
             </div>
 
@@ -148,7 +148,7 @@ export default function FeaturesPage() {
                 </div>
                 <h3 className="text-xl font-bold text-white mb-4">Install & Connect</h3>
                 <p className="text-gray-400">
-                  Install FlowSight and connect it to your development environment.
+                  Install FlowSight and connect it to your work environment.
                   No complex setup required.
                 </p>
               </div>
@@ -158,7 +158,7 @@ export default function FeaturesPage() {
                 <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
                   <span className="text-2xl font-bold text-blue-400">2</span>
                 </div>
-                <h3 className="text-xl font-bold text-white mb-4">Code Naturally</h3>
+                <h3 className="text-xl font-bold text-white mb-4">Work Naturally</h3>
                 <p className="text-gray-400">
                   Continue working as you always do. FlowSight analyzes your context
                   in the background.
@@ -189,7 +189,7 @@ export default function FeaturesPage() {
                   Ready to Experience the Future?
                 </h2>
                 <p className="text-lg text-gray-400 mb-8 max-w-2xl mx-auto">
-                  Join thousands of developers who have transformed their workflow with FlowSight.
+                  Join thousands of professionals who have transformed their workflow with FlowSight.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <button

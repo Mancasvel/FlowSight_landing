@@ -6,7 +6,7 @@ export default function TeamSection() {
       <div className="container-max px-4 sm:px-6 lg:px-12">
         <div className="text-center mb-10 md:mb-16">
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-3 sm:mb-4 px-2">
-            Founded by a Developer Operations Engineer
+            Founded by an Operations Engineer
           </h2>
           <p className="text-base sm:text-lg md:text-xl text-gray-400 max-w-2xl mx-auto px-4">
             Building the future of organizational intelligence

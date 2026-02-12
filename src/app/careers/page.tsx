@@ -7,19 +7,19 @@ export default function CareersPage() {
       title: 'Senior AI Engineer',
       type: 'Full-time',
       location: 'Remote',
-      description: 'Build the next generation of AI-powered developer tools.'
+      description: 'Build the next generation of AI-powered workforce tools.'
     },
     {
       title: 'Product Designer',
       type: 'Full-time',
       location: 'Remote',
-      description: 'Design intuitive interfaces for developer productivity tools.'
+      description: 'Design intuitive interfaces for workforce productivity tools.'
     },
     {
       title: 'DevOps Engineer',
       type: 'Full-time',
       location: 'Remote',
-      description: 'Maintain and scale our infrastructure for millions of developers.'
+      description: 'Maintain and scale our infrastructure for millions of users.'
     }
   ]
 
@@ -44,8 +44,8 @@ export default function CareersPage() {
               </h1>
 
               <p className="text-lg sm:text-xl text-gray-400 leading-relaxed max-w-3xl mx-auto px-4">
-                Help us build the future of development workflow management.
-                Work with cutting-edge AI and make an impact on millions of developers.
+                Help us build the future of workforce management.
+                Work with cutting-edge AI and make an impact on millions of professionals.
               </p>
             </div>
           </div>
@@ -97,7 +97,7 @@ export default function CareersPage() {
                   </svg>
                 </div>
                 <h3 className="text-xl font-bold text-white mb-4">Cutting-Edge Technology</h3>
-                <p className="text-gray-400">Work with the latest AI and machine learning technologies shaping the future of developer tools.</p>
+                <p className="text-gray-400">Work with the latest AI and machine learning technologies shaping the future of productivity tools.</p>
               </div>
 
               <div className="text-center">
@@ -117,7 +117,7 @@ export default function CareersPage() {
                   </svg>
                 </div>
                 <h3 className="text-xl font-bold text-white mb-4">Global Impact</h3>
-                <p className="text-gray-400">Your work will directly impact millions of developers worldwide, improving their daily workflow.</p>
+                <p className="text-gray-400">Your work will directly impact millions of professionals worldwide, improving their daily workflow.</p>
               </div>
             </div>
           </div>

@@ -24,7 +24,7 @@ export default function AboutPage() {
               </h1>
 
               <p className="text-lg sm:text-xl text-gray-400 leading-relaxed max-w-3xl mx-auto px-4">
-                We're building the future of development workflow management
+                We're building the future of workforce management
                 with AI-powered context understanding and privacy-first architecture.
               </p>
             </div>
@@ -40,7 +40,7 @@ export default function AboutPage() {
               </h2>
               <p className="text-lg sm:text-xl text-gray-400 leading-relaxed mb-12">
                 Traditional time tracking and project management tools interrupt your flow and compromise your privacy.
-                FlowSight changes this by understanding your development context automatically, tracking progress seamlessly,
+                FlowSight changes this by understanding your work context automatically, tracking progress seamlessly,
                 and keeping everything local and secure.
               </p>
 
@@ -91,17 +91,17 @@ export default function AboutPage() {
                 <div className="bg-slate-800/50 rounded-xl p-6 sm:p-8">
                   <h3 className="text-xl font-bold text-white mb-4">The Problem</h3>
                   <p className="text-gray-400 leading-relaxed">
-                    Developers spend hours each week on administrative tasks - updating Jira tickets,
+                    Employees spend hours each week on administrative tasks - updating Jira tickets,
                     tracking time, and maintaining project status. This constant context switching breaks
-                    focus and slows down development velocity.
+                    focus and slows down team velocity.
                   </p>
                 </div>
 
                 <div className="bg-slate-800/50 rounded-xl p-6 sm:p-8">
                   <h3 className="text-xl font-bold text-white mb-4">The Solution</h3>
                   <p className="text-gray-400 leading-relaxed">
-                    FlowSight uses AI to understand development context automatically. By analyzing
-                    code changes, comments, and patterns, it can track progress, link tasks, and update
+                    FlowSight uses AI to understand work context automatically. By analyzing
+                    activity, documents, and patterns, it can track progress, link tasks, and update
                     project management tools without any manual intervention.
                   </p>
                 </div>
@@ -109,9 +109,9 @@ export default function AboutPage() {
                 <div className="bg-slate-800/50 rounded-xl p-6 sm:p-8">
                   <h3 className="text-xl font-bold text-white mb-4">The Future</h3>
                   <p className="text-gray-400 leading-relaxed">
-                    We're building toward a world where developers can focus entirely on coding,
+                    We're building toward a world where teams can focus entirely on high-value work,
                     while intelligent systems handle all the administrative overhead. Privacy-first,
-                    AI-powered, and designed for the modern development workflow.
+                    AI-powered, and designed for the modern workflow.
                   </p>
                 </div>
               </div>
@@ -128,8 +128,8 @@ export default function AboutPage() {
                   Join Our Mission
                 </h2>
                 <p className="text-lg text-gray-400 mb-8 max-w-2xl mx-auto">
-                  Help us build the future of development workflow management.
-                  Be part of the team that's changing how developers work.
+                  Help us build the future of workforce management.
+                  Be part of the team that's changing how teams work.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <button className="bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white font-semibold px-8 py-4 rounded-xl transition-all duration-200 hover:shadow-xl hover:shadow-teal-500/25 transform hover:-translate-y-1">

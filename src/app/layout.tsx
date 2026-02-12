@@ -8,7 +8,7 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://flowsight.site'),
-  title: 'FlowSight - Task Visibility Without Developer Surveillance',
+  title: 'FlowSight - Task Visibility Without Employee Surveillance',
   description: 'Automatic task traceability powered by AI context understanding.',
   icons: {
     icon: '/flowsight_sinfondo.png',
