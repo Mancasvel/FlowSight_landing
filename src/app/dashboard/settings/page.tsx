@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { UserPlus, Link as LinkIcon, Bell, Shield, Check, Plus, Trash2, Copy, RefreshCw, CreditCard, Users, MessageSquare } from 'lucide-react';
+import { UserPlus, Link as LinkIcon, Bell, Shield, Check, Plus, Trash2, Copy, RefreshCw, CreditCard, Users, MessageSquare, Palette, AlertTriangle, Mail } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import {
     getLicense,
@@ -60,6 +60,22 @@ export default function SettingsPage() {
     const [weeklyReport, setWeeklyReport] = useState(true);
     const [realTimeAlerts, setRealTimeAlerts] = useState(false);
     const [retention, setRetention] = useState('7');
+
+    // Team template
+    const [teamTemplate, setTeamTemplate] = useState(() => {
+        if (typeof window !== 'undefined') return localStorage.getItem('flowsight_team_template') || 'general';
+        return 'general';
+    });
+
+    // Alert thresholds
+    const [burnoutThreshold, setBurnoutThreshold] = useState('9');
+    const [lowActivityThreshold, setLowActivityThreshold] = useState('2');
+    const [meetingOverloadThreshold, setMeetingOverloadThreshold] = useState('40');
+
+    // Email digest
+    const [digestDay, setDigestDay] = useState('monday');
+    const [digestTime, setDigestTime] = useState('09:00');
+    const [digestRecipients, setDigestRecipients] = useState('');
 
     const fetchData = async () => {
         try {
@@ -276,9 +292,7 @@ export default function SettingsPage() {
         <div className="space-y-8 max-w-4xl">
             {/* Header */}
             <div>
-                <h1 className="text-2xl font-bold text-dashboard-text flex items-center gap-2">
-                    ⚙️ Settings
-                </h1>
+                <h1 className="text-2xl font-bold text-dashboard-text">Settings</h1>
                 <p className="text-dashboard-muted">Manage your license, teams, and preferences</p>
             </div>
 
@@ -539,13 +553,115 @@ export default function SettingsPage() {
                 </div>
             </section>
 
-            {/* Notifications */}
+            {/* Team Template */}
+            <section className="dashboard-card p-6">
+                <div className="flex items-center gap-3 mb-6">
+                    <Palette className="text-primary-blue" size={24} />
+                    <div>
+                        <h2 className="font-semibold text-dashboard-text text-lg">Team Template</h2>
+                        <p className="text-sm text-dashboard-muted">Customize your dashboard for your team type</p>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {[
+                        { id: 'general', label: 'General', desc: 'Balanced metrics for any team' },
+                        { id: 'engineering', label: 'Engineering', desc: 'Focus on deep work & code review' },
+                        { id: 'design', label: 'Design', desc: 'Creative time & iteration cycles' },
+                        { id: 'marketing', label: 'Marketing', desc: 'Campaign hours & content output' },
+                        { id: 'sales', label: 'Sales', desc: 'Client-facing time & pipeline' },
+                        { id: 'operations', label: 'Operations', desc: 'Process efficiency & admin load' },
+                        { id: 'content', label: 'Content', desc: 'Writing time & research balance' },
+                        { id: 'custom', label: 'Custom', desc: 'Define your own categories' },
+                    ].map(t => (
+                        <button
+                            key={t.id}
+                            onClick={() => {
+                                setTeamTemplate(t.id);
+                                localStorage.setItem('flowsight_team_template', t.id);
+                            }}
+                            className={`p-4 rounded-lg border text-left transition-all ${
+                                teamTemplate === t.id
+                                    ? 'border-primary-blue bg-primary-blue/5 ring-1 ring-primary-blue/20'
+                                    : 'border-dashboard-border hover:border-slate-300 bg-dashboard-bg'
+                            }`}
+                        >
+                            <div className="font-medium text-dashboard-text text-sm">{t.label}</div>
+                            <div className="text-[11px] text-dashboard-muted mt-1">{t.desc}</div>
+                        </button>
+                    ))}
+                </div>
+            </section>
+
+            {/* Alert Configuration */}
+            <section className="dashboard-card p-6">
+                <div className="flex items-center gap-3 mb-6">
+                    <AlertTriangle className="text-amber-500" size={24} />
+                    <div>
+                        <h2 className="font-semibold text-dashboard-text text-lg">Alert Thresholds</h2>
+                        <p className="text-sm text-dashboard-muted">Configure when alerts are triggered for your team</p>
+                    </div>
+                </div>
+
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between p-4 bg-dashboard-bg rounded-lg">
+                        <div>
+                            <div className="font-medium text-dashboard-text">Burnout Risk</div>
+                            <div className="text-sm text-dashboard-muted">Alert when a member works more than X hours/day for 3+ days</div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <input
+                                type="number"
+                                value={burnoutThreshold}
+                                onChange={(e) => setBurnoutThreshold(e.target.value)}
+                                className="w-16 px-3 py-2 bg-dashboard-card border border-dashboard-border rounded-lg text-dashboard-text text-sm text-center"
+                                min="6" max="14"
+                            />
+                            <span className="text-sm text-dashboard-muted">hours</span>
+                        </div>
+                    </div>
+                    <div className="flex items-center justify-between p-4 bg-dashboard-bg rounded-lg">
+                        <div>
+                            <div className="font-medium text-dashboard-text">Low Activity</div>
+                            <div className="text-sm text-dashboard-muted">Alert when a member logs less than X hours for 2+ days</div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <input
+                                type="number"
+                                value={lowActivityThreshold}
+                                onChange={(e) => setLowActivityThreshold(e.target.value)}
+                                className="w-16 px-3 py-2 bg-dashboard-card border border-dashboard-border rounded-lg text-dashboard-text text-sm text-center"
+                                min="1" max="6"
+                            />
+                            <span className="text-sm text-dashboard-muted">hours</span>
+                        </div>
+                    </div>
+                    <div className="flex items-center justify-between p-4 bg-dashboard-bg rounded-lg">
+                        <div>
+                            <div className="font-medium text-dashboard-text">Meeting Overload</div>
+                            <div className="text-sm text-dashboard-muted">Alert when meetings exceed X% of total time</div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <input
+                                type="number"
+                                value={meetingOverloadThreshold}
+                                onChange={(e) => setMeetingOverloadThreshold(e.target.value)}
+                                className="w-16 px-3 py-2 bg-dashboard-card border border-dashboard-border rounded-lg text-dashboard-text text-sm text-center"
+                                min="20" max="80"
+                            />
+                            <span className="text-sm text-dashboard-muted">%</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Notifications & Email Digest */}
             <section className="dashboard-card p-6">
                 <div className="flex items-center gap-3 mb-6">
                     <Bell className="text-primary-blue" size={24} />
                     <div>
                         <h2 className="font-semibold text-dashboard-text text-lg">Notifications</h2>
-                        <p className="text-sm text-dashboard-muted">Configure your notification preferences</p>
+                        <p className="text-sm text-dashboard-muted">Configure alerts and email digests</p>
                     </div>
                 </div>
 
@@ -560,18 +676,63 @@ export default function SettingsPage() {
                     <div className="flex items-center justify-between p-4 bg-dashboard-bg rounded-lg">
                         <div>
                             <div className="font-medium text-dashboard-text">Weekly Report</div>
-                            <div className="text-sm text-dashboard-muted">Get a comprehensive weekly productivity report</div>
+                            <div className="text-sm text-dashboard-muted">Comprehensive weekly productivity report</div>
                         </div>
                         <Toggle enabled={weeklyReport} onChange={setWeeklyReport} />
                     </div>
                     <div className="flex items-center justify-between p-4 bg-dashboard-bg rounded-lg">
                         <div>
-                            <div className="font-medium text-dashboard-text">Real-time Alerts</div>
-                            <div className="text-sm text-dashboard-muted">Get notified of important events as they happen</div>
+                            <div className="font-medium text-dashboard-text">Smart Alerts</div>
+                            <div className="text-sm text-dashboard-muted">Get notified of burnout risk, low activity, and meeting overload</div>
                         </div>
                         <Toggle enabled={realTimeAlerts} onChange={setRealTimeAlerts} />
                     </div>
                 </div>
+
+                {/* Email Digest Schedule */}
+                {weeklyReport && (
+                    <div className="mt-4 p-4 bg-dashboard-bg rounded-lg space-y-3">
+                        <div className="flex items-center gap-2 mb-2">
+                            <Mail size={16} className="text-primary-blue" />
+                            <span className="font-medium text-dashboard-text text-sm">Weekly Digest Schedule</span>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div>
+                                <label className="block text-xs text-dashboard-muted mb-1">Day</label>
+                                <select
+                                    value={digestDay}
+                                    onChange={(e) => setDigestDay(e.target.value)}
+                                    className="w-full px-3 py-2 bg-dashboard-card border border-dashboard-border rounded-lg text-dashboard-text text-sm"
+                                >
+                                    <option value="monday">Monday</option>
+                                    <option value="tuesday">Tuesday</option>
+                                    <option value="wednesday">Wednesday</option>
+                                    <option value="thursday">Thursday</option>
+                                    <option value="friday">Friday</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-xs text-dashboard-muted mb-1">Time</label>
+                                <input
+                                    type="time"
+                                    value={digestTime}
+                                    onChange={(e) => setDigestTime(e.target.value)}
+                                    className="w-full px-3 py-2 bg-dashboard-card border border-dashboard-border rounded-lg text-dashboard-text text-sm"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs text-dashboard-muted mb-1">Additional recipients (emails)</label>
+                                <input
+                                    type="text"
+                                    value={digestRecipients}
+                                    onChange={(e) => setDigestRecipients(e.target.value)}
+                                    placeholder="cto@company.com, hr@company.com"
+                                    className="w-full px-3 py-2 bg-dashboard-card border border-dashboard-border rounded-lg text-dashboard-text text-sm"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                )}
             </section>
 
             {/* Privacy */}
@@ -579,25 +740,25 @@ export default function SettingsPage() {
                 <div className="flex items-center gap-3 mb-6">
                     <Shield className="text-primary-blue" size={24} />
                     <div>
-                        <h2 className="font-semibold text-dashboard-text text-lg">Privacy</h2>
-                        <p className="text-sm text-dashboard-muted">Manage data retention settings</p>
+                        <h2 className="font-semibold text-dashboard-text text-lg">Privacy & Data</h2>
+                        <p className="text-sm text-dashboard-muted">Control how long activity data is retained</p>
                     </div>
                 </div>
 
                 <div className="flex items-center justify-between p-4 bg-dashboard-bg rounded-lg">
                     <div>
-                        <div className="font-medium text-dashboard-text">Screenshot retention</div>
-                        <div className="text-sm text-dashboard-muted">How long to keep screenshot data</div>
+                        <div className="font-medium text-dashboard-text">Activity data retention</div>
+                        <div className="text-sm text-dashboard-muted">Older data is automatically deleted. FlowSight never captures screen content.</div>
                     </div>
                     <select
                         value={retention}
                         onChange={(e) => setRetention(e.target.value)}
-                        className="px-4 py-2 bg-dashboard-card border border-dashboard-border rounded-lg text-dashboard-text"
+                        className="px-4 py-2 bg-dashboard-card border border-dashboard-border rounded-lg text-dashboard-text text-sm"
                     >
-                        <option value="3">3 days</option>
                         <option value="7">7 days</option>
                         <option value="14">14 days</option>
                         <option value="30">30 days</option>
+                        <option value="90">90 days</option>
                     </select>
                 </div>
             </section>

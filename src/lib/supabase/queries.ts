@@ -360,24 +360,81 @@ export function secondsToHours(seconds: number): number {
     return Math.round((seconds / 3600) * 10) / 10;
 }
 
-// Category display colors
-export const CATEGORY_COLORS: Record<string, string> = {
-    Coding: '#10B981',
-    Debugging: '#F59E0B',
-    CodeReview: '#8B5CF6',
-    Testing: '#3B82F6',
-    Documentation: '#06B6D4',
-    Design: '#EC4899',
-    Planning: '#6366F1',
-    Meeting: '#F97316',
-    Communication: '#14B8A6',
-    Research: '#A855F7',
-    Learning: '#22C55E',
-    DevOps: '#EF4444',
-    Database: '#0EA5E9',
-    Sales: '#84CC16',
-    Admin: '#78716C',
-    Browsing: '#94A3B8',
-    Idle: '#64748B',
-    General: '#9CA3AF',
-};
+export { getCategoryColor, aggregateToMeta, getTopCategories, META_CATEGORY_CONFIG } from '@/lib/categories';
+
+export function getDateRange(rangeKey: string): { start: string; end: string } {
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
+
+    switch (rangeKey) {
+        case 'today':
+            return { start: today, end: today };
+        case 'yesterday': {
+            const d = new Date(now);
+            d.setDate(d.getDate() - 1);
+            return { start: d.toISOString().split('T')[0], end: d.toISOString().split('T')[0] };
+        }
+        case 'this_week': {
+            const d = new Date(now);
+            d.setDate(d.getDate() - d.getDay() + 1); // Monday
+            return { start: d.toISOString().split('T')[0], end: today };
+        }
+        case 'last_week': {
+            const d = new Date(now);
+            d.setDate(d.getDate() - d.getDay() - 6); // Last Monday
+            const end = new Date(d);
+            end.setDate(end.getDate() + 6);
+            return { start: d.toISOString().split('T')[0], end: end.toISOString().split('T')[0] };
+        }
+        case 'this_month': {
+            const start = new Date(now.getFullYear(), now.getMonth(), 1);
+            return { start: start.toISOString().split('T')[0], end: today };
+        }
+        case 'last_month': {
+            const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+            const end = new Date(now.getFullYear(), now.getMonth(), 0);
+            return { start: start.toISOString().split('T')[0], end: end.toISOString().split('T')[0] };
+        }
+        case 'last_7': {
+            const d = new Date(now);
+            d.setDate(d.getDate() - 6);
+            return { start: d.toISOString().split('T')[0], end: today };
+        }
+        case 'last_14': {
+            const d = new Date(now);
+            d.setDate(d.getDate() - 13);
+            return { start: d.toISOString().split('T')[0], end: today };
+        }
+        case 'last_30': {
+            const d = new Date(now);
+            d.setDate(d.getDate() - 29);
+            return { start: d.toISOString().split('T')[0], end: today };
+        }
+        default:
+            return { start: today, end: today };
+    }
+}
+
+export function getDailyBreakdown(
+    sessions: WorkSession[],
+): { date: string; seconds: number; breakdown: Record<string, number> }[] {
+    const byDate: Record<string, { seconds: number; breakdown: Record<string, number> }> = {};
+
+    for (const s of sessions) {
+        if (!byDate[s.session_date]) {
+            byDate[s.session_date] = { seconds: 0, breakdown: {} };
+        }
+        byDate[s.session_date].seconds += s.duration_seconds;
+
+        if (s.category_breakdown) {
+            for (const [cat, sec] of Object.entries(s.category_breakdown)) {
+                byDate[s.session_date].breakdown[cat] =
+                    (byDate[s.session_date].breakdown[cat] || 0) + (sec as number);
+            }
+        }
+    }
+
+    return Object.entries(byDate)
+        .map(([date, data]) => ({ date, ...data }))
+        .sort((a, b) => a.date.localeCompare(b.date));
+}

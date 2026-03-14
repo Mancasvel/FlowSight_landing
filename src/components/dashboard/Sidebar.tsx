@@ -37,14 +37,14 @@ export default function Sidebar() {
 
     return (
         <aside
-            className={`${collapsed ? 'w-20' : 'w-64'} h-screen bg-dashboard-card border-r border-dashboard-border 
+            className={`${collapsed ? 'w-20' : 'w-64'} h-screen bg-white border-r border-slate-200 
                  flex flex-col transition-all duration-300 relative`}
         >
             {/* Collapse Toggle */}
             <button
                 onClick={() => setCollapsed(!collapsed)}
-                className="absolute -right-3 top-8 w-6 h-6 bg-dashboard-card border border-dashboard-border 
-                   rounded-full flex items-center justify-center text-dashboard-muted hover:text-dashboard-text
+                className="absolute -right-3 top-8 w-6 h-6 bg-white border border-slate-200 shadow-sm
+                   rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700
                    transition-colors z-10"
             >
                 {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}

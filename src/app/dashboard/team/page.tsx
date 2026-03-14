@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Filter, Download, RefreshCw } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import WorkloadBalance from '@/components/dashboard/WorkloadBalance';
 import {
     getTeams,
     getTeamMembers,
@@ -20,7 +21,7 @@ interface DisplayMember {
     name: string;
     avatar_url: string | null;
     isOnline: boolean;
-    todayHours: number;
+    hours: number;
     currentActivity: string | null;
 }
 
@@ -33,8 +34,9 @@ export default function TeamPage() {
     const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
     const [members, setMembers] = useState<DisplayMember[]>([]);
     const [filter, setFilter] = useState<'all' | 'online' | 'offline'>('all');
+    const [viewMode, setViewMode] = useState<'cards' | 'balance'>('balance');
 
-    const fetchTeamData = async (showRefresh = false) => {
+    const fetchTeamData = useCallback(async (showRefresh = false) => {
         if (showRefresh) setRefreshing(true);
 
         try {
@@ -53,19 +55,16 @@ export default function TeamPage() {
             const teamId = selectedTeamId || userTeams[0].id;
             if (!selectedTeamId) setSelectedTeamId(teamId);
 
-            // Get members and today's sessions
             const [teamMembers, sessions] = await Promise.all([
                 getTeamMembers(supabase, teamId),
                 getTodayWorkSessions(supabase, teamId),
             ]);
 
-            // Calculate hours per member
             const memberHours: Record<string, number> = {};
             sessions.forEach((s: WorkSession) => {
                 memberHours[s.user_id] = (memberHours[s.user_id] || 0) + s.duration_seconds;
             });
 
-            // Map to display format
             const displayMembers: DisplayMember[] = teamMembers.map((m: TeamMemberType & { profile: Profile }) => {
                 const lastSeen = m.profile.last_seen_at ? new Date(m.profile.last_seen_at) : null;
                 const isOnline = lastSeen ? (Date.now() - lastSeen.getTime()) < 5 * 60 * 1000 : false;
@@ -75,10 +74,10 @@ export default function TeamPage() {
                     name: m.profile.display_name || 'Unknown',
                     avatar_url: m.profile.avatar_url,
                     isOnline,
-                    todayHours: secondsToHours(memberHours[m.user_id] || 0),
-                    currentActivity: null, // Would need real-time activity tracking
+                    hours: secondsToHours(memberHours[m.user_id] || 0),
+                    currentActivity: null,
                 };
-            }).sort((a, b) => b.todayHours - a.todayHours);
+            }).sort((a, b) => b.hours - a.hours);
 
             setMembers(displayMembers);
         } catch (err) {
@@ -87,12 +86,11 @@ export default function TeamPage() {
             setLoading(false);
             setRefreshing(false);
         }
-    };
+    }, [supabase, selectedTeamId]);
 
     useEffect(() => {
         fetchTeamData();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedTeamId]);
+    }, [fetchTeamData]);
 
     const filteredMembers = members.filter(member => {
         if (filter === 'online') return member.isOnline;
@@ -100,9 +98,9 @@ export default function TeamPage() {
         return true;
     });
 
-    const handleMemberClick = (memberId: string) => {
-        router.push(`/dashboard/member/${memberId}`);
-    };
+    const onlinePct = members.length > 0
+        ? Math.round((members.filter(m => m.isOnline).length / members.length) * 100)
+        : 0;
 
     if (loading) {
         return (
@@ -116,13 +114,8 @@ export default function TeamPage() {
         return (
             <div className="dashboard-card p-8 text-center">
                 <h2 className="text-xl font-semibold text-dashboard-text mb-2">No Teams Yet</h2>
-                <p className="text-dashboard-muted mb-4">
-                    Create a team in Settings to view your team members.
-                </p>
-                <a
-                    href="/dashboard/settings"
-                    className="inline-block px-4 py-2 bg-gradient-to-r from-primary-blue to-primary-teal text-white rounded-lg"
-                >
+                <p className="text-dashboard-muted mb-4">Create a team in Settings to view your team members.</p>
+                <a href="/dashboard/settings" className="inline-block px-4 py-2 bg-gradient-to-r from-primary-blue to-primary-teal text-white rounded-lg">
                     Go to Settings
                 </a>
             </div>
@@ -134,18 +127,17 @@ export default function TeamPage() {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-dashboard-text flex items-center gap-2">
-                        👥 Team Overview
-                    </h1>
-                    <p className="text-dashboard-muted">Manage and monitor your team members</p>
+                    <h1 className="text-2xl font-bold text-dashboard-text">Team Overview</h1>
+                    <p className="text-dashboard-muted">
+                        {members.length} members · {onlinePct}% online
+                    </p>
                 </div>
                 <div className="flex items-center gap-3">
-                    {/* Team Selector */}
                     {teams.length > 1 && (
                         <select
                             value={selectedTeamId || ''}
                             onChange={(e) => setSelectedTeamId(e.target.value)}
-                            className="px-3 py-2 bg-dashboard-card border border-dashboard-border rounded-lg text-dashboard-text"
+                            className="px-3 py-2 bg-dashboard-card border border-dashboard-border rounded-lg text-dashboard-text text-sm"
                         >
                             {teams.map(team => (
                                 <option key={team.id} value={team.id}>{team.name}</option>
@@ -153,23 +145,35 @@ export default function TeamPage() {
                         </select>
                     )}
 
-                    {/* Filter Dropdown */}
+                    {/* View toggle */}
+                    <div className="flex bg-dashboard-card border border-dashboard-border rounded-lg overflow-hidden">
+                        <button
+                            onClick={() => setViewMode('balance')}
+                            className={`px-3 py-2 text-xs ${viewMode === 'balance' ? 'bg-primary-blue/20 text-primary-blue' : 'text-dashboard-muted hover:text-dashboard-text'}`}
+                        >
+                            Balance
+                        </button>
+                        <button
+                            onClick={() => setViewMode('cards')}
+                            className={`px-3 py-2 text-xs ${viewMode === 'cards' ? 'bg-primary-blue/20 text-primary-blue' : 'text-dashboard-muted hover:text-dashboard-text'}`}
+                        >
+                            Cards
+                        </button>
+                    </div>
+
                     <div className="relative">
                         <select
                             value={filter}
                             onChange={(e) => setFilter(e.target.value as 'all' | 'online' | 'offline')}
-                            className="appearance-none px-4 py-2 pr-10 bg-dashboard-card border border-dashboard-border 
-                       rounded-lg text-dashboard-text cursor-pointer
-                       focus:outline-none focus:ring-2 focus:ring-primary-blue/50"
+                            className="appearance-none px-3 py-2 pr-8 bg-dashboard-card border border-dashboard-border rounded-lg text-dashboard-text text-sm cursor-pointer"
                         >
-                            <option value="all">All Members</option>
-                            <option value="online">Online Only</option>
-                            <option value="offline">Offline Only</option>
+                            <option value="all">All</option>
+                            <option value="online">Online</option>
+                            <option value="offline">Offline</option>
                         </select>
-                        <Filter className="absolute right-3 top-1/2 -translate-y-1/2 text-dashboard-muted pointer-events-none" size={16} />
+                        <Filter className="absolute right-2.5 top-1/2 -translate-y-1/2 text-dashboard-muted pointer-events-none" size={14} />
                     </div>
 
-                    {/* Refresh Button */}
                     <button
                         onClick={() => fetchTeamData(true)}
                         disabled={refreshing}
@@ -178,75 +182,75 @@ export default function TeamPage() {
                         <RefreshCw className={refreshing ? 'animate-spin' : ''} size={16} />
                     </button>
 
-                    {/* Export Button */}
-                    <button className="flex items-center gap-2 px-4 py-2 bg-dashboard-card border border-dashboard-border 
-                           rounded-lg text-dashboard-text hover:bg-dashboard-border/50 transition-colors">
-                        <Download size={16} />
-                        Export
+                    <button className="flex items-center gap-2 px-3 py-2 bg-dashboard-card border border-dashboard-border rounded-lg text-dashboard-text text-sm hover:bg-dashboard-border/50 transition-colors">
+                        <Download size={14} /> Export
                     </button>
                 </div>
             </div>
 
-            {/* Team Grid */}
-            {filteredMembers.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    {filteredMembers.map((member) => (
-                        <button
-                            key={member.id}
-                            onClick={() => handleMemberClick(member.id)}
-                            className="dashboard-card p-6 text-left hover:border-primary-blue/50 
-                     transition-all duration-200 group"
-                        >
-                            {/* Avatar */}
-                            <div className="flex justify-center mb-4">
-                                <div className="w-16 h-16 bg-gradient-to-br from-primary-blue to-primary-teal 
-                            rounded-full flex items-center justify-center relative
-                            group-hover:scale-105 transition-transform overflow-hidden">
-                                    {member.avatar_url ? (
-                                        // eslint-disable-next-line @next/next/no-img-element
-                                        <img src={member.avatar_url} alt={member.name} className="w-full h-full object-cover" />
-                                    ) : (
-                                        <span className="text-white font-bold text-xl">
-                                            {member.name.split(' ').map(n => n[0]).join('')}
-                                        </span>
-                                    )}
-                                    {member.isOnline && (
-                                        <span className="absolute bottom-0 right-0 w-4 h-4 bg-accent-green rounded-full border-2 border-dashboard-card" />
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* Name */}
-                            <h3 className="text-center font-semibold text-dashboard-text mb-2">
-                                {member.name}
-                            </h3>
-
-                            {/* Status */}
-                            <div className="flex items-center justify-center gap-2 mb-3">
-                                <span className={member.isOnline ? 'status-online' : 'status-offline'} />
-                                <span className="text-sm text-dashboard-muted">
-                                    {member.isOnline ? 'Online' : 'Offline'}
-                                </span>
-                            </div>
-
-                            {/* Hours */}
-                            <div className="text-center text-2xl font-bold text-dashboard-text mb-1">
-                                {member.todayHours}h
-                            </div>
-
-                            {/* Current Activity */}
-                            <div className="text-center text-sm text-dashboard-muted h-5">
-                                {member.currentActivity || '---'}
-                            </div>
-                        </button>
-                    ))}
+            {/* Content */}
+            {viewMode === 'balance' ? (
+                <div className="dashboard-card p-6">
+                    <h3 className="font-semibold text-dashboard-text mb-4 text-sm uppercase tracking-wider">
+                        Today&apos;s Workload Distribution
+                    </h3>
+                    {filteredMembers.length > 0 ? (
+                        <WorkloadBalance
+                            members={filteredMembers}
+                            onMemberClick={(id) => router.push(`/dashboard/member/${id}`)}
+                        />
+                    ) : (
+                        <div className="text-center text-dashboard-muted py-8 text-sm">
+                            {filter === 'all' ? 'No team members yet' : `No ${filter} members`}
+                        </div>
+                    )}
                 </div>
             ) : (
-                <div className="dashboard-card p-8 text-center">
-                    <p className="text-dashboard-muted">
-                        {filter === 'all' ? 'No team members yet' : `No ${filter} members`}
-                    </p>
-                </div>
+                filteredMembers.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        {filteredMembers.map((member) => (
+                            <button
+                                key={member.id}
+                                onClick={() => router.push(`/dashboard/member/${member.id}`)}
+                                className="dashboard-card p-6 text-left hover:border-primary-blue/50 transition-all duration-200 group"
+                            >
+                                <div className="flex justify-center mb-4">
+                                    <div className="w-14 h-14 bg-gradient-to-br from-primary-blue to-primary-teal rounded-full flex items-center justify-center relative group-hover:scale-105 transition-transform overflow-hidden">
+                                        {member.avatar_url ? (
+                                            // eslint-disable-next-line @next/next/no-img-element
+                                            <img src={member.avatar_url} alt={member.name} className="w-full h-full object-cover" />
+                                        ) : (
+                                            <span className="text-white font-bold text-lg">
+                                                {member.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                                            </span>
+                                        )}
+                                        {member.isOnline && (
+                                            <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-accent-green rounded-full border-2 border-dashboard-card" />
+                                        )}
+                                    </div>
+                                </div>
+
+                                <h3 className="text-center font-semibold text-dashboard-text mb-2 text-sm">{member.name}</h3>
+
+                                <div className="flex items-center justify-center gap-2 mb-3">
+                                    <span className={`w-1.5 h-1.5 rounded-full ${member.isOnline ? 'bg-accent-green' : 'bg-dashboard-muted'}`} />
+                                    <span className="text-xs text-dashboard-muted">{member.isOnline ? 'Online' : 'Offline'}</span>
+                                </div>
+
+                                <div className="text-center text-2xl font-bold text-dashboard-text mb-1">{member.hours}h</div>
+                                <div className="text-center text-xs text-dashboard-muted h-4">
+                                    {member.currentActivity || '---'}
+                                </div>
+                            </button>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="dashboard-card p-8 text-center">
+                        <p className="text-dashboard-muted text-sm">
+                            {filter === 'all' ? 'No team members yet' : `No ${filter} members`}
+                        </p>
+                    </div>
+                )
             )}
         </div>
     );

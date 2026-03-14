@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Calendar, RefreshCw, Clock, Code, Monitor, MessageSquare, FileText } from 'lucide-react';
+import { ArrowLeft, Calendar, RefreshCw, Clock } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import {
     getProfile,
@@ -10,11 +10,19 @@ import {
     getUserWorkSessions,
     aggregateCategoryBreakdown,
     secondsToHours,
-    CATEGORY_COLORS,
     type Profile,
     type ActivityReport,
     type WorkSession,
 } from '@/lib/supabase/queries';
+import {
+    getCategoryColor,
+    getCategoryIcon,
+    getMetaCategory,
+    META_CATEGORY_CONFIG,
+    aggregateToMeta,
+    type MetaCategory,
+} from '@/lib/categories';
+import SparkLine from '@/components/dashboard/SparkLine';
 import {
     BarChart,
     Bar,
@@ -23,21 +31,17 @@ import {
     Tooltip,
     ResponsiveContainer,
 } from 'recharts';
+import { CHART_TOOLTIP_STYLE, CHART_AXIS_COLOR } from '@/lib/chartConfig';
 
 interface TimelineEntry {
     time: string;
+    timeRaw: Date;
     category: string;
+    metaCategory: MetaCategory;
     description: string;
     jiraTicket: string | null;
     durationMinutes: number;
 }
-
-const CATEGORY_ICONS: Record<string, React.ReactNode> = {
-    Coding: <Code size={16} />,
-    Design: <Monitor size={16} />,
-    Meeting: <MessageSquare size={16} />,
-    Documentation: <FileText size={16} />,
-};
 
 export default function MemberTimelinePage() {
     const params = useParams();
@@ -50,55 +54,73 @@ export default function MemberTimelinePage() {
     const [profile, setProfile] = useState<Profile | null>(null);
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
     const [timeline, setTimeline] = useState<TimelineEntry[]>([]);
-    const [categoryBreakdown, setCategoryBreakdown] = useState<{ name: string; hours: number }[]>([]);
+    const [categoryBreakdown, setCategoryBreakdown] = useState<{ name: string; hours: number; color: string }[]>([]);
     const [totalHours, setTotalHours] = useState(0);
+    const [weeklyHoursData, setWeeklyHoursData] = useState<number[]>([]);
+    const [focusPercent, setFocusPercent] = useState(0);
 
-    const fetchMemberData = async (showRefresh = false) => {
+    const fetchMemberData = useCallback(async (showRefresh = false) => {
         if (showRefresh) setRefreshing(true);
 
         try {
-            // Get member profile
-            const memberProfile = await getProfile(supabase, userId);
+            const weekAgo = new Date();
+            weekAgo.setDate(weekAgo.getDate() - 7);
+            const weekAgoStr = weekAgo.toISOString().split('T')[0];
+            const todayStr = new Date().toISOString().split('T')[0];
+
+            const [memberProfile, reports, sessions] = await Promise.all([
+                getProfile(supabase, userId),
+                getActivityReports(supabase, userId, selectedDate),
+                getUserWorkSessions(supabase, userId, weekAgoStr, todayStr),
+            ]);
+
             setProfile(memberProfile);
 
-            // Get activity reports for selected date
-            const reports = await getActivityReports(supabase, userId, selectedDate);
-
-            // Map to timeline entries
+            // Timeline entries
             const timelineEntries: TimelineEntry[] = reports.map((r: ActivityReport) => ({
                 time: new Date(r.captured_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                timeRaw: new Date(r.captured_at),
                 category: r.category,
+                metaCategory: getMetaCategory(r.category),
                 description: r.description,
                 jiraTicket: r.jira_ticket_id,
                 durationMinutes: Math.round(r.duration_seconds / 60),
             }));
             setTimeline(timelineEntries);
 
-            // Get work sessions for category breakdown (past 7 days)
-            const weekAgo = new Date();
-            weekAgo.setDate(weekAgo.getDate() - 7);
-            const sessions = await getUserWorkSessions(
-                supabase,
-                userId,
-                weekAgo.toISOString().split('T')[0],
-                new Date().toISOString().split('T')[0]
-            );
-
-            // Calculate category breakdown
+            // Category breakdown using meta-categories
             const breakdown = aggregateCategoryBreakdown(sessions);
-            const chartData = Object.entries(breakdown)
+            const metaBreakdown = aggregateToMeta(breakdown);
+            const chartData = Object.entries(metaBreakdown)
                 .map(([name, seconds]) => ({
                     name,
                     hours: secondsToHours(seconds),
+                    color: META_CATEGORY_CONFIG[name as MetaCategory]?.color || '#94A3B8',
                 }))
-                .sort((a, b) => b.hours - a.hours)
-                .slice(0, 8);
+                .filter(d => d.hours > 0)
+                .sort((a, b) => b.hours - a.hours);
             setCategoryBreakdown(chartData);
 
-            // Calculate total hours for selected date
+            // Total hours for selected date
             const todaySessions = sessions.filter((s: WorkSession) => s.session_date === selectedDate);
             const todayTotal = todaySessions.reduce((sum, s) => sum + s.duration_seconds, 0);
             setTotalHours(secondsToHours(todayTotal));
+
+            // Weekly sparkline data
+            const dailyMap: Record<string, number> = {};
+            sessions.forEach((s: WorkSession) => {
+                dailyMap[s.session_date] = (dailyMap[s.session_date] || 0) + s.duration_seconds;
+            });
+            const last7Days = Array.from({ length: 7 }, (_, i) => {
+                const d = new Date();
+                d.setDate(d.getDate() - (6 - i));
+                return d.toISOString().split('T')[0];
+            });
+            setWeeklyHoursData(last7Days.map(d => secondsToHours(dailyMap[d] || 0)));
+
+            // Focus percent
+            const metaTotal = Object.values(metaBreakdown).reduce((a, b) => a + b, 0);
+            setFocusPercent(metaTotal > 0 ? Math.round(((metaBreakdown['Deep Work'] || 0) / metaTotal) * 100) : 0);
 
         } catch (err) {
             console.error('Error fetching member data:', err);
@@ -106,12 +128,11 @@ export default function MemberTimelinePage() {
             setLoading(false);
             setRefreshing(false);
         }
-    };
+    }, [supabase, userId, selectedDate]);
 
     useEffect(() => {
         fetchMemberData();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [userId, selectedDate]);
+    }, [fetchMemberData]);
 
     if (loading) {
         return (
@@ -125,10 +146,7 @@ export default function MemberTimelinePage() {
         return (
             <div className="dashboard-card p-8 text-center">
                 <h2 className="text-xl font-semibold text-dashboard-text mb-2">Member Not Found</h2>
-                <button
-                    onClick={() => router.push('/dashboard/team')}
-                    className="mt-4 px-4 py-2 bg-primary-blue text-white rounded-lg"
-                >
+                <button onClick={() => router.push('/dashboard/team')} className="mt-4 px-4 py-2 bg-primary-blue text-white rounded-lg">
                     Back to Team
                 </button>
             </div>
@@ -139,6 +157,19 @@ export default function MemberTimelinePage() {
         ? (Date.now() - new Date(profile.last_seen_at).getTime()) < 5 * 60 * 1000
         : false;
 
+    // Build Gantt-style blocks grouped by hour
+    const ganttBlocks = timeline.reduce<Record<number, TimelineEntry[]>>((acc, entry) => {
+        const hour = entry.timeRaw.getHours();
+        if (!acc[hour]) acc[hour] = [];
+        acc[hour].push(entry);
+        return acc;
+    }, {});
+
+    const ganttHours = Object.keys(ganttBlocks).map(Number).sort((a, b) => a - b);
+    const startHour = ganttHours.length > 0 ? Math.min(...ganttHours) : 9;
+    const endHour = ganttHours.length > 0 ? Math.max(...ganttHours) + 1 : 18;
+    const hourRange = Array.from({ length: endHour - startHour }, (_, i) => startHour + i);
+
     return (
         <div className="space-y-6">
             {/* Header */}
@@ -148,51 +179,53 @@ export default function MemberTimelinePage() {
                         onClick={() => router.push('/dashboard/team')}
                         className="p-2 text-dashboard-muted hover:text-dashboard-text transition-colors"
                     >
-                        <ArrowLeft size={24} />
+                        <ArrowLeft size={22} />
                     </button>
                     <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 bg-gradient-to-br from-primary-blue to-primary-teal rounded-full flex items-center justify-center relative overflow-hidden">
+                        <div className="w-14 h-14 bg-gradient-to-br from-primary-blue to-primary-teal rounded-full flex items-center justify-center relative overflow-hidden">
                             {profile.avatar_url ? (
                                 // eslint-disable-next-line @next/next/no-img-element
                                 <img src={profile.avatar_url} alt={profile.display_name || ''} className="w-full h-full object-cover" />
                             ) : (
-                                <span className="text-white font-bold text-xl">
-                                    {(profile.display_name || 'U').split(' ').map(n => n[0]).join('')}
+                                <span className="text-white font-bold text-lg">
+                                    {(profile.display_name || 'U').split(' ').map(n => n[0]).join('').slice(0, 2)}
                                 </span>
                             )}
                             {isOnline && (
-                                <span className="absolute bottom-0 right-0 w-4 h-4 bg-accent-green rounded-full border-2 border-dashboard-card" />
+                                <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-accent-green rounded-full border-2 border-dashboard-card" />
                             )}
                         </div>
                         <div>
-                            <h1 className="text-2xl font-bold text-dashboard-text">
-                                {profile.display_name || 'Unknown'}
-                            </h1>
-                            <p className="text-dashboard-muted flex items-center gap-2">
-                                <span className={isOnline ? 'status-online' : 'status-offline'} />
-                                {isOnline ? 'Online' : 'Offline'}
-                                <span className="mx-2">•</span>
-                                <Clock size={14} />
-                                {totalHours}h today
-                            </p>
+                            <h1 className="text-xl font-bold text-dashboard-text">{profile.display_name || 'Unknown'}</h1>
+                            <div className="flex items-center gap-3 text-sm text-dashboard-muted">
+                                <span className="flex items-center gap-1.5">
+                                    <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-accent-green' : 'bg-dashboard-muted'}`} />
+                                    {isOnline ? 'Online' : 'Offline'}
+                                </span>
+                                <span className="flex items-center gap-1">
+                                    <Clock size={12} /> {totalHours}h today
+                                </span>
+                                <span>{focusPercent}% focus</span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <div className="flex items-center gap-3">
-                    {/* Date Picker */}
+                    <SparkLine data={weeklyHoursData} color="#3B82F6" width={80} height={28} showDots />
+                    <span className="text-[10px] text-dashboard-muted">7d trend</span>
+
                     <div className="relative">
                         <input
                             type="date"
                             value={selectedDate}
                             onChange={(e) => setSelectedDate(e.target.value)}
                             max={new Date().toISOString().split('T')[0]}
-                            className="px-4 py-2 bg-dashboard-card border border-dashboard-border rounded-lg text-dashboard-text"
+                            className="px-3 py-2 bg-dashboard-card border border-dashboard-border rounded-lg text-dashboard-text text-sm"
                         />
-                        <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 text-dashboard-muted pointer-events-none" size={16} />
+                        <Calendar className="absolute right-2.5 top-1/2 -translate-y-1/2 text-dashboard-muted pointer-events-none" size={14} />
                     </div>
 
-                    {/* Refresh */}
                     <button
                         onClick={() => fetchMemberData(true)}
                         disabled={refreshing}
@@ -203,94 +236,135 @@ export default function MemberTimelinePage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Activity Timeline */}
-                <div className="lg:col-span-2 dashboard-card p-6">
-                    <h3 className="font-semibold text-dashboard-text mb-4 flex items-center gap-2">
-                        📋 Activity Timeline
+            {/* Gantt Timeline */}
+            <div className="dashboard-card p-6">
+                <h3 className="font-semibold text-dashboard-text mb-4 text-sm uppercase tracking-wider">
+                    Day Timeline
+                </h3>
+                {timeline.length > 0 ? (
+                    <div className="space-y-1">
+                        {hourRange.map(hour => {
+                            const blocks = ganttBlocks[hour] || [];
+                            const hourLabel = hour > 12 ? `${hour - 12} PM` : hour === 12 ? '12 PM' : `${hour} AM`;
+                            const totalMin = blocks.reduce((s, b) => s + b.durationMinutes, 0);
+
+                            return (
+                                <div key={hour} className="flex items-center gap-3">
+                                    <span className="text-[10px] text-dashboard-muted w-10 text-right flex-shrink-0 font-mono">
+                                        {hourLabel}
+                                    </span>
+                                    <div className="flex-1 h-7 bg-dashboard-bg/30 rounded flex items-center gap-0.5 px-0.5 overflow-hidden">
+                                        {blocks.length > 0 ? (
+                                            blocks.map((block, i) => {
+                                                const widthPct = Math.max((block.durationMinutes / 60) * 100, 4);
+                                                const color = getCategoryColor(block.category);
+                                                return (
+                                                    <div
+                                                        key={i}
+                                                        className="h-5 rounded-sm flex items-center px-1.5 overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
+                                                        style={{ width: `${widthPct}%`, backgroundColor: color, minWidth: 20 }}
+                                                        title={`${block.description} (${block.durationMinutes}m)`}
+                                                    >
+                                                        <span className="text-[9px] text-white truncate font-medium">
+                                                            {block.durationMinutes}m
+                                                        </span>
+                                                    </div>
+                                                );
+                                            })
+                                        ) : (
+                                            <div className="w-full h-5 rounded-sm bg-dashboard-bg/20" />
+                                        )}
+                                    </div>
+                                    <span className="text-[10px] text-dashboard-muted w-8 text-right flex-shrink-0">
+                                        {totalMin > 0 ? `${totalMin}m` : ''}
+                                    </span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                ) : (
+                    <div className="text-center text-dashboard-muted py-8 text-sm">
+                        No activity recorded for this date
+                    </div>
+                )}
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Activity Log */}
+                <div className="dashboard-card p-6">
+                    <h3 className="font-semibold text-dashboard-text mb-4 text-sm uppercase tracking-wider">
+                        Activity Log
                     </h3>
                     {timeline.length > 0 ? (
-                        <div className="space-y-3 max-h-[500px] overflow-y-auto dark-scrollbar pr-2">
-                            {timeline.map((entry, index) => (
-                                <div
-                                    key={index}
-                                    className="flex items-start gap-4 p-3 rounded-lg bg-dashboard-bg/50 hover:bg-dashboard-bg transition-colors"
-                                >
-                                    <span className="text-dashboard-muted font-mono text-sm w-16 flex-shrink-0">
-                                        {entry.time}
-                                    </span>
+                        <div className="space-y-2 max-h-[400px] overflow-y-auto dark-scrollbar pr-1">
+                            {timeline.map((entry, index) => {
+                                const config = META_CATEGORY_CONFIG[entry.metaCategory];
+                                const Icon = getCategoryIcon(entry.category);
+                                return (
                                     <div
-                                        className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                                        style={{ backgroundColor: `${CATEGORY_COLORS[entry.category] || '#94A3B8'}20` }}
+                                        key={index}
+                                        className="flex items-start gap-3 p-2.5 rounded-lg bg-dashboard-bg/50 hover:bg-dashboard-bg transition-colors"
                                     >
-                                        <span style={{ color: CATEGORY_COLORS[entry.category] || '#94A3B8' }}>
-                                            {CATEGORY_ICONS[entry.category] || <Code size={16} />}
+                                        <span className="text-dashboard-muted font-mono text-xs w-12 flex-shrink-0 pt-0.5">
+                                            {entry.time}
                                         </span>
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <span
-                                                className="px-2 py-0.5 rounded text-xs font-medium"
-                                                style={{
-                                                    backgroundColor: `${CATEGORY_COLORS[entry.category] || '#94A3B8'}20`,
-                                                    color: CATEGORY_COLORS[entry.category] || '#94A3B8',
-                                                }}
-                                            >
-                                                {entry.category}
-                                            </span>
-                                            {entry.jiraTicket && (
-                                                <span className="text-primary-blue font-mono text-xs">
-                                                    {entry.jiraTicket}
-                                                </span>
-                                            )}
-                                            <span className="text-dashboard-muted text-xs ml-auto">
-                                                {entry.durationMinutes}m
-                                            </span>
+                                        <div
+                                            className="w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0"
+                                            style={{ backgroundColor: config.bgLight }}
+                                        >
+                                            <Icon size={14} style={{ color: config.color }} />
                                         </div>
-                                        <p className="text-dashboard-text text-sm truncate">
-                                            {entry.description}
-                                        </p>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2 mb-0.5">
+                                                <span
+                                                    className="px-1.5 py-0.5 rounded text-[10px] font-medium"
+                                                    style={{ backgroundColor: config.bgLight, color: config.color }}
+                                                >
+                                                    {entry.metaCategory}
+                                                </span>
+                                                {entry.jiraTicket && (
+                                                    <span className="text-primary-blue font-mono text-[10px]">{entry.jiraTicket}</span>
+                                                )}
+                                                <span className="text-dashboard-muted text-[10px] ml-auto">{entry.durationMinutes}m</span>
+                                            </div>
+                                            <p className="text-dashboard-text text-sm truncate">{entry.description}</p>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     ) : (
-                        <div className="text-center text-dashboard-muted py-8">
+                        <div className="text-center text-dashboard-muted py-8 text-sm">
                             No activity recorded for this date
                         </div>
                     )}
                 </div>
 
-                {/* Category Breakdown (7-day) */}
+                {/* 7-Day Category Breakdown */}
                 <div className="dashboard-card p-6">
-                    <h3 className="font-semibold text-dashboard-text mb-4 flex items-center gap-2">
-                        📊 Last 7 Days by Category
+                    <h3 className="font-semibold text-dashboard-text mb-4 text-sm uppercase tracking-wider">
+                        Last 7 Days by Category
                     </h3>
                     {categoryBreakdown.length > 0 ? (
                         <div className="h-64">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={categoryBreakdown} layout="vertical">
-                                    <XAxis type="number" stroke="#94A3B8" fontSize={12} tickLine={false} axisLine={false} />
-                                    <YAxis type="category" dataKey="name" stroke="#94A3B8" fontSize={12} tickLine={false} axisLine={false} width={80} />
+                                    <XAxis type="number" stroke={CHART_AXIS_COLOR} fontSize={11} tickLine={false} axisLine={false} unit="h" />
+                                    <YAxis type="category" dataKey="name" stroke={CHART_AXIS_COLOR} fontSize={11} tickLine={false} axisLine={false} width={90} />
                                     <Tooltip
-                                        contentStyle={{
-                                            backgroundColor: '#1E293B',
-                                            border: '1px solid #334155',
-                                            borderRadius: '8px',
-                                            color: '#F8FAFC'
-                                        }}
-                                        formatter={(value) => [`${value}h`, 'Hours']}
+                                        contentStyle={CHART_TOOLTIP_STYLE}
+                                        formatter={(value: number | undefined) => [`${value != null ? value : 0}h`, 'Hours']}
                                     />
                                     <Bar
                                         dataKey="hours"
-                                        fill="#3B82F6"
                                         radius={[0, 4, 4, 0]}
+                                        fill="#3B82F6"
                                     />
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>
                     ) : (
-                        <div className="text-center text-dashboard-muted py-8">
+                        <div className="h-64 flex items-center justify-center text-dashboard-muted text-sm">
                             No activity data available
                         </div>
                     )}

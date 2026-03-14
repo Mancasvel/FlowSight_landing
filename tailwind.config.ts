@@ -29,11 +29,12 @@ const config: Config = {
           darkNavy: "#0f172a",
         },
         dashboard: {
-          bg: "#0F172A",
-          card: "#1E293B",
-          border: "#334155",
-          text: "#F8FAFC",
-          muted: "#94A3B8",
+          bg: "#F8FAFC",
+          card: "#FFFFFF",
+          border: "#E2E8F0",
+          text: "#0F172A",
+          muted: "#64748B",
+          subtle: "#F1F5F9",
         },
         category: {
           coding: "#10B981",

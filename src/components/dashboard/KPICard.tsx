@@ -1,5 +1,8 @@
+'use client';
+
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import { ReactNode } from 'react';
+import SparkLine from './SparkLine';
 
 interface KPICardProps {
     title: string;
@@ -8,6 +11,8 @@ interface KPICardProps {
     change?: number;
     icon?: ReactNode;
     color?: 'blue' | 'green' | 'orange' | 'purple';
+    sparkData?: number[];
+    sparkColor?: string;
 }
 
 const colorClasses = {
@@ -24,20 +29,30 @@ const iconColorClasses = {
     purple: 'text-category-design',
 };
 
+const sparkColors = {
+    blue: '#3B82F6',
+    green: '#10B981',
+    orange: '#F59E0B',
+    purple: '#8B5CF6',
+};
+
 export default function KPICard({
     title,
     value,
     subtitle,
     change,
     icon,
-    color = 'blue'
+    color = 'blue',
+    sparkData,
+    sparkColor,
 }: KPICardProps) {
     const isPositive = change !== undefined && change >= 0;
+    const resolvedSparkColor = sparkColor || sparkColors[color];
 
     return (
-        <div className={`dashboard-card p-6 bg-gradient-to-br ${colorClasses[color]}`}>
-            <div className="flex items-start justify-between mb-4">
-                <span className="text-sm font-medium text-dashboard-muted uppercase tracking-wide">
+        <div className={`dashboard-card p-5 bg-gradient-to-br ${colorClasses[color]}`}>
+            <div className="flex items-start justify-between mb-3">
+                <span className="text-xs font-medium text-dashboard-muted uppercase tracking-wider">
                     {title}
                 </span>
                 {icon && (
@@ -47,23 +62,35 @@ export default function KPICard({
                 )}
             </div>
 
-            <div className="space-y-1">
-                <div className="text-3xl font-bold text-dashboard-text">
-                    {value}
+            <div className="flex items-end justify-between">
+                <div className="space-y-1">
+                    <div className="text-2xl font-bold text-dashboard-text">
+                        {value}
+                    </div>
+
+                    {(subtitle || change !== undefined) && (
+                        <div className="flex items-center gap-2 text-sm">
+                            {change !== undefined && change !== 0 && (
+                                <span className={`flex items-center gap-0.5 text-xs font-medium ${isPositive ? 'text-accent-green' : 'text-accent-red'}`}>
+                                    {isPositive ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+                                    {Math.abs(change)}%
+                                </span>
+                            )}
+                            {subtitle && (
+                                <span className="text-xs text-dashboard-muted">{subtitle}</span>
+                            )}
+                        </div>
+                    )}
                 </div>
 
-                {(subtitle || change !== undefined) && (
-                    <div className="flex items-center gap-2 text-sm">
-                        {change !== undefined && (
-                            <span className={`flex items-center gap-1 ${isPositive ? 'text-accent-green' : 'text-accent-red'}`}>
-                                {isPositive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-                                {Math.abs(change)}%
-                            </span>
-                        )}
-                        {subtitle && (
-                            <span className="text-dashboard-muted">{subtitle}</span>
-                        )}
-                    </div>
+                {sparkData && sparkData.length >= 2 && (
+                    <SparkLine
+                        data={sparkData}
+                        color={resolvedSparkColor}
+                        width={72}
+                        height={28}
+                        showDots
+                    />
                 )}
             </div>
         </div>
