@@ -1,8 +1,8 @@
 import { createClient } from '@/lib/supabase/server';
+import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Sidebar from '@/components/dashboard/Sidebar';
 
-// Force dynamic rendering - auth can't be done at build time
 export const dynamic = 'force-dynamic';
 
 export default async function DashboardLayout({
@@ -10,30 +10,32 @@ export default async function DashboardLayout({
 }: {
     children: React.ReactNode;
 }) {
-    const supabase = await createClient();
+    const headerStore = await headers();
+    const userId = headerStore.get('x-user-id');
 
-    // Check auth
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
+    if (!userId) {
         redirect('/login');
     }
 
-    // Check if user has profile
+    const supabase = await createClient();
+
     const { data: profile } = await supabase
         .from('profiles')
         .select('role')
-        .eq('id', user.id)
+        .eq('id', userId)
         .single();
 
-    // If no profile exists, create one as PM (user came from dashboard login)
     if (!profile) {
+        const userName = headerStore.get('x-user-name') || '';
+        const userAvatar = headerStore.get('x-user-avatar') || null;
+        const userEmail = headerStore.get('x-user-email') || '';
+
         const { error: insertError } = await supabase.from('profiles').insert({
-            id: user.id,
-            display_name: user.user_metadata?.full_name || user.email?.split('@')[0],
-            avatar_url: user.user_metadata?.avatar_url,
-            email: user.email,
-            role: 'pm', // Users logging in through dashboard are PMs
+            id: userId,
+            display_name: userName,
+            avatar_url: userAvatar,
+            email: userEmail,
+            role: 'pm',
         });
 
         if (insertError) {
@@ -41,7 +43,6 @@ export default async function DashboardLayout({
             redirect('/login?error=profile_creation_failed');
         }
     }
-    // Note: We no longer reject users based on role - all dashboard users are considered PMs
 
     return (
         <div className="min-h-screen bg-dashboard-bg flex">

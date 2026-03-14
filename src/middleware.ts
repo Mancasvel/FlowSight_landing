@@ -29,21 +29,28 @@ export async function middleware(request: NextRequest) {
         }
     );
 
-    // Refresh session if expired
     const {
         data: { user },
     } = await supabase.auth.getUser();
 
-    // Protect dashboard routes - redirect to login if not authenticated
     if (request.nextUrl.pathname.startsWith('/dashboard')) {
         if (!user) {
             const url = request.nextUrl.clone();
             url.pathname = '/login';
             return NextResponse.redirect(url);
         }
+        supabaseResponse.headers.set('x-user-id', user.id);
+        supabaseResponse.headers.set('x-user-email', user.email ?? '');
+        supabaseResponse.headers.set(
+            'x-user-name',
+            user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? ''
+        );
+        supabaseResponse.headers.set(
+            'x-user-avatar',
+            user.user_metadata?.avatar_url ?? ''
+        );
     }
 
-    // Redirect logged-in users away from login page
     if (request.nextUrl.pathname === '/login') {
         if (user) {
             const url = request.nextUrl.clone();
@@ -56,15 +63,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-    matcher: [
-        /*
-         * Match all request paths except for:
-         * - _next/static (static files)
-         * - _next/image (image optimization files)
-         * - favicon.ico (favicon file)
-         * - public folder
-         * - API routes that don't need auth
-         */
-        '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
-    ],
+    matcher: ['/dashboard/:path*', '/login'],
 };

@@ -1,6 +1,17 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Next.js 14 uses app directory by default, no experimental flag needed
+  turbopack: {
+    root: __dirname,
+  },
+  serverExternalPackages: ['mongoose', 'mongodb'],
+  experimental: {
+    optimizePackageImports: [
+      'lucide-react',
+      'framer-motion',
+      'recharts',
+      '@supabase/supabase-js',
+    ],
+  },
 }
 
 module.exports = nextConfig
