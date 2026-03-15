@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { Clock, Users, Activity, Target, RefreshCw } from 'lucide-react';
+import { Clock, Users, Activity, Target, RefreshCw, Calendar } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import KPICard from '@/components/dashboard/KPICard';
 import Heatmap from '@/components/dashboard/Heatmap';
@@ -29,12 +29,6 @@ import {
     META_CATEGORY_CONFIG,
     type MetaCategory,
 } from '@/lib/categories';
-import {
-    Treemap,
-    ResponsiveContainer,
-    Tooltip,
-} from 'recharts';
-import { CHART_TOOLTIP_STYLE } from '@/lib/chartConfig';
 
 interface TeamMemberWithHours {
     id: string;
@@ -56,6 +50,13 @@ interface FeedItem {
     userName: string;
     description: string;
     category: string;
+}
+
+function getGreeting(): string {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 18) return 'Good afternoon';
+    return 'Good evening';
 }
 
 export default function DashboardPage() {
@@ -106,7 +107,6 @@ export default function DashboardPage() {
             const teamId = selectedTeamId || userTeams[0].id;
             if (!selectedTeamId) setSelectedTeamId(teamId);
 
-            // Fetch data in parallel
             const todayStr = new Date().toISOString().split('T')[0];
             const { start: weekStart } = getDateRange('this_week');
             const { start: lastWeekStart, end: lastWeekEnd } = getDateRange('last_week');
@@ -125,7 +125,6 @@ export default function DashboardPage() {
                 getTeamActivityReports(supabase, teamId, todayStr, 20),
             ]);
 
-            // --- Members with hours ---
             const memberHoursMap: Record<string, number> = {};
             todaySessions.forEach((s: WorkSession & { profile: Pick<Profile, 'id' | 'display_name' | 'avatar_url'> }) => {
                 memberHoursMap[s.user_id] = (memberHoursMap[s.user_id] || 0) + s.duration_seconds;
@@ -144,7 +143,6 @@ export default function DashboardPage() {
             });
             setTeamMembers(memberDisplay);
 
-            // --- KPIs ---
             const todayTotalSec = todaySessions.reduce((sum: number, s: WorkSession) => sum + s.duration_seconds, 0);
             const yesterdaySessions = weekSessions.filter((s: WorkSession) => s.session_date === yesterdayStr);
             const yesterdayTotalSec = yesterdaySessions.reduce((sum: number, s: WorkSession) => sum + s.duration_seconds, 0);
@@ -160,7 +158,6 @@ export default function DashboardPage() {
 
             const onlineCount = memberDisplay.filter(m => m.isOnline).length;
 
-            // Focus & meeting percent from today
             const todayCategoryBreakdown = aggregateCategoryBreakdown(todaySessions);
             const todayMeta = aggregateToMeta(todayCategoryBreakdown);
             const todayMetaTotal = Object.values(todayMeta).reduce((a, b) => a + b, 0);
@@ -178,7 +175,6 @@ export default function DashboardPage() {
                 meetingPercent: meetPct,
             });
 
-            // --- Sparklines ---
             const dailyMap: Record<string, number> = {};
             last14Sessions.forEach((s: WorkSession) => {
                 dailyMap[s.session_date] = (dailyMap[s.session_date] || 0) + s.duration_seconds;
@@ -201,11 +197,9 @@ export default function DashboardPage() {
             });
             setSparkWeek(last4Weeks);
 
-            // --- Category data for treemap ---
             const weekCategoryBreakdown = aggregateCategoryBreakdown(weekSessions);
             setCategoryData(getTopCategories(weekCategoryBreakdown, 8));
 
-            // --- Task data ---
             const jiraBreakdown = aggregateJiraBreakdown(weekSessions);
             const taskData: TaskData[] = Object.entries(jiraBreakdown)
                 .map(([key, seconds]) => ({ key, hours: secondsToHours(seconds), maxHours: 40 }))
@@ -213,7 +207,6 @@ export default function DashboardPage() {
                 .slice(0, 5);
             setTasks(taskData);
 
-            // --- Heatmap from activity reports (build from last 7 days sessions) ---
             const heatmap: Record<string, Record<string, number>> = {};
             const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
             last14Sessions.forEach((s: WorkSession) => {
@@ -235,7 +228,6 @@ export default function DashboardPage() {
             });
             setHeatmapData(heatmap);
 
-            // --- Activity Feed (real data) ---
             const feed: FeedItem[] = activityReports.map((r: ActivityReport & { profile: Pick<Profile, 'id' | 'display_name' | 'avatar_url'> }) => ({
                 id: r.id,
                 time: new Date(r.captured_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }),
@@ -261,17 +253,24 @@ export default function DashboardPage() {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-64">
-                <div className="animate-spin w-8 h-8 border-2 border-primary-blue border-t-transparent rounded-full" />
+                <div className="flex flex-col items-center gap-3">
+                    <div className="w-8 h-8 border-2 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+                    <span className="text-sm text-zinc-400">Loading dashboard...</span>
+                </div>
             </div>
         );
     }
 
     if (error) {
         return (
-            <div className="dashboard-card p-6 text-center">
-                <p className="text-accent-red mb-4">{error}</p>
-                <button onClick={() => fetchDashboardData()} className="px-4 py-2 bg-primary-blue text-white rounded-lg hover:opacity-90">
-                    Retry
+            <div className="bg-white rounded-2xl shadow-card p-8 text-center max-w-md mx-auto mt-12">
+                <p className="text-zinc-500 mb-4">{error}</p>
+                <button
+                    onClick={() => fetchDashboardData()}
+                    className="px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-medium
+                        hover:bg-indigo-700 transition-colors"
+                >
+                    Try Again
                 </button>
             </div>
         );
@@ -279,248 +278,251 @@ export default function DashboardPage() {
 
     if (teams.length === 0) {
         return (
-            <div className="dashboard-card p-8 text-center">
-                <h2 className="text-xl font-semibold text-dashboard-text mb-2">No Teams Yet</h2>
-                <p className="text-dashboard-muted mb-4">Create a team in Settings to start tracking your team&apos;s productivity.</p>
-                <a href="/dashboard/settings" className="inline-block px-4 py-2 bg-gradient-to-r from-primary-blue to-primary-teal text-white rounded-lg hover:opacity-90">
+            <div className="bg-white rounded-2xl shadow-card p-8 sm:p-10 text-center max-w-md mx-auto mt-12">
+                <div className="w-14 h-14 rounded-2xl bg-indigo-50 flex items-center justify-center mx-auto mb-5">
+                    <Users className="text-indigo-500" size={28} />
+                </div>
+                <h2 className="text-lg font-semibold text-zinc-900 mb-2">No Teams Yet</h2>
+                <p className="text-zinc-400 mb-6 text-sm leading-relaxed">
+                    Create your first team in Settings to start tracking productivity.
+                </p>
+                <a
+                    href="/dashboard/settings"
+                    className="inline-block px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-sm
+                        font-medium hover:bg-indigo-700 transition-colors"
+                >
                     Go to Settings
                 </a>
             </div>
         );
     }
 
-    const treemapData = categoryData.map(c => ({
-        name: c.name,
-        size: c.seconds,
-        fill: c.color,
-    }));
-
     return (
-        <div className="space-y-6">
+        <div className="space-y-5 sm:space-y-7">
             {/* Header */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-dashboard-text">Dashboard</h1>
-                    <p className="text-dashboard-muted">Overview of your team&apos;s activity</p>
+                    <h1 className="text-xl sm:text-[22px] font-semibold text-zinc-900 tracking-tight">
+                        {getGreeting()}
+                    </h1>
+                    <p className="text-zinc-400 mt-0.5 text-[13px] sm:text-[14px]">
+                        Here&apos;s your team&apos;s activity overview
+                    </p>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 sm:gap-3">
                     {teams.length > 1 && (
                         <select
                             value={selectedTeamId || ''}
                             onChange={(e) => setSelectedTeamId(e.target.value)}
-                            className="px-3 py-2 bg-dashboard-card border border-dashboard-border rounded-lg text-dashboard-text text-sm"
+                            className="px-3 py-2 bg-white rounded-xl text-zinc-700 text-sm
+                                shadow-card border-0 outline-none cursor-pointer"
                         >
                             {teams.map(team => (
                                 <option key={team.id} value={team.id}>{team.name}</option>
                             ))}
                         </select>
                     )}
+                    <div className="hidden sm:flex items-center gap-2 px-3.5 py-2 bg-white rounded-xl
+                        text-sm text-zinc-500 shadow-card">
+                        <Calendar size={14} className="text-zinc-400" />
+                        {new Date().toLocaleDateString('en-US', {
+                            weekday: 'short', month: 'short', day: 'numeric',
+                        })}
+                    </div>
                     <button
                         onClick={() => fetchDashboardData(true)}
                         disabled={refreshing}
-                        className="p-2 text-dashboard-muted hover:text-dashboard-text transition-colors"
+                        className="p-2.5 bg-white rounded-xl text-zinc-400 hover:text-zinc-600
+                            shadow-card transition-colors"
                     >
-                        <RefreshCw className={refreshing ? 'animate-spin' : ''} size={18} />
+                        <RefreshCw className={refreshing ? 'animate-spin' : ''} size={16} />
                     </button>
                 </div>
             </div>
 
-            {/* Alerts */}
-            <AlertPanel />
-
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
                 <KPICard
-                    title="Today"
+                    title="Today Hours"
                     value={`${kpi.todayHours}h`}
                     change={kpi.todayChange}
                     subtitle="vs yesterday"
-                    icon={<Clock size={18} />}
+                    icon={<Clock size={22} />}
                     color="blue"
-                    sparkData={sparkToday}
                 />
                 <KPICard
                     title="This Week"
                     value={`${kpi.weekHours}h`}
                     change={kpi.weekChange}
                     subtitle="vs last week"
-                    icon={<Activity size={18} />}
+                    icon={<Activity size={22} />}
                     color="green"
-                    sparkData={sparkWeek}
                 />
                 <KPICard
-                    title="Team"
-                    value={`${kpi.activeMembers} Members`}
+                    title="Team Members"
+                    value={`${kpi.activeMembers}`}
                     subtitle={`${kpi.onlineMembers} online now`}
-                    icon={<Users size={18} />}
+                    icon={<Users size={22} />}
                     color="purple"
                 />
                 <KPICard
-                    title="Focus"
+                    title="Focus Time"
                     value={`${kpi.focusPercent}%`}
                     subtitle={`${kpi.meetingPercent}% in meetings`}
-                    icon={<Target size={18} />}
+                    icon={<Target size={22} />}
                     color="orange"
                 />
             </div>
 
-            {/* Main Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-                {/* Heatmap — 3 cols */}
-                <div className="lg:col-span-3 dashboard-card p-6">
-                    <h3 className="font-semibold text-dashboard-text mb-4 text-sm uppercase tracking-wider">
-                        Activity Patterns
-                    </h3>
-                    <Heatmap data={heatmapData} />
-                </div>
+            {/* Alerts */}
+            <AlertPanel />
 
-                {/* Category Treemap — 2 cols */}
-                <div className="lg:col-span-2 dashboard-card p-6">
-                    <h3 className="font-semibold text-dashboard-text mb-4 text-sm uppercase tracking-wider">
-                        Time Allocation
-                    </h3>
-                    {treemapData.length > 0 ? (
-                        <div className="h-52">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <Treemap
-                                    data={treemapData}
-                                    dataKey="size"
-                                    aspectRatio={4 / 3}
-                                    stroke="#FFFFFF"
-                                    content={({ x, y, width, height, name, fill }) => {
-                                        if (typeof width !== 'number' || typeof height !== 'number') return <g />;
-                                        if (width < 30 || height < 20) return <g />;
-                                        return (
-                                            <g>
-                                                <rect x={x} y={y} width={width} height={height} fill={fill as string} rx={6} opacity={0.9} />
-                                                {width > 50 && height > 30 && (
-                                                    <text
-                                                        x={(x as number) + 8}
-                                                        y={(y as number) + 18}
-                                                        fill="#FFFFFF"
-                                                        fontSize={12}
-                                                        fontWeight={700}
-                                                        style={{ textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}
-                                                    >
-                                                        {name as string}
-                                                    </text>
-                                                )}
-                                                {width > 50 && height > 45 && (
-                                                    <text
-                                                        x={(x as number) + 8}
-                                                        y={(y as number) + 33}
-                                                        fill="rgba(255,255,255,0.8)"
-                                                        fontSize={10}
-                                                    >
-                                                        {secondsToHours((treemapData.find(d => d.name === name)?.size || 0))}h
-                                                    </text>
-                                                )}
-                                            </g>
-                                        );
-                                    }}
-                                >
-                                    <Tooltip
-                                        contentStyle={CHART_TOOLTIP_STYLE}
-                                        formatter={(value: number | undefined) => [value != null ? `${secondsToHours(value)}h` : '—', 'Time']}
-                                    />
-                                </Treemap>
-                            </ResponsiveContainer>
-                        </div>
-                    ) : (
-                        <div className="h-52 flex items-center justify-center text-dashboard-muted text-sm">
-                            No activity data yet
-                        </div>
-                    )}
-
-                    {/* Category legend */}
-                    <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3">
-                        {categoryData.slice(0, 6).map(c => (
-                            <div key={c.name} className="flex items-center gap-1.5">
-                                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: c.color }} />
-                                <span className="text-[10px] text-dashboard-muted">{c.name} {c.percent}%</span>
-                            </div>
-                        ))}
+            {/* Row 1: Team Workload + Time Allocation */}
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6">
+                <div className="lg:col-span-3 bg-white rounded-2xl shadow-card p-4 sm:p-6">
+                    <div className="flex items-center justify-between mb-4 sm:mb-5">
+                        <h3 className="text-[15px] font-semibold text-zinc-800">Team Workload</h3>
+                        <span className="text-xs text-zinc-400">Today</span>
                     </div>
-                </div>
-            </div>
-
-            {/* Second Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-                {/* Workload Balance — 3 cols */}
-                <div className="lg:col-span-3 dashboard-card p-6">
-                    <h3 className="font-semibold text-dashboard-text mb-4 text-sm uppercase tracking-wider">
-                        Workload Balance
-                    </h3>
                     {teamMembers.length > 0 ? (
                         <WorkloadBalance
                             members={teamMembers}
                             onMemberClick={(id) => router.push(`/dashboard/member/${id}`)}
                         />
                     ) : (
-                        <div className="text-center text-dashboard-muted py-4 text-sm">
+                        <div className="text-center text-zinc-400 py-8 text-sm">
                             No team members yet
                         </div>
                     )}
                 </div>
 
-                {/* Active Tasks — 2 cols */}
-                <div className="lg:col-span-2 dashboard-card p-6">
-                    <h3 className="font-semibold text-dashboard-text mb-4 text-sm uppercase tracking-wider">
-                        Active Tasks
-                    </h3>
-                    <div className="space-y-4">
-                        {tasks.length > 0 ? (
-                            tasks.map((task) => (
-                                <div key={task.key} className="space-y-1.5">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-primary-blue font-mono text-xs">{task.key}</span>
-                                        <span className="text-dashboard-muted text-xs">{task.hours}h</span>
-                                    </div>
-                                    <div className="h-1.5 bg-dashboard-bg rounded-full overflow-hidden">
+                <div className="lg:col-span-2 bg-white rounded-2xl shadow-card p-4 sm:p-6">
+                    <div className="flex items-center justify-between mb-4 sm:mb-5">
+                        <h3 className="text-[15px] font-semibold text-zinc-800">Time Allocation</h3>
+                        <span className="text-xs text-zinc-400">This Week</span>
+                    </div>
+                    {categoryData.length > 0 ? (
+                        <div className="space-y-3 sm:space-y-4">
+                            {categoryData.slice(0, 6).map(c => (
+                                <div key={c.name} className="flex items-center gap-2 sm:gap-3">
+                                    <div
+                                        className="w-2 h-2 rounded-full flex-shrink-0"
+                                        style={{ backgroundColor: c.color }}
+                                    />
+                                    <span className="text-xs sm:text-sm text-zinc-600 w-16 sm:w-24 flex-shrink-0 truncate">
+                                        {c.name}
+                                    </span>
+                                    <div className="flex-1 h-2 bg-zinc-100 rounded-full overflow-hidden">
                                         <div
-                                            className="h-full bg-gradient-to-r from-primary-blue to-primary-teal rounded-full transition-all duration-500"
-                                            style={{ width: `${Math.min((task.hours / task.maxHours) * 100, 100)}%` }}
+                                            className="h-full rounded-full transition-all duration-700"
+                                            style={{
+                                                width: `${c.percent}%`,
+                                                backgroundColor: c.color,
+                                                opacity: 0.85,
+                                            }}
                                         />
                                     </div>
+                                    <span className="text-xs text-zinc-400 w-10 text-right tabular-nums">
+                                        {c.percent}%
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="flex items-center justify-center h-48 text-zinc-400 text-sm">
+                            No activity data yet
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Row 2: Activity Heatmap + Sprint Tasks */}
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6">
+                <div className="lg:col-span-3 bg-white rounded-2xl shadow-card p-4 sm:p-6">
+                    <div className="flex items-center justify-between mb-4 sm:mb-5">
+                        <h3 className="text-[15px] font-semibold text-zinc-800">Activity Patterns</h3>
+                        <span className="text-xs text-zinc-400">Last 14 days</span>
+                    </div>
+                    <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+                        <div className="min-w-[480px]">
+                            <Heatmap data={heatmapData} />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="lg:col-span-2 bg-white rounded-2xl shadow-card p-4 sm:p-6">
+                    <div className="flex items-center justify-between mb-4 sm:mb-5">
+                        <h3 className="text-[15px] font-semibold text-zinc-800">Sprint Progress</h3>
+                        <span className="text-xs text-zinc-400">{tasks.length} tasks</span>
+                    </div>
+                    <div className="space-y-3 sm:space-y-4">
+                        {tasks.length > 0 ? (
+                            tasks.map((task) => (
+                                <div key={task.key} className="flex items-center gap-2 sm:gap-3">
+                                    <span className="text-indigo-500 text-xs font-medium w-16 sm:w-20 truncate">
+                                        {task.key}
+                                    </span>
+                                    <div className="flex-1 h-1.5 bg-zinc-100 rounded-full overflow-hidden">
+                                        <div
+                                            className="h-full bg-indigo-400 rounded-full transition-all duration-700"
+                                            style={{
+                                                width: `${Math.min((task.hours / task.maxHours) * 100, 100)}%`,
+                                            }}
+                                        />
+                                    </div>
+                                    <span className="text-xs text-zinc-400 w-8 text-right tabular-nums">
+                                        {task.hours}h
+                                    </span>
                                 </div>
                             ))
                         ) : (
-                            <div className="text-center text-dashboard-muted py-4 text-sm">
-                                No task data yet — connect a task management tool in Settings
+                            <div className="text-center text-zinc-400 py-8 text-sm">
+                                No task data yet
                             </div>
                         )}
                     </div>
                 </div>
             </div>
 
-            {/* Live Feed */}
-            <div className="dashboard-card p-6">
-                <div className="flex items-center gap-2 mb-4">
-                    <div className="w-2 h-2 rounded-full bg-accent-green animate-pulse" />
-                    <h3 className="font-semibold text-dashboard-text text-sm uppercase tracking-wider">
+            {/* Activity Feed */}
+            <div className="bg-white rounded-2xl shadow-card p-4 sm:p-6">
+                <div className="flex items-center gap-2.5 mb-4">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    <h3 className="text-[15px] font-semibold text-zinc-800">
                         Recent Activity
                     </h3>
                 </div>
                 {feedItems.length > 0 ? (
-                    <div className="space-y-2 max-h-56 overflow-y-auto dark-scrollbar">
+                    <div className="space-y-0.5 max-h-56 overflow-y-auto dark-scrollbar">
                         {feedItems.map(item => {
                             const metaCat = item.category as MetaCategory;
                             const config = META_CATEGORY_CONFIG[metaCat] || META_CATEGORY_CONFIG['Deep Work'];
                             return (
-                                <div key={item.id} className="flex items-start gap-3 p-2.5 rounded-lg bg-dashboard-bg/50 hover:bg-dashboard-bg transition-colors">
-                                    <span className="text-xs font-mono text-dashboard-muted w-11 flex-shrink-0 pt-0.5">{item.time}</span>
-                                    <div className="w-2 h-2 rounded-full mt-1.5 flex-shrink-0" style={{ backgroundColor: config.color }} />
-                                    <div className="flex-1 min-w-0">
-                                        <span className="text-sm font-medium text-dashboard-text">{item.userName}</span>
-                                        <span className="text-dashboard-muted mx-1.5 text-xs">·</span>
-                                        <span className="text-sm text-dashboard-muted">{item.description}</span>
-                                    </div>
+                                <div
+                                    key={item.id}
+                                    className="flex items-center gap-2 sm:gap-3 py-2 px-2 rounded-lg
+                                        hover:bg-zinc-50 transition-colors"
+                                >
+                                    <span className="text-[11px] sm:text-xs text-zinc-400 w-10 sm:w-12
+                                        flex-shrink-0 tabular-nums">
+                                        {item.time}
+                                    </span>
+                                    <div
+                                        className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                                        style={{ backgroundColor: config.color }}
+                                    />
+                                    <span className="text-sm font-medium text-zinc-700 flex-shrink-0">
+                                        {item.userName}
+                                    </span>
+                                    <span className="text-xs sm:text-sm text-zinc-400 truncate">
+                                        {item.description}
+                                    </span>
                                 </div>
                             );
                         })}
                     </div>
                 ) : (
-                    <div className="text-center text-dashboard-muted py-6 text-sm">
+                    <div className="text-center text-zinc-400 py-8 text-sm">
                         Activity will appear here as your team works
                     </div>
                 )}

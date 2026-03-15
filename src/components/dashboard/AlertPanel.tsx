@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Bell, AlertTriangle, TrendingDown, Clock, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { AlertTriangle, TrendingDown, Clock, X } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import {
     getTeams,
@@ -12,7 +12,6 @@ import {
     getDateRange,
     type Team,
     type WorkSession,
-    type Profile,
 } from '@/lib/supabase/queries';
 import { aggregateToMeta } from '@/lib/categories';
 
@@ -31,19 +30,13 @@ const ALERT_ICONS = {
     burnout: <AlertTriangle size={14} className="text-red-500" />,
     low_activity: <TrendingDown size={14} className="text-amber-500" />,
     meeting_overload: <Clock size={14} className="text-orange-500" />,
-    category_shift: <TrendingDown size={14} className="text-blue-500" />,
-};
-
-const ALERT_COLORS = {
-    critical: 'border-l-red-500 bg-red-50',
-    warning: 'border-l-amber-500 bg-amber-50',
+    category_shift: <TrendingDown size={14} className="text-indigo-500" />,
 };
 
 export default function AlertPanel() {
     const supabase = createClient();
     const [alerts, setAlerts] = useState<Alert[]>([]);
     const [loading, setLoading] = useState(true);
-    const [expanded, setExpanded] = useState(true);
 
     const analyzeForAlerts = useCallback(async () => {
         try {
@@ -65,19 +58,16 @@ export default function AlertPanel() {
 
             const newAlerts: Alert[] = [];
 
-            // Per-member analysis
             for (const member of members) {
                 const memberName = member.profile.display_name || 'Unknown';
                 const memberWeekSessions = weekSessions.filter((s: WorkSession) => s.user_id === member.user_id);
                 const memberLastWeekSessions = lastWeekSessions.filter((s: WorkSession) => s.user_id === member.user_id);
 
-                // Group by day
                 const dailyHours: Record<string, number> = {};
                 memberWeekSessions.forEach((s: WorkSession) => {
                     dailyHours[s.session_date] = (dailyHours[s.session_date] || 0) + s.duration_seconds;
                 });
 
-                // Burnout: >9h for 3+ consecutive days
                 const highDays = Object.values(dailyHours).filter(sec => sec > 9 * 3600);
                 if (highDays.length >= 3) {
                     newAlerts.push({
@@ -92,7 +82,6 @@ export default function AlertPanel() {
                     });
                 }
 
-                // Low activity: <2h for 2+ days
                 const lowDays = Object.values(dailyHours).filter(sec => sec > 0 && sec < 2 * 3600);
                 if (lowDays.length >= 2) {
                     newAlerts.push({
@@ -107,7 +96,6 @@ export default function AlertPanel() {
                     });
                 }
 
-                // Meeting overload: >40% meetings this week
                 const memberCategoryBreakdown = aggregateCategoryBreakdown(memberWeekSessions);
                 const metaBreakdown = aggregateToMeta(memberCategoryBreakdown);
                 const metaTotal = Object.values(metaBreakdown).reduce((a, b) => a + b, 0);
@@ -126,7 +114,6 @@ export default function AlertPanel() {
                     });
                 }
 
-                // Category shift: >20% change from last week in top category
                 const lastWeekBreakdown = aggregateCategoryBreakdown(memberLastWeekSessions);
                 const lastWeekMeta = aggregateToMeta(lastWeekBreakdown);
                 const lastWeekTotal = Object.values(lastWeekMeta).reduce((a, b) => a + b, 0);
@@ -151,22 +138,20 @@ export default function AlertPanel() {
                 }
             }
 
-            // Team-wide: Total hours significantly lower
             const weekTotal = secondsToHours(weekSessions.reduce((s: number, w: WorkSession) => s + w.duration_seconds, 0));
-            const lastWeekTotal = secondsToHours(lastWeekSessions.reduce((s: number, w: WorkSession) => s + w.duration_seconds, 0));
-            if (lastWeekTotal > 10 && weekTotal < lastWeekTotal * 0.6) {
+            const lastWeekTotalHours = secondsToHours(lastWeekSessions.reduce((s: number, w: WorkSession) => s + w.duration_seconds, 0));
+            if (lastWeekTotalHours > 10 && weekTotal < lastWeekTotalHours * 0.6) {
                 newAlerts.push({
                     id: 'team-drop',
                     type: 'low_activity',
                     severity: 'warning',
                     title: 'Team activity drop',
-                    description: `Team hours are ${Math.round((1 - weekTotal / lastWeekTotal) * 100)}% lower than last week (${weekTotal}h vs ${lastWeekTotal}h).`,
+                    description: `Team hours are ${Math.round((1 - weekTotal / lastWeekTotalHours) * 100)}% lower than last week (${weekTotal}h vs ${lastWeekTotalHours}h).`,
                     timestamp: new Date(),
                     dismissed: false,
                 });
             }
 
-            // Restore dismissed state from localStorage
             const dismissed = JSON.parse(localStorage.getItem('flowsight_dismissed_alerts') || '[]') as string[];
             newAlerts.forEach(a => {
                 if (dismissed.includes(a.id)) a.dismissed = true;
@@ -196,45 +181,32 @@ export default function AlertPanel() {
     if (loading || activeAlerts.length === 0) return null;
 
     return (
-        <div className="dashboard-card overflow-hidden">
-            <button
-                onClick={() => setExpanded(!expanded)}
-                className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
-            >
-                <div className="flex items-center gap-2">
-                    <Bell size={16} className="text-amber-500" />
-                    <span className="font-semibold text-dashboard-text text-sm">
-                        Alerts
-                    </span>
-                    <span className="px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded-full text-[10px] font-bold">
-                        {activeAlerts.length}
-                    </span>
+        <div className="flex flex-col gap-2">
+            {activeAlerts.slice(0, 3).map(alert => (
+                <div
+                    key={alert.id}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
+                        ${alert.severity === 'critical'
+                            ? 'bg-red-50 border border-red-100'
+                            : 'bg-amber-50/60 border border-amber-100'
+                        }`}
+                >
+                    <div className="flex-shrink-0">
+                        {ALERT_ICONS[alert.type]}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <span className="text-sm font-medium text-zinc-800">{alert.title}</span>
+                        <span className="text-zinc-300 mx-2">&middot;</span>
+                        <span className="text-sm text-zinc-500">{alert.description}</span>
+                    </div>
+                    <button
+                        onClick={() => dismissAlert(alert.id)}
+                        className="text-zinc-300 hover:text-zinc-500 transition-colors flex-shrink-0"
+                    >
+                        <X size={14} />
+                    </button>
                 </div>
-                {expanded ? <ChevronUp size={16} className="text-dashboard-muted" /> : <ChevronDown size={16} className="text-dashboard-muted" />}
-            </button>
-
-            {expanded && (
-                <div className="px-4 pb-4 space-y-2">
-                    {activeAlerts.map(alert => (
-                        <div
-                            key={alert.id}
-                            className={`flex items-start gap-3 p-3 rounded-lg border-l-[3px] ${ALERT_COLORS[alert.severity]}`}
-                        >
-                            <div className="pt-0.5">{ALERT_ICONS[alert.type]}</div>
-                            <div className="flex-1 min-w-0">
-                                <div className="text-sm font-medium text-slate-800">{alert.title}</div>
-                                <div className="text-xs text-slate-600 mt-0.5">{alert.description}</div>
-                            </div>
-                            <button
-                                onClick={() => dismissAlert(alert.id)}
-                                className="text-slate-400 hover:text-slate-600 transition-colors flex-shrink-0"
-                            >
-                                <X size={14} />
-                            </button>
-                        </div>
-                    ))}
-                </div>
-            )}
+            ))}
         </div>
     );
 }

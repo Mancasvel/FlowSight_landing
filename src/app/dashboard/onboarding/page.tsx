@@ -100,7 +100,7 @@ export default async function OnboardingPage() {
 
                     <button
                         type="submit"
-                        className="w-full py-3 px-4 rounded-lg font-medium bg-gradient-to-r from-primary-blue to-primary-teal text-white hover:opacity-90 transition-all shadow-lg shadow-primary-blue/20 flex items-center justify-center gap-2"
+                        className="w-full py-3 px-4 rounded-xl font-medium bg-indigo-600 text-white hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
                     >
                         Create Workspace
                     </button>

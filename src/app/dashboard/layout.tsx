@@ -45,10 +45,10 @@ export default async function DashboardLayout({
     }
 
     return (
-        <div className="min-h-screen bg-dashboard-bg flex">
+        <div className="min-h-screen bg-[#FAFAFA]">
             <Sidebar />
-            <main className="flex-1 overflow-auto dark-scrollbar">
-                <div className="p-8">
+            <main className="lg:pl-20 min-h-screen overflow-auto dark-scrollbar">
+                <div className="px-4 pt-16 pb-6 sm:px-6 lg:px-8 lg:pt-7 lg:pb-7 max-w-[1440px]">
                     {children}
                 </div>
             </main>

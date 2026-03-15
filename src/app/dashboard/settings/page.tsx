@@ -25,9 +25,9 @@ function Toggle({ enabled, onChange }: ToggleProps) {
     return (
         <button
             onClick={() => onChange(!enabled)}
-            className={`relative w-11 h-6 rounded-full transition-colors ${enabled ? 'bg-primary-blue' : 'bg-dashboard-border'}`}
+            className={`relative w-11 h-6 rounded-full transition-colors ${enabled ? 'bg-indigo-600' : 'bg-zinc-200'}`}
         >
-            <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform ${enabled ? 'translate-x-5' : 'translate-x-0'}`} />
+            <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform ${enabled ? 'translate-x-5' : 'translate-x-0'}`} />
         </button>
     );
 }
@@ -281,7 +281,7 @@ export default function SettingsPage() {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-64">
-                <div className="animate-spin w-8 h-8 border-2 border-primary-blue border-t-transparent rounded-full" />
+                <div className="w-8 h-8 border-2 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
             </div>
         );
     }
@@ -330,7 +330,7 @@ export default function SettingsPage() {
                         <p className="text-dashboard-muted mb-4">No active license</p>
                         <a
                             href="/dashboard/pricing"
-                            className="inline-block px-4 py-2 bg-gradient-to-r from-primary-blue to-primary-teal text-white rounded-lg hover:opacity-90 transition-opacity"
+                            className="inline-block px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors"
                         >
                             View Plans
                         </a>
@@ -362,7 +362,7 @@ export default function SettingsPage() {
                     <button
                         onClick={() => setShowCreateTeam(true)}
                         disabled={!license}
-                        className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg hover:opacity-90 disabled:opacity-50"
+                        className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 disabled:opacity-50 transition-colors"
                     >
                         <Plus size={16} />
                         New Team
@@ -377,7 +377,7 @@ export default function SettingsPage() {
                                 key={team.id}
                                 onClick={() => handleTeamSelect(team)}
                                 className={`px-4 py-2 rounded-lg whitespace-nowrap transition-colors ${selectedTeam?.id === team.id
-                                    ? 'bg-primary-blue text-white'
+                                    ? 'bg-indigo-600 text-white'
                                     : 'bg-dashboard-bg text-dashboard-text hover:bg-dashboard-border'
                                     }`}
                             >
@@ -401,7 +401,7 @@ export default function SettingsPage() {
                             <button
                                 onClick={handleCreateTeam}
                                 disabled={!newTeamName.trim() || creatingTeam}
-                                className="px-4 py-2 bg-primary-blue text-white rounded-lg hover:opacity-90 disabled:opacity-50"
+                                className="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 disabled:opacity-50 transition-colors"
                             >
                                 {creatingTeam ? 'Creating...' : 'Create'}
                             </button>
@@ -519,7 +519,7 @@ export default function SettingsPage() {
                             disabled={connecting === 'jira'}
                             className={`px-4 py-2 rounded-lg transition-colors ${integrations.jira
                                 ? 'bg-dashboard-card border border-dashboard-border text-dashboard-text hover:bg-dashboard-border'
-                                : 'bg-primary-blue text-white hover:opacity-90'
+                                : 'bg-indigo-600 text-white hover:bg-indigo-700'
                                 }`}
                         >
                             {connecting === 'jira' ? <RefreshCw className="animate-spin" size={16} /> : integrations.jira ? 'Disconnect' : 'Connect'}
@@ -544,7 +544,7 @@ export default function SettingsPage() {
                             disabled={connecting === 'slack'}
                             className={`px-4 py-2 rounded-lg transition-colors ${integrations.slack
                                 ? 'bg-dashboard-card border border-dashboard-border text-dashboard-text hover:bg-dashboard-border'
-                                : 'bg-primary-blue text-white hover:opacity-90'
+                                : 'bg-indigo-600 text-white hover:bg-indigo-700'
                                 }`}
                         >
                             {connecting === 'slack' ? <RefreshCw className="animate-spin" size={16} /> : integrations.slack ? 'Disconnect' : 'Connect'}
@@ -582,7 +582,7 @@ export default function SettingsPage() {
                             }}
                             className={`p-4 rounded-lg border text-left transition-all ${
                                 teamTemplate === t.id
-                                    ? 'border-primary-blue bg-primary-blue/5 ring-1 ring-primary-blue/20'
+                                    ? 'border-indigo-500 bg-indigo-50 ring-1 ring-indigo-200'
                                     : 'border-dashboard-border hover:border-slate-300 bg-dashboard-bg'
                             }`}
                         >
@@ -765,7 +765,7 @@ export default function SettingsPage() {
 
             {/* Save Button */}
             <div className="flex justify-end">
-                <button className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary-blue to-primary-teal text-white font-medium rounded-lg hover:opacity-90">
+                <button className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition-colors">
                     <Check size={18} />
                     Save Changes
                 </button>

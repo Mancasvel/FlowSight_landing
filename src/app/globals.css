@@ -67,18 +67,18 @@
 
 @layer utilities {
   .dashboard-card {
-    @apply bg-dashboard-card border border-dashboard-border rounded-xl shadow-sm;
+    @apply bg-white rounded-2xl shadow-card;
   }
 
   .dashboard-gradient {
-    background: linear-gradient(135deg, #F8FAFC 0%, #FFFFFF 100%);
+    background: linear-gradient(135deg, #FAFAFA 0%, #FFFFFF 100%);
   }
 
   .status-online {
-    @apply w-2 h-2 rounded-full bg-accent-green animate-pulse;
+    @apply w-2 h-2 rounded-full bg-emerald-400 animate-pulse;
   }
 
   .status-offline {
-    @apply w-2 h-2 rounded-full bg-dashboard-muted;
+    @apply w-2 h-2 rounded-full bg-zinc-300;
   }
 }

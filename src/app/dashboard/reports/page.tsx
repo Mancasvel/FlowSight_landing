@@ -36,9 +36,9 @@ interface JiraTicketProgress {
 }
 
 const statusIcons = {
-    done: <CheckCircle className="text-accent-green" size={14} />,
-    in_progress: <Clock className="text-accent-orange" size={14} />,
-    todo: <Circle className="text-dashboard-muted" size={14} />,
+    done: <CheckCircle className="text-emerald-500" size={14} />,
+    in_progress: <Clock className="text-amber-500" size={14} />,
+    todo: <Circle className="text-zinc-400" size={14} />,
 };
 
 const DAY_LABELS: Record<string, string> = {
@@ -110,7 +110,6 @@ export default function ReportsPage() {
             const prevSessions = results[1] as typeof sessions | undefined;
             setRawSessions(sessions);
 
-            // --- Summary stats ---
             const totalSeconds = sessions.reduce((sum, s) => sum + s.duration_seconds, 0);
             const uniqueMembers = new Set(sessions.map(s => s.user_id)).size;
 
@@ -124,7 +123,6 @@ export default function ReportsPage() {
                 if (sec > topSeconds) { topSeconds = sec; topCat = cat; }
             });
 
-            // Most active day
             const dailyBreakdown = getDailyBreakdown(sessions);
             let bestDay = { date: '---', seconds: 0 };
             dailyBreakdown.forEach(d => {
@@ -152,7 +150,6 @@ export default function ReportsPage() {
                 setPrevStats(null);
             }
 
-            // --- Daily stacked bar chart ---
             const daily = dailyBreakdown.map(d => {
                 const metaBreak = aggregateToMeta(d.breakdown);
                 const dateObj = new Date(d.date);
@@ -166,7 +163,6 @@ export default function ReportsPage() {
             });
             setDailyChartData(daily);
 
-            // --- Category trend (area chart) ---
             const trend = dailyBreakdown.map(d => {
                 const metaBreak = aggregateToMeta(d.breakdown);
                 const dateObj = new Date(d.date);
@@ -181,7 +177,6 @@ export default function ReportsPage() {
             });
             setCategoryTrendData(trend);
 
-            // --- Task tickets ---
             const jiraBreakdown = aggregateJiraBreakdown(sessions);
             const tickets = Object.entries(jiraBreakdown).map(([key, seconds]) => ({
                 key,
@@ -205,7 +200,10 @@ export default function ReportsPage() {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-64">
-                <div className="animate-spin w-8 h-8 border-2 border-primary-blue border-t-transparent rounded-full" />
+                <div className="flex flex-col items-center gap-3">
+                    <div className="w-8 h-8 border-2 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+                    <span className="text-sm text-zinc-400">Loading reports...</span>
+                </div>
             </div>
         );
     }
@@ -215,21 +213,24 @@ export default function ReportsPage() {
     );
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-5 sm:space-y-7">
             {/* Header */}
             <div>
-                <h1 className="text-2xl font-bold text-dashboard-text">Reports</h1>
-                <p className="text-dashboard-muted">Team productivity insights and trends</p>
+                <h1 className="text-xl sm:text-[22px] font-semibold text-zinc-900 tracking-tight">Reports</h1>
+                <p className="text-zinc-400 mt-0.5 text-[13px] sm:text-[14px]">
+                    Team productivity insights and trends
+                </p>
             </div>
 
             {/* Filters */}
-            <div className="flex flex-wrap items-end gap-4">
+            <div className="flex flex-wrap items-end gap-3 sm:gap-4">
                 <div>
-                    <label className="block text-xs text-dashboard-muted mb-1.5 uppercase tracking-wider">Period</label>
+                    <label className="block text-xs text-zinc-400 mb-1.5 font-medium">Period</label>
                     <select
                         value={dateRange}
                         onChange={(e) => setDateRange(e.target.value)}
-                        className="px-3 py-2 bg-dashboard-card border border-dashboard-border rounded-lg text-dashboard-text text-sm"
+                        className="px-3 py-2 bg-white rounded-xl text-zinc-700 text-sm
+                            shadow-card border-0 outline-none cursor-pointer"
                     >
                         <option value="today">Today</option>
                         <option value="this_week">This Week</option>
@@ -241,11 +242,12 @@ export default function ReportsPage() {
                 </div>
 
                 <div>
-                    <label className="block text-xs text-dashboard-muted mb-1.5 uppercase tracking-wider">Team</label>
+                    <label className="block text-xs text-zinc-400 mb-1.5 font-medium">Team</label>
                     <select
                         value={selectedTeamId}
                         onChange={(e) => setSelectedTeamId(e.target.value)}
-                        className="px-3 py-2 bg-dashboard-card border border-dashboard-border rounded-lg text-dashboard-text text-sm"
+                        className="px-3 py-2 bg-white rounded-xl text-zinc-700 text-sm
+                            shadow-card border-0 outline-none cursor-pointer"
                     >
                         <option value="all">All Teams</option>
                         {teams.map(team => (
@@ -259,73 +261,99 @@ export default function ReportsPage() {
                         type="checkbox"
                         checked={comparisonEnabled}
                         onChange={(e) => setComparisonEnabled(e.target.checked)}
-                        className="w-4 h-4 rounded border-dashboard-border bg-dashboard-card text-primary-blue focus:ring-primary-blue/50"
+                        className="w-4 h-4 rounded border-zinc-200 bg-white text-indigo-600
+                            focus:ring-indigo-500/30"
                     />
-                    <span className="text-sm text-dashboard-muted">Compare with previous period</span>
+                    <span className="text-sm text-zinc-500">Compare with previous period</span>
                 </label>
 
                 <button
                     onClick={() => fetchData(true)}
                     disabled={refreshing}
-                    className="p-2 bg-dashboard-card border border-dashboard-border rounded-lg text-dashboard-muted hover:text-dashboard-text"
+                    className="p-2.5 bg-white rounded-xl text-zinc-400 hover:text-zinc-600
+                        shadow-card transition-colors"
                 >
-                    <RefreshCw className={refreshing ? 'animate-spin' : ''} size={18} />
+                    <RefreshCw className={refreshing ? 'animate-spin' : ''} size={16} />
                 </button>
             </div>
 
             {/* Summary Cards */}
-            <div className="dashboard-card p-6">
-                <h3 className="font-semibold text-dashboard-text mb-5 text-sm uppercase tracking-wider">Summary</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div className="bg-white rounded-2xl shadow-card p-4 sm:p-6">
+                <h3 className="text-[15px] font-semibold text-zinc-800 mb-4 sm:mb-5">Summary</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
                     <div>
-                        <div className="text-3xl font-bold text-dashboard-text">
+                        <div className="text-3xl font-semibold text-zinc-900 tabular-nums">
                             {stats.totalHours}h
                             {prevStats && (
-                                <span className="text-sm font-normal text-dashboard-muted ml-2">
+                                <span className="text-sm font-normal text-zinc-400 ml-2">
                                     vs {prevStats.totalHours}h
                                 </span>
                             )}
                         </div>
-                        <div className="text-xs text-dashboard-muted mt-1">Total Hours</div>
+                        <div className="text-xs text-zinc-400 mt-1.5">Total Hours</div>
                     </div>
                     <div>
-                        <div className="text-3xl font-bold text-dashboard-text">{stats.avgPerMember}h</div>
-                        <div className="text-xs text-dashboard-muted mt-1">Avg per Member</div>
+                        <div className="text-3xl font-semibold text-zinc-900 tabular-nums">
+                            {stats.avgPerMember}h
+                        </div>
+                        <div className="text-xs text-zinc-400 mt-1.5">Avg per Member</div>
                     </div>
                     <div>
-                        <div className="text-2xl font-bold text-dashboard-text">
+                        <div className="text-2xl font-semibold text-zinc-900">
                             {stats.topCategory}
-                            <span className="text-sm text-dashboard-muted ml-1.5">({stats.topCategoryPercent}%)</span>
+                            <span className="text-sm text-zinc-400 ml-1.5">
+                                ({stats.topCategoryPercent}%)
+                            </span>
                         </div>
-                        <div className="text-xs text-dashboard-muted mt-1">Top Category</div>
+                        <div className="text-xs text-zinc-400 mt-1.5">Top Category</div>
                     </div>
                     <div>
-                        <div className="text-2xl font-bold text-dashboard-text">
+                        <div className="text-2xl font-semibold text-zinc-900">
                             {stats.mostActiveDay}
-                            <span className="text-sm text-dashboard-muted ml-1.5">({stats.mostActiveDayHours}h)</span>
+                            <span className="text-sm text-zinc-400 ml-1.5">
+                                ({stats.mostActiveDayHours}h)
+                            </span>
                         </div>
-                        <div className="text-xs text-dashboard-muted mt-1">Most Active Day</div>
+                        <div className="text-xs text-zinc-400 mt-1.5">Most Active Day</div>
                     </div>
                 </div>
             </div>
 
             {/* Daily Stacked Bar Chart */}
-            <div className="dashboard-card p-6">
-                <h3 className="font-semibold text-dashboard-text mb-4 text-sm uppercase tracking-wider">
+            <div className="bg-white rounded-2xl shadow-card p-4 sm:p-6">
+                <h3 className="text-[15px] font-semibold text-zinc-800 mb-4 sm:mb-5">
                     Daily Breakdown by Category
                 </h3>
                 <div className="h-64">
                     {dailyChartData.length > 0 ? (
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={dailyChartData}>
-                                <XAxis dataKey="day" stroke={CHART_AXIS_COLOR} fontSize={11} tickLine={false} axisLine={false} />
-                                <YAxis stroke={CHART_AXIS_COLOR} fontSize={11} tickLine={false} axisLine={false} width={35} />
+                                <XAxis
+                                    dataKey="day"
+                                    stroke={CHART_AXIS_COLOR}
+                                    fontSize={11}
+                                    tickLine={false}
+                                    axisLine={false}
+                                />
+                                <YAxis
+                                    stroke={CHART_AXIS_COLOR}
+                                    fontSize={11}
+                                    tickLine={false}
+                                    axisLine={false}
+                                    width={35}
+                                />
                                 <Tooltip
                                     contentStyle={CHART_TOOLTIP_STYLE}
-                                    formatter={(value: number | undefined) => [value != null ? `${value}h` : '—', undefined]}
+                                    formatter={(value: number | undefined) => [
+                                        value != null ? `${value}h` : '—', undefined,
+                                    ]}
                                 />
                                 <Legend
-                                    formatter={(value) => <span style={{ color: '#64748B', fontSize: 11 }}>{value}</span>}
+                                    formatter={(value) => (
+                                        <span style={{ color: '#71717A', fontSize: 11 }}>
+                                            {value}
+                                        </span>
+                                    )}
                                     iconSize={8}
                                 />
                                 {activeMetas.map(mc => (
@@ -334,13 +362,16 @@ export default function ReportsPage() {
                                         dataKey={mc}
                                         stackId="a"
                                         fill={META_CATEGORY_CONFIG[mc].color}
-                                        radius={mc === activeMetas[activeMetas.length - 1] ? [3, 3, 0, 0] : [0, 0, 0, 0]}
+                                        radius={mc === activeMetas[activeMetas.length - 1]
+                                            ? [4, 4, 0, 0]
+                                            : [0, 0, 0, 0]
+                                        }
                                     />
                                 ))}
                             </BarChart>
                         </ResponsiveContainer>
                     ) : (
-                        <div className="h-full flex items-center justify-center text-dashboard-muted text-sm">
+                        <div className="h-full flex items-center justify-center text-zinc-400 text-sm">
                             No data for this period
                         </div>
                     )}
@@ -348,19 +379,34 @@ export default function ReportsPage() {
             </div>
 
             {/* Category Trend */}
-            <div className="dashboard-card p-6">
-                <h3 className="font-semibold text-dashboard-text mb-4 text-sm uppercase tracking-wider">
+            <div className="bg-white rounded-2xl shadow-card p-4 sm:p-6">
+                <h3 className="text-[15px] font-semibold text-zinc-800 mb-4 sm:mb-5">
                     Category Trend (%)
                 </h3>
                 <div className="h-52">
                     {categoryTrendData.length > 1 ? (
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={categoryTrendData}>
-                                <XAxis dataKey="date" stroke={CHART_AXIS_COLOR} fontSize={11} tickLine={false} axisLine={false} />
-                                <YAxis stroke={CHART_AXIS_COLOR} fontSize={11} tickLine={false} axisLine={false} width={35} domain={[0, 100]} />
+                                <XAxis
+                                    dataKey="date"
+                                    stroke={CHART_AXIS_COLOR}
+                                    fontSize={11}
+                                    tickLine={false}
+                                    axisLine={false}
+                                />
+                                <YAxis
+                                    stroke={CHART_AXIS_COLOR}
+                                    fontSize={11}
+                                    tickLine={false}
+                                    axisLine={false}
+                                    width={35}
+                                    domain={[0, 100]}
+                                />
                                 <Tooltip
                                     contentStyle={CHART_TOOLTIP_STYLE}
-                                    formatter={(value: number | undefined) => [value != null ? `${value}%` : '—', undefined]}
+                                    formatter={(value: number | undefined) => [
+                                        value != null ? `${value}%` : '—', undefined,
+                                    ]}
                                 />
                                 {activeMetas.map(mc => (
                                     <Area
@@ -376,7 +422,7 @@ export default function ReportsPage() {
                             </AreaChart>
                         </ResponsiveContainer>
                     ) : (
-                        <div className="h-full flex items-center justify-center text-dashboard-muted text-sm">
+                        <div className="h-full flex items-center justify-center text-zinc-400 text-sm">
                             Need at least 2 days of data for trends
                         </div>
                     )}
@@ -385,28 +431,37 @@ export default function ReportsPage() {
 
             {/* Task Progress */}
             {jiraTickets.length > 0 && (
-                <div className="dashboard-card p-6">
-                    <h3 className="font-semibold text-dashboard-text mb-5 text-sm uppercase tracking-wider">
+                <div className="bg-white rounded-2xl shadow-card p-6">
+                    <h3 className="text-[15px] font-semibold text-zinc-800 mb-5">
                         Task Progress
                     </h3>
                     <div className="space-y-3">
                         {jiraTickets.map((ticket) => (
                             <div key={ticket.key} className="flex items-center gap-4">
-                                <span className="text-primary-blue font-mono text-xs w-24">{ticket.key}</span>
+                                <span className="text-indigo-500 font-mono text-xs w-24">
+                                    {ticket.key}
+                                </span>
                                 <div className="flex-1">
                                     <div className="flex items-center gap-2">
-                                        <div className="flex-1 h-2.5 bg-dashboard-bg rounded-full overflow-hidden">
+                                        <div className="flex-1 h-2 bg-zinc-100 rounded-full overflow-hidden">
                                             <div
-                                                className="h-full bg-gradient-to-r from-primary-blue to-primary-teal rounded-full transition-all duration-500"
-                                                style={{ width: `${Math.min((ticket.hoursWorked / 30) * 100, 100)}%` }}
+                                                className="h-full bg-indigo-400 rounded-full
+                                                    transition-all duration-500"
+                                                style={{
+                                                    width: `${Math.min((ticket.hoursWorked / 30) * 100, 100)}%`,
+                                                }}
                                             />
                                         </div>
-                                        <span className="text-dashboard-muted text-xs w-10 text-right">{ticket.hoursWorked}h</span>
+                                        <span className="text-zinc-400 text-xs w-10 text-right tabular-nums">
+                                            {ticket.hoursWorked}h
+                                        </span>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-1.5 w-24">
                                     {statusIcons[ticket.status]}
-                                    <span className="text-xs text-dashboard-muted capitalize">{ticket.status.replace('_', ' ')}</span>
+                                    <span className="text-xs text-zinc-500 capitalize">
+                                        {ticket.status.replace('_', ' ')}
+                                    </span>
                                 </div>
                             </div>
                         ))}
@@ -418,7 +473,8 @@ export default function ReportsPage() {
             <div className="flex flex-wrap gap-3 no-print">
                 <button
                     onClick={() => exportToPrintPDF()}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-dashboard-card border border-dashboard-border rounded-lg text-dashboard-text text-sm hover:bg-slate-50 transition-colors"
+                    className="flex items-center gap-2 px-5 py-2.5 bg-white rounded-xl
+                        text-zinc-600 text-sm shadow-card hover:shadow-card-hover transition-shadow"
                 >
                     <FileDown size={16} /> Export PDF
                 </button>
@@ -427,13 +483,15 @@ export default function ReportsPage() {
                         const teamName = teams.find(t => t.id === selectedTeamId)?.name || 'All Teams';
                         exportToCSV(rawSessions, teamName, dateRange);
                     }}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-dashboard-card border border-dashboard-border rounded-lg text-dashboard-text text-sm hover:bg-slate-50 transition-colors"
+                    className="flex items-center gap-2 px-5 py-2.5 bg-white rounded-xl
+                        text-zinc-600 text-sm shadow-card hover:shadow-card-hover transition-shadow"
                 >
                     <FileSpreadsheet size={16} /> Export CSV
                 </button>
                 <button
                     onClick={() => alert('Email digest can be configured in Settings → Notifications')}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-dashboard-card border border-dashboard-border rounded-lg text-dashboard-text text-sm hover:bg-slate-50 transition-colors"
+                    className="flex items-center gap-2 px-5 py-2.5 bg-white rounded-xl
+                        text-zinc-600 text-sm shadow-card hover:shadow-card-hover transition-shadow"
                 >
                     <Mail size={16} /> Email Report
                 </button>

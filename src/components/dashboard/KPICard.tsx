@@ -1,8 +1,7 @@
 'use client';
 
-import { TrendingUp, TrendingDown } from 'lucide-react';
+import { TrendingUp, TrendingDown, MoreHorizontal } from 'lucide-react';
 import { ReactNode } from 'react';
-import SparkLine from './SparkLine';
 
 interface KPICardProps {
     title: string;
@@ -15,25 +14,23 @@ interface KPICardProps {
     sparkColor?: string;
 }
 
-const colorClasses = {
-    blue: 'from-primary-blue/20 to-primary-blue/5 border-primary-blue/30',
-    green: 'from-accent-green/20 to-accent-green/5 border-accent-green/30',
-    orange: 'from-accent-orange/20 to-accent-orange/5 border-accent-orange/30',
-    purple: 'from-category-design/20 to-category-design/5 border-category-design/30',
-};
-
-const iconColorClasses = {
-    blue: 'text-primary-blue',
-    green: 'text-accent-green',
-    orange: 'text-accent-orange',
-    purple: 'text-category-design',
-};
-
-const sparkColors = {
-    blue: '#3B82F6',
-    green: '#10B981',
-    orange: '#F59E0B',
-    purple: '#8B5CF6',
+const colorConfig = {
+    blue: {
+        iconBg: 'bg-indigo-50',
+        iconText: 'text-indigo-500',
+    },
+    green: {
+        iconBg: 'bg-emerald-50',
+        iconText: 'text-emerald-500',
+    },
+    orange: {
+        iconBg: 'bg-amber-50',
+        iconText: 'text-amber-500',
+    },
+    purple: {
+        iconBg: 'bg-violet-50',
+        iconText: 'text-violet-500',
+    },
 };
 
 export default function KPICard({
@@ -43,55 +40,53 @@ export default function KPICard({
     change,
     icon,
     color = 'blue',
-    sparkData,
-    sparkColor,
 }: KPICardProps) {
-    const isPositive = change !== undefined && change >= 0;
-    const resolvedSparkColor = sparkColor || sparkColors[color];
+    const config = colorConfig[color];
+    const isPositive = change !== undefined && change > 0;
+    const isNegative = change !== undefined && change < 0;
 
     return (
-        <div className={`dashboard-card p-5 bg-gradient-to-br ${colorClasses[color]}`}>
-            <div className="flex items-start justify-between mb-3">
-                <span className="text-xs font-medium text-dashboard-muted uppercase tracking-wider">
-                    {title}
-                </span>
+        <div className="bg-white rounded-2xl px-5 py-5 shadow-card hover:shadow-card-hover
+            transition-shadow duration-200 relative group">
+            <button
+                className="absolute top-4 right-4 p-1 rounded-lg text-zinc-300
+                    hover:text-zinc-500 hover:bg-zinc-50 opacity-0 group-hover:opacity-100
+                    transition-all duration-150"
+                aria-label="More options"
+            >
+                <MoreHorizontal size={16} />
+            </button>
+
+            <div className="flex items-center gap-4">
                 {icon && (
-                    <span className={iconColorClasses[color]}>
+                    <div className={`w-12 h-12 rounded-2xl ${config.iconBg} ${config.iconText}
+                        flex items-center justify-center flex-shrink-0`}>
                         {icon}
-                    </span>
-                )}
-            </div>
-
-            <div className="flex items-end justify-between">
-                <div className="space-y-1">
-                    <div className="text-2xl font-bold text-dashboard-text">
-                        {value}
                     </div>
-
-                    {(subtitle || change !== undefined) && (
-                        <div className="flex items-center gap-2 text-sm">
-                            {change !== undefined && change !== 0 && (
-                                <span className={`flex items-center gap-0.5 text-xs font-medium ${isPositive ? 'text-accent-green' : 'text-accent-red'}`}>
-                                    {isPositive ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-                                    {Math.abs(change)}%
-                                </span>
-                            )}
-                            {subtitle && (
-                                <span className="text-xs text-dashboard-muted">{subtitle}</span>
-                            )}
-                        </div>
+                )}
+                <div className="min-w-0">
+                    <div className="flex items-baseline gap-2">
+                        <span className="text-[24px] font-bold text-zinc-900 leading-none tracking-tight tabular-nums">
+                            {value}
+                        </span>
+                        {change !== undefined && change !== 0 && (
+                            <span className={`inline-flex items-center gap-0.5 text-[11px] font-semibold
+                                ${isPositive ? 'text-emerald-500' : ''}
+                                ${isNegative ? 'text-red-500' : ''}`}>
+                                {isPositive ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
+                                {Math.abs(change)}%
+                            </span>
+                        )}
+                    </div>
+                    <span className="text-[13px] text-zinc-400 mt-1.5 block leading-none">
+                        {title}
+                    </span>
+                    {subtitle && (
+                        <span className="text-[11px] text-zinc-300 mt-0.5 block">
+                            {subtitle}
+                        </span>
                     )}
                 </div>
-
-                {sparkData && sparkData.length >= 2 && (
-                    <SparkLine
-                        data={sparkData}
-                        color={resolvedSparkColor}
-                        width={72}
-                        height={28}
-                        showDots
-                    />
-                )}
             </div>
         </div>
     );

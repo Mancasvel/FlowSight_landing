@@ -150,7 +150,7 @@ export default function DashboardPricingPage() {
                     >
                         {plan.popular && (
                             <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                                <span className="px-3 py-1 bg-gradient-to-r from-primary-blue to-primary-teal text-white text-xs font-semibold rounded-full">
+                                <span className="px-3 py-1 bg-indigo-600 text-white text-xs font-semibold rounded-full">
                                     Most Popular
                                 </span>
                             </div>
@@ -186,7 +186,7 @@ export default function DashboardPricingPage() {
                             onClick={() => handlePlanSelect(plan)}
                             className={`w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2
                                 ${plan.popular
-                                    ? 'bg-gradient-to-r from-primary-blue to-primary-teal text-white hover:opacity-90'
+                                    ? 'bg-indigo-600 text-white hover:bg-indigo-700'
                                     : 'bg-dashboard-bg border border-dashboard-border text-dashboard-text hover:bg-dashboard-border'
                                 }
                             `}
@@ -250,7 +250,7 @@ export default function DashboardPricingPage() {
                             <button
                                 onClick={handlePurchase}
                                 disabled={loading !== null}
-                                className="flex-1 py-3 px-4 rounded-lg font-medium bg-gradient-to-r from-primary-blue to-primary-teal text-white hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                                className="flex-1 py-3 px-4 rounded-xl font-medium bg-indigo-600 text-white hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
                             >
                                 {loading === selectedPlan.id ? (
                                     <>

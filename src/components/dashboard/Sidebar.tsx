@@ -8,10 +8,11 @@ import {
     FileBarChart,
     Settings,
     LogOut,
-    ChevronLeft,
-    ChevronRight
+    Menu,
+    X,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 
 const navItems = [
@@ -24,8 +25,19 @@ const navItems = [
 export default function Sidebar() {
     const pathname = usePathname();
     const router = useRouter();
-    const [collapsed, setCollapsed] = useState(false);
+    const [expanded, setExpanded] = useState(false);
+    const [mobileOpen, setMobileOpen] = useState(false);
     const supabase = createClient();
+
+    useEffect(() => { setMobileOpen(false); }, [pathname]);
+
+    useEffect(() => {
+        const onResize = () => {
+            if (window.innerWidth >= 1024) setMobileOpen(false);
+        };
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+    }, []);
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
@@ -36,76 +48,199 @@ export default function Sidebar() {
     };
 
     return (
-        <aside
-            className={`${collapsed ? 'w-20' : 'w-64'} h-screen bg-white border-r border-slate-200 
-                 flex flex-col transition-all duration-300 relative`}
-        >
-            {/* Collapse Toggle */}
+        <>
+            {/* Mobile hamburger */}
             <button
-                onClick={() => setCollapsed(!collapsed)}
-                className="absolute -right-3 top-8 w-6 h-6 bg-white border border-slate-200 shadow-sm
-                   rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700
-                   transition-colors z-10"
+                onClick={() => setMobileOpen(true)}
+                className="lg:hidden fixed top-4 left-4 z-40 p-2.5 bg-white rounded-xl shadow-card
+                    text-zinc-500 hover:text-zinc-700 transition-colors"
+                aria-label="Open menu"
             >
-                {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+                <Menu size={20} />
             </button>
 
-            {/* Logo */}
-            <div className={`p-6 ${collapsed ? 'px-4' : ''}`}>
-                <Link href="/dashboard" className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-primary-blue to-primary-teal rounded-lg 
-                        flex items-center justify-center flex-shrink-0">
-                        <span className="text-white font-bold text-xl">F</span>
-                    </div>
-                    {!collapsed && (
-                        <span className="text-xl font-bold text-dashboard-text">FlowSight</span>
-                    )}
-                </Link>
-            </div>
+            {/* Mobile backdrop */}
+            <div
+                className={`lg:hidden fixed inset-0 bg-black/20 backdrop-blur-sm z-40
+                    transition-opacity duration-300
+                    ${mobileOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                onClick={() => setMobileOpen(false)}
+            />
 
-            {/* Navigation */}
-            <nav className="flex-1 px-3 py-4">
-                <ul className="space-y-2">
-                    {navItems.map((item) => {
-                        const Icon = item.icon;
-                        const isActive = pathname === item.href ||
-                            (item.href !== '/dashboard' && pathname.startsWith(item.href));
+            {/* Mobile sidebar (overlay) */}
+            <aside
+                className={`lg:hidden fixed top-0 left-0 h-full w-[280px] bg-white z-50
+                    flex flex-col shadow-elevated transition-transform duration-300 ease-in-out
+                    ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}
+            >
+                <div className="flex items-center justify-between px-5 pt-5 pb-6">
+                    <Link
+                        href="/dashboard"
+                        className="flex items-center gap-3"
+                        onClick={() => setMobileOpen(false)}
+                    >
+                        <Image
+                            src="/flowsight_sinfondo.png"
+                            alt="FlowSight"
+                            width={36}
+                            height={36}
+                            className="flex-shrink-0"
+                        />
+                        <span className="text-lg font-semibold text-zinc-900 tracking-tight">
+                            FlowSight
+                        </span>
+                    </Link>
+                    <button
+                        onClick={() => setMobileOpen(false)}
+                        className="p-1.5 text-zinc-400 hover:text-zinc-600 transition-colors"
+                    >
+                        <X size={18} />
+                    </button>
+                </div>
 
-                        return (
-                            <li key={item.href}>
-                                <Link
-                                    href={item.href}
-                                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200
-                            ${isActive
-                                            ? 'bg-primary-blue/20 text-primary-blue border border-primary-blue/30'
-                                            : 'text-dashboard-muted hover:text-dashboard-text hover:bg-dashboard-border/50'
-                                        }
-                            ${collapsed ? 'justify-center px-3' : ''}`}
-                                    title={collapsed ? item.label : undefined}
-                                >
-                                    <Icon size={20} className="flex-shrink-0" />
-                                    {!collapsed && <span className="font-medium">{item.label}</span>}
-                                </Link>
-                            </li>
-                        );
-                    })}
-                </ul>
-            </nav>
+                <nav className="flex-1 px-3">
+                    <ul className="space-y-1">
+                        {navItems.map((item) => {
+                            const Icon = item.icon;
+                            const isActive = pathname === item.href ||
+                                (item.href !== '/dashboard' && pathname.startsWith(item.href));
+                            return (
+                                <li key={item.href}>
+                                    <Link
+                                        href={item.href}
+                                        onClick={() => setMobileOpen(false)}
+                                        className={`flex items-center gap-3 px-3 py-3 rounded-xl
+                                            transition-all duration-150
+                                            ${isActive
+                                                ? 'bg-indigo-50 text-indigo-600'
+                                                : 'text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100'
+                                            }`}
+                                    >
+                                        <Icon
+                                            size={20}
+                                            strokeWidth={isActive ? 2 : 1.5}
+                                            className="flex-shrink-0"
+                                        />
+                                        <span className={`text-[15px] ${isActive ? 'font-semibold' : 'font-medium'}`}>
+                                            {item.label}
+                                        </span>
+                                    </Link>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                </nav>
 
-            {/* Logout */}
-            <div className="p-3 border-t border-dashboard-border">
-                <button
-                    onClick={handleLogout}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-lg w-full
-                     text-dashboard-muted hover:text-accent-red hover:bg-accent-red/10
-                     transition-all duration-200
-                     ${collapsed ? 'justify-center px-3' : ''}`}
-                    title={collapsed ? 'Logout' : undefined}
+                <div className="p-3 border-t border-zinc-100">
+                    <button
+                        onClick={handleLogout}
+                        className="flex items-center gap-3 px-3 py-3 rounded-xl w-full
+                            text-zinc-400 hover:text-red-500 hover:bg-red-50
+                            transition-all duration-150"
+                    >
+                        <LogOut size={20} strokeWidth={1.5} className="flex-shrink-0" />
+                        <span className="text-[15px] font-medium">Logout</span>
+                    </button>
+                </div>
+            </aside>
+
+            {/* Desktop sidebar */}
+            <aside
+                className={`hidden lg:block fixed top-0 left-0 z-30
+                    transition-all duration-300 ease-in-out
+                    ${expanded ? 'w-[260px]' : 'w-[80px]'} h-screen`}
+                onMouseEnter={() => setExpanded(true)}
+                onMouseLeave={() => setExpanded(false)}
+            >
+                <div
+                    className={`flex flex-col h-full transition-all duration-300 ease-in-out
+                        ${expanded
+                            ? 'bg-white shadow-elevated rounded-none m-0'
+                            : 'bg-[#F0F0F3] rounded-[20px] m-2'
+                        }`}
                 >
-                    <LogOut size={20} className="flex-shrink-0" />
-                    {!collapsed && <span className="font-medium">Logout</span>}
-                </button>
-            </div>
-        </aside>
+                    {/* Logo */}
+                    <div className={`${expanded ? 'px-5 pt-6 pb-7' : 'flex justify-center pt-6 pb-7'}`}>
+                        <Link href="/dashboard" className="flex items-center gap-3">
+                            <Image
+                                src="/flowsight_sinfondo.png"
+                                alt="FlowSight"
+                                width={36}
+                                height={36}
+                                className="flex-shrink-0"
+                            />
+                            {expanded && (
+                                <span className="text-lg font-semibold text-zinc-900 tracking-tight whitespace-nowrap">
+                                    FlowSight
+                                </span>
+                            )}
+                        </Link>
+                    </div>
+
+                    {/* Nav */}
+                    <nav className={`flex-1 ${expanded ? 'px-3' : 'px-2'}`}>
+                        <ul className="space-y-1">
+                            {navItems.map((item) => {
+                                const Icon = item.icon;
+                                const isActive = pathname === item.href ||
+                                    (item.href !== '/dashboard' && pathname.startsWith(item.href));
+
+                                return (
+                                    <li key={item.href}>
+                                        <Link
+                                            href={item.href}
+                                            className={`flex items-center gap-3 rounded-xl transition-all duration-150
+                                                ${expanded
+                                                    ? `px-3 py-2.5 ${isActive
+                                                        ? 'bg-indigo-50 text-indigo-600'
+                                                        : 'text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100'
+                                                    }`
+                                                    : `justify-center py-2.5 ${isActive
+                                                        ? 'text-indigo-600 bg-white'
+                                                        : 'text-zinc-400 hover:text-zinc-600 hover:bg-white/60'
+                                                    }`
+                                                }`}
+                                            title={!expanded ? item.label : undefined}
+                                        >
+                                            <Icon
+                                                size={20}
+                                                strokeWidth={isActive ? 2 : 1.5}
+                                                className="flex-shrink-0"
+                                            />
+                                            {expanded && (
+                                                <span className={`text-[14px] whitespace-nowrap
+                                                    ${isActive ? 'font-semibold' : 'font-medium'}`}>
+                                                    {item.label}
+                                                </span>
+                                            )}
+                                        </Link>
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    </nav>
+
+                    {/* Logout */}
+                    <div className={expanded ? 'p-3' : 'p-2 pb-4'}>
+                        <button
+                            onClick={handleLogout}
+                            className={`flex items-center gap-3 rounded-xl w-full transition-all duration-150
+                                ${expanded
+                                    ? 'px-3 py-2.5 text-zinc-400 hover:text-red-500 hover:bg-red-50'
+                                    : 'justify-center py-2.5 text-zinc-400 hover:text-red-500 hover:bg-white/60'
+                                }`}
+                            title={!expanded ? 'Logout' : undefined}
+                        >
+                            <LogOut size={20} strokeWidth={1.5} className="flex-shrink-0" />
+                            {expanded && (
+                                <span className="text-[14px] font-medium whitespace-nowrap">
+                                    Logout
+                                </span>
+                            )}
+                        </button>
+                    </div>
+                </div>
+            </aside>
+        </>
     );
 }

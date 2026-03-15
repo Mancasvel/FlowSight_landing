@@ -137,16 +137,22 @@ export default function MemberTimelinePage() {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-64">
-                <div className="animate-spin w-8 h-8 border-2 border-primary-blue border-t-transparent rounded-full" />
+                <div className="flex flex-col items-center gap-3">
+                    <div className="w-8 h-8 border-2 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+                    <span className="text-sm text-zinc-400">Loading member...</span>
+                </div>
             </div>
         );
     }
 
     if (!profile) {
         return (
-            <div className="dashboard-card p-8 text-center">
-                <h2 className="text-xl font-semibold text-dashboard-text mb-2">Member Not Found</h2>
-                <button onClick={() => router.push('/dashboard/team')} className="mt-4 px-4 py-2 bg-primary-blue text-white rounded-lg">
+            <div className="bg-white rounded-2xl shadow-card p-8 text-center max-w-md mx-auto mt-12">
+                <h2 className="text-lg font-semibold text-zinc-900 mb-2">Member Not Found</h2>
+                <button
+                    onClick={() => router.push('/dashboard/team')}
+                    className="mt-4 px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-700 transition-colors"
+                >
                     Back to Team
                 </button>
             </div>
@@ -182,24 +188,24 @@ export default function MemberTimelinePage() {
                         <ArrowLeft size={22} />
                     </button>
                     <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 bg-gradient-to-br from-primary-blue to-primary-teal rounded-full flex items-center justify-center relative overflow-hidden">
+                        <div className="w-14 h-14 bg-zinc-100 rounded-full flex items-center justify-center relative overflow-hidden">
                             {profile.avatar_url ? (
                                 // eslint-disable-next-line @next/next/no-img-element
                                 <img src={profile.avatar_url} alt={profile.display_name || ''} className="w-full h-full object-cover" />
                             ) : (
-                                <span className="text-white font-bold text-lg">
+                                <span className="text-zinc-500 font-semibold text-lg">
                                     {(profile.display_name || 'U').split(' ').map(n => n[0]).join('').slice(0, 2)}
                                 </span>
                             )}
                             {isOnline && (
-                                <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-accent-green rounded-full border-2 border-dashboard-card" />
+                                <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-400 rounded-full border-2 border-white" />
                             )}
                         </div>
                         <div>
-                            <h1 className="text-xl font-bold text-dashboard-text">{profile.display_name || 'Unknown'}</h1>
-                            <div className="flex items-center gap-3 text-sm text-dashboard-muted">
+                            <h1 className="text-xl font-semibold text-zinc-900 tracking-tight">{profile.display_name || 'Unknown'}</h1>
+                            <div className="flex items-center gap-3 text-sm text-zinc-500">
                                 <span className="flex items-center gap-1.5">
-                                    <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-accent-green' : 'bg-dashboard-muted'}`} />
+                                    <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-emerald-400' : 'bg-zinc-300'}`} />
                                     {isOnline ? 'Online' : 'Offline'}
                                 </span>
                                 <span className="flex items-center gap-1">
@@ -212,7 +218,7 @@ export default function MemberTimelinePage() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <SparkLine data={weeklyHoursData} color="#3B82F6" width={80} height={28} showDots />
+                    <SparkLine data={weeklyHoursData} color="#6366F1" width={80} height={28} showDots />
                     <span className="text-[10px] text-dashboard-muted">7d trend</span>
 
                     <div className="relative">
@@ -238,7 +244,7 @@ export default function MemberTimelinePage() {
 
             {/* Gantt Timeline */}
             <div className="dashboard-card p-6">
-                <h3 className="font-semibold text-dashboard-text mb-4 text-sm uppercase tracking-wider">
+                <h3 className="text-[15px] font-semibold text-zinc-800 mb-5">
                     Day Timeline
                 </h3>
                 {timeline.length > 0 ? (
@@ -292,7 +298,7 @@ export default function MemberTimelinePage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Activity Log */}
                 <div className="dashboard-card p-6">
-                    <h3 className="font-semibold text-dashboard-text mb-4 text-sm uppercase tracking-wider">
+                    <h3 className="text-[15px] font-semibold text-zinc-800 mb-5">
                         Activity Log
                     </h3>
                     {timeline.length > 0 ? (
@@ -342,7 +348,7 @@ export default function MemberTimelinePage() {
 
                 {/* 7-Day Category Breakdown */}
                 <div className="dashboard-card p-6">
-                    <h3 className="font-semibold text-dashboard-text mb-4 text-sm uppercase tracking-wider">
+                    <h3 className="text-[15px] font-semibold text-zinc-800 mb-5">
                         Last 7 Days by Category
                     </h3>
                     {categoryBreakdown.length > 0 ? (

@@ -20,7 +20,7 @@ const config: Config = {
           navyAlt: "#0A0A0F",
         },
         accent: {
-          green: "#10B981",
+          green: "#22C55E",
           orange: "#F59E0B",
           red: "#EF4444",
         },
@@ -29,12 +29,12 @@ const config: Config = {
           darkNavy: "#0f172a",
         },
         dashboard: {
-          bg: "#F8FAFC",
+          bg: "#FAFAFA",
           card: "#FFFFFF",
-          border: "#E2E8F0",
-          text: "#0F172A",
-          muted: "#64748B",
-          subtle: "#F1F5F9",
+          border: "#F4F4F5",
+          text: "#18181B",
+          muted: "#71717A",
+          subtle: "#F4F4F5",
         },
         category: {
           coding: "#10B981",
@@ -45,6 +45,11 @@ const config: Config = {
           sales: "#EC4899",
           other: "#94A3B8",
         },
+      },
+      boxShadow: {
+        card: "0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06)",
+        "card-hover": "0 4px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04)",
+        elevated: "0 8px 30px rgba(0,0,0,0.08)",
       },
       fontFamily: {
         sans: ["var(--font-inter)", "sans-serif"],
