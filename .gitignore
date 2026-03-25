@@ -171,3 +171,6 @@ brain/
 
 # Cursor IDE
 .cursor/
+
+# Supabase local migration scripts
+supabase/
