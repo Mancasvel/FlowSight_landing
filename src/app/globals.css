@@ -82,3 +82,9 @@
     @apply w-2 h-2 rounded-full bg-zinc-300;
   }
 }
+
+/* Hide the marketing footer on dashboard pages */
+#dashboard-shell ~ footer,
+#dashboard-shell ~ div:last-child {
+  display: none !important;
+}

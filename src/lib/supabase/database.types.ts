@@ -233,6 +233,109 @@ export interface Database {
                     created_at?: string;
                 };
             };
+            ticket_snapshots: {
+                Row: {
+                    id: string;
+                    jira_ticket_id: string;
+                    user_id: string;
+                    team_id: string;
+                    total_seconds: number;
+                    deep_work_seconds: number;
+                    shallow_seconds: number;
+                    interrupted_seconds: number;
+                    meeting_seconds: number;
+                    avg_active_backlogs: number;
+                    avg_context_switches: number;
+                    avg_load_factor: number;
+                    adjusted_seconds: number;
+                    jira_issue_type: string | null;
+                    jira_story_points: number | null;
+                    jira_project_key: string;
+                    jira_sprint_id: string | null;
+                    closed_at: string;
+                    created_at: string;
+                };
+                Insert: {
+                    id?: string;
+                    jira_ticket_id: string;
+                    user_id: string;
+                    team_id: string;
+                    total_seconds: number;
+                    deep_work_seconds?: number;
+                    shallow_seconds?: number;
+                    interrupted_seconds?: number;
+                    meeting_seconds?: number;
+                    avg_active_backlogs?: number;
+                    avg_context_switches?: number;
+                    avg_load_factor?: number;
+                    adjusted_seconds: number;
+                    jira_issue_type?: string | null;
+                    jira_story_points?: number | null;
+                    jira_project_key: string;
+                    jira_sprint_id?: string | null;
+                    closed_at: string;
+                    created_at?: string;
+                };
+                Update: {
+                    id?: string;
+                    jira_ticket_id?: string;
+                    user_id?: string;
+                    team_id?: string;
+                    total_seconds?: number;
+                    deep_work_seconds?: number;
+                    shallow_seconds?: number;
+                    interrupted_seconds?: number;
+                    meeting_seconds?: number;
+                    avg_active_backlogs?: number;
+                    avg_context_switches?: number;
+                    avg_load_factor?: number;
+                    adjusted_seconds?: number;
+                    jira_issue_type?: string | null;
+                    jira_story_points?: number | null;
+                    jira_project_key?: string;
+                    jira_sprint_id?: string | null;
+                    closed_at?: string;
+                    created_at?: string;
+                };
+            };
+            sprint_commitments: {
+                Row: {
+                    id: string;
+                    team_id: string;
+                    sprint_label: string;
+                    jira_sprint_id: string | null;
+                    committed_hours: number;
+                    starts_at: string;
+                    ends_at: string;
+                    cost_per_hour: number;
+                    created_by: string | null;
+                    created_at: string;
+                };
+                Insert: {
+                    id?: string;
+                    team_id: string;
+                    sprint_label: string;
+                    jira_sprint_id?: string | null;
+                    committed_hours: number;
+                    starts_at: string;
+                    ends_at: string;
+                    cost_per_hour?: number;
+                    created_by?: string | null;
+                    created_at?: string;
+                };
+                Update: {
+                    id?: string;
+                    team_id?: string;
+                    sprint_label?: string;
+                    jira_sprint_id?: string | null;
+                    committed_hours?: number;
+                    starts_at?: string;
+                    ends_at?: string;
+                    cost_per_hour?: number;
+                    created_by?: string | null;
+                    created_at?: string;
+                };
+            };
         };
         Views: {};
         Functions: {
@@ -253,6 +356,8 @@ export type TeamMember = Database['public']['Tables']['team_members']['Row'];
 export type WorkSession = Database['public']['Tables']['work_sessions']['Row'];
 export type ActivityReport = Database['public']['Tables']['activity_reports']['Row'];
 export type Invitation = Database['public']['Tables']['invitations']['Row'];
+export type TicketSnapshot = Database['public']['Tables']['ticket_snapshots']['Row'];
+export type SprintCommitment = Database['public']['Tables']['sprint_commitments']['Row'];
 
 // Category types
 export type ActivityCategory =
