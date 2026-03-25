@@ -168,3 +168,6 @@ storybook-static
 .gemini/
 .agent/
 brain/
+
+# Cursor IDE
+.cursor/
