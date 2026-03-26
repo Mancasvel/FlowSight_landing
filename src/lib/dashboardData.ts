@@ -73,7 +73,7 @@ const JIRA_KEY_REGEX = /^[A-Z]+-\d+$/
 
 type CategoryBreakdown = {
   deep_work?: number
-  meetings?: number
+  meeting?: number
   shallow?: number
   interrupted?: number
 }
@@ -81,12 +81,13 @@ type CategoryBreakdown = {
 function parseCategoryBreakdown(raw: unknown): CategoryBreakdown {
   if (typeof raw !== 'object' || raw === null) return {}
   const obj = raw as Record<string, unknown>
-  return {
-    deep_work: typeof obj.deep_work === 'number' ? obj.deep_work : 0,
-    meetings: typeof obj.meetings === 'number' ? obj.meetings : 0,
-    shallow: typeof obj.shallow === 'number' ? obj.shallow : 0,
-    interrupted: typeof obj.interrupted === 'number' ? obj.interrupted : 0,
+  const result: CategoryBreakdown = { deep_work: 0, meeting: 0, shallow: 0, interrupted: 0 }
+  for (const [key, val] of Object.entries(obj)) {
+    if (typeof val !== 'number') continue
+    const state = mapFlowState(key)
+    result[state] = (result[state] ?? 0) + val
   }
+  return result
 }
 
 function parseJiraBreakdown(raw: unknown): Record<string, number> {
@@ -102,7 +103,7 @@ function parseJiraBreakdown(raw: unknown): Record<string, number> {
 }
 
 function sumBreakdown(b: CategoryBreakdown): number {
-  return (b.deep_work ?? 0) + (b.meetings ?? 0) + (b.shallow ?? 0) + (b.interrupted ?? 0)
+  return (b.deep_work ?? 0) + (b.meeting ?? 0) + (b.shallow ?? 0) + (b.interrupted ?? 0)
 }
 
 function clamp(val: number, min: number, max: number): number {
@@ -113,11 +114,27 @@ function toDateStr(d: Date): string {
   return d.toISOString().split('T')[0]
 }
 
+const DEEP_WORK_CATEGORIES = new Set([
+  'coding', 'debugging', 'testing', 'devops', 'database', 'design',
+  'prototyping', 'uxdesign', 'writing', 'editing', 'contentcreation',
+  'copywriting', 'campaignmanagement', 'seo', 'socialmedia', 'crm',
+  'proposals', 'prospecting', 'documentation', 'sales', 'general',
+  'deep_work', 'deep work', 'focus work',
+])
+
+const MEETING_CATEGORIES = new Set([
+  'meeting', 'meetings', 'clientcalls',
+])
+
+const INTERRUPTED_CATEGORIES = new Set([
+  'interrupted',
+])
+
 function mapFlowState(category: string): FlowState {
   const lower = category.toLowerCase()
-  if (lower === 'deep_work' || lower === 'coding' || lower === 'debugging' || lower === 'testing') return 'deep_work'
-  if (lower === 'meeting' || lower === 'meetings') return 'meeting'
-  if (lower === 'interrupted') return 'interrupted'
+  if (DEEP_WORK_CATEGORIES.has(lower)) return 'deep_work'
+  if (MEETING_CATEGORIES.has(lower)) return 'meeting'
+  if (INTERRUPTED_CATEGORIES.has(lower)) return 'interrupted'
   return 'shallow'
 }
 
@@ -416,7 +433,7 @@ export async function getContextLoadData(
     let totalSec = 0
     for (const s of uSessions) {
       const cb = parseCategoryBreakdown(s.category_breakdown)
-      totalMeetingSec += cb.meetings ?? 0
+      totalMeetingSec += cb.meeting ?? 0
       totalSec += sumBreakdown(cb)
     }
     const meetingRatio = totalSec > 0 ? totalMeetingSec / totalSec : 0
@@ -555,7 +572,7 @@ export async function getPlanningData(teamId: string, sprintCount = 4): Promise<
       totalSec += s.duration_seconds
       const cb = parseCategoryBreakdown(s.category_breakdown)
       deepSec += cb.deep_work ?? 0
-      meetingSec += cb.meetings ?? 0
+      meetingSec += cb.meeting ?? 0
       interruptedSec += cb.interrupted ?? 0
     }
 
@@ -652,7 +669,7 @@ export async function getPlanningData(teamId: string, sprintCount = 4): Promise<
     const cb = parseCategoryBreakdown(s.category_breakdown)
     const current = userHours.get(s.user_id) ?? { total: 0, meetings: 0, interrupted: 0, backlogs: 0 }
     current.total += s.duration_seconds / 3600
-    current.meetings += (cb.meetings ?? 0) / 3600
+    current.meetings += (cb.meeting ?? 0) / 3600
     current.interrupted += (cb.interrupted ?? 0) / 3600
     userHours.set(s.user_id, current)
   }
@@ -734,7 +751,7 @@ export async function getMeetingsData(
   let totalWorkSec = 0
   for (const s of allSessions) {
     const cb = parseCategoryBreakdown(s.category_breakdown)
-    totalMeetingSec += cb.meetings ?? 0
+    totalMeetingSec += cb.meeting ?? 0
     totalWorkSec += sumBreakdown(cb)
   }
 
