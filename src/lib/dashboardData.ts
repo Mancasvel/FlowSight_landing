@@ -106,12 +106,52 @@ function sumBreakdown(b: CategoryBreakdown): number {
   return (b.deep_work ?? 0) + (b.meeting ?? 0) + (b.shallow ?? 0) + (b.interrupted ?? 0)
 }
 
+function dominantFlowState(cb: CategoryBreakdown): FlowState | null {
+  const entries: [FlowState, number][] = [
+    ['deep_work', cb.deep_work ?? 0],
+    ['meeting', cb.meeting ?? 0],
+    ['shallow', cb.shallow ?? 0],
+    ['interrupted', cb.interrupted ?? 0],
+  ]
+  entries.sort((a, b) => b[1] - a[1])
+  return entries[0][1] > 0 ? entries[0][0] : null
+}
+
+function dominantRawCategory(raw: unknown): string {
+  if (typeof raw !== 'object' || raw === null) return 'General'
+  const entries = Object.entries(raw as Record<string, unknown>)
+    .filter(([, v]) => typeof v === 'number' && v > 0)
+    .sort((a, b) => (b[1] as number) - (a[1] as number))
+  return entries[0]?.[0] ?? 'General'
+}
+
+function extractFirstJiraKey(raw: unknown): string | null {
+  if (typeof raw !== 'object' || raw === null) return null
+  const keys = Object.keys(raw as Record<string, unknown>).filter((k) => JIRA_KEY_REGEX.test(k))
+  return keys[0] ?? null
+}
+
 function clamp(val: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, val))
 }
 
 function toDateStr(d: Date): string {
-  return d.toISOString().split('T')[0]
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
+/** Returns ISO string with timezone offset for start of local day */
+function dayStartISO(d: Date): string {
+  const start = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0)
+  return start.toISOString()
+}
+
+/** Returns ISO string with timezone offset for end of local day */
+function dayEndISO(d: Date): string {
+  const end = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999)
+  return end.toISOString()
 }
 
 const DEEP_WORK_CATEGORIES = new Set([
@@ -159,15 +199,16 @@ async function fetchFlowStateData(teamId: string, date: Date): Promise<FlowState
   const [sessionsRes, reportsRes, trendSessionsRes, membersRes] = await Promise.all([
     supabase
       .from('work_sessions')
-      .select('user_id, duration_seconds, category_breakdown')
+      .select('user_id, duration_seconds, category_breakdown, created_at')
       .eq('team_id', teamId)
-      .eq('session_date', dateStr),
+      .eq('session_date', dateStr)
+      .order('created_at', { ascending: true }),
     supabase
       .from('activity_reports')
       .select('user_id, category, captured_at')
       .eq('team_id', teamId)
-      .gte('captured_at', `${dateStr}T00:00:00`)
-      .lt('captured_at', `${dateStr}T23:59:59`)
+      .gte('captured_at', dayStartISO(date))
+      .lte('captured_at', dayEndISO(date))
       .order('captured_at', { ascending: true }),
     supabase
       .from('work_sessions')
@@ -189,6 +230,7 @@ async function fetchFlowStateData(teamId: string, date: Date): Promise<FlowState
   const sessions = sessionsRes.data ?? []
   const reports = reportsRes.data ?? []
   const trendSessions = trendSessionsRes.data ?? []
+
   const members = (membersRes.data ?? []) as unknown as Array<{
     user_id: string
     profile: { id: string; display_name: string | null; avatar_url: string | null }
@@ -241,62 +283,163 @@ async function fetchFlowStateData(teamId: string, date: Date): Promise<FlowState
   }
 
   // Per-user activity reports for timeline + streak + recovery
+  const hasReports = reports.length > 0
   const userReports = new Map<string, Array<{ category: string; captured_at: string }>>()
   for (const r of reports) {
     if (!userReports.has(r.user_id)) userReports.set(r.user_id, [])
     userReports.get(r.user_id)!.push(r)
   }
 
+  // Group sessions by user (ordered by created_at asc) for fallback when no activity_reports
+  const userSessionsOrdered = new Map<string, Array<{
+    user_id: string
+    duration_seconds: number
+    category_breakdown: unknown
+    created_at: string
+  }>>()
+  if (!hasReports) {
+    for (const s of sessions) {
+      if (!userSessionsOrdered.has(s.user_id)) userSessionsOrdered.set(s.user_id, [])
+      userSessionsOrdered.get(s.user_id)!.push(s)
+    }
+  }
+
   const memberResults: MemberFlowState[] = members.map((m) => {
     const base = buildMemberBase(m.profile)
     const reps = userReports.get(m.user_id) ?? []
 
-    // Timeline: bucket by hour (8–17), dominant category per hour
-    const timelineToday: TimelineSlot[] = []
-    for (let hour = 8; hour <= 17; hour++) {
-      const hourReports = reps.filter((r) => new Date(r.captured_at).getHours() === hour)
-      if (hourReports.length === 0) {
-        timelineToday.push({ hour, state: null })
-        continue
-      }
-      const counts: Record<string, number> = {}
-      for (const r of hourReports) {
-        const st = mapFlowState(r.category)
-        counts[st] = (counts[st] || 0) + 1
-      }
-      const dominant = Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0] as FlowState
-      timelineToday.push({ hour, state: dominant })
-    }
+    let timelineToday: TimelineSlot[]
+    let longestStreakMin: number
+    let recoveryTimeAvg: number
 
-    // Longest consecutive deep_work streak in minutes
-    let maxStreak = 0
-    let currentStreak = 0
-    for (const r of reps) {
-      if (mapFlowState(r.category) === 'deep_work') {
-        currentStreak++
-        maxStreak = Math.max(maxStreak, currentStreak)
-      } else {
-        currentStreak = 0
+    if (reps.length > 0) {
+      // Primary path: use granular activity_reports
+      timelineToday = []
+      for (let hour = 8; hour <= 17; hour++) {
+        const hourReports = reps.filter((r) => new Date(r.captured_at).getHours() === hour)
+        if (hourReports.length === 0) {
+          timelineToday.push({ hour, state: null })
+          continue
+        }
+        const counts: Record<string, number> = {}
+        for (const r of hourReports) {
+          const st = mapFlowState(r.category)
+          counts[st] = (counts[st] || 0) + 1
+        }
+        const dominant = Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0] as FlowState
+        timelineToday.push({ hour, state: dominant })
       }
-    }
-    const longestStreakMin = Math.round(maxStreak * (REPORT_INTERVAL_SECONDS / 60) * 10) / 10
 
-    // Recovery time: gap from last interrupted → next deep_work
-    const recoveryGaps: number[] = []
-    for (let i = 0; i < reps.length - 1; i++) {
-      if (mapFlowState(reps[i].category) === 'interrupted') {
-        for (let j = i + 1; j < reps.length; j++) {
-          if (mapFlowState(reps[j].category) === 'deep_work') {
-            const gap = (new Date(reps[j].captured_at).getTime() - new Date(reps[i].captured_at).getTime()) / 60000
-            recoveryGaps.push(gap)
-            break
+      let maxStreak = 0
+      let currentStreak = 0
+      for (const r of reps) {
+        if (mapFlowState(r.category) === 'deep_work') {
+          currentStreak++
+          maxStreak = Math.max(maxStreak, currentStreak)
+        } else {
+          currentStreak = 0
+        }
+      }
+      longestStreakMin = Math.round(maxStreak * (REPORT_INTERVAL_SECONDS / 60) * 10) / 10
+
+      const recoveryGaps: number[] = []
+      for (let i = 0; i < reps.length - 1; i++) {
+        if (mapFlowState(reps[i].category) === 'interrupted') {
+          for (let j = i + 1; j < reps.length; j++) {
+            if (mapFlowState(reps[j].category) === 'deep_work') {
+              const gap = (new Date(reps[j].captured_at).getTime() - new Date(reps[i].captured_at).getTime()) / 60000
+              recoveryGaps.push(gap)
+              break
+            }
           }
         }
       }
+      recoveryTimeAvg = recoveryGaps.length > 0
+        ? Math.round(recoveryGaps.reduce((a, b) => a + b, 0) / recoveryGaps.length)
+        : 0
+    } else {
+      // Fallback: derive timeline + KPIs from work_sessions (created_at + category_breakdown)
+      const userSess = userSessionsOrdered.get(m.user_id) ?? []
+
+      // Timeline: map each session to the hour of its created_at
+      const hourStateMap = new Map<number, FlowState>()
+      for (const s of userSess) {
+        const hour = new Date(s.created_at).getHours()
+        if (hour >= 8 && hour <= 17) {
+          const cb = parseCategoryBreakdown(s.category_breakdown)
+          const dom = dominantFlowState(cb)
+          if (dom) hourStateMap.set(hour, dom)
+        }
+      }
+
+      // If sessions exist but none mapped to 8-17 range, distribute proportionally
+      if (userSess.length > 0 && hourStateMap.size === 0) {
+        const merged: CategoryBreakdown = { deep_work: 0, meeting: 0, shallow: 0, interrupted: 0 }
+        for (const s of userSess) {
+          const cb = parseCategoryBreakdown(s.category_breakdown)
+          merged.deep_work = (merged.deep_work ?? 0) + (cb.deep_work ?? 0)
+          merged.meeting = (merged.meeting ?? 0) + (cb.meeting ?? 0)
+          merged.shallow = (merged.shallow ?? 0) + (cb.shallow ?? 0)
+          merged.interrupted = (merged.interrupted ?? 0) + (cb.interrupted ?? 0)
+        }
+        const total = sumBreakdown(merged)
+        if (total > 0) {
+          const states: [FlowState, number][] = [
+            ['deep_work', merged.deep_work ?? 0],
+            ['meeting', merged.meeting ?? 0],
+            ['shallow', merged.shallow ?? 0],
+            ['interrupted', merged.interrupted ?? 0],
+          ]
+          states.sort((a, b) => b[1] - a[1])
+          let idx = 0
+          for (const [state, sec] of states) {
+            if (sec <= 0) continue
+            const numHours = Math.max(1, Math.round((sec / total) * 10))
+            for (let h = 0; h < numHours && idx < 10; h++, idx++) {
+              hourStateMap.set(8 + idx, state)
+            }
+          }
+        }
+      }
+
+      timelineToday = []
+      for (let hour = 8; hour <= 17; hour++) {
+        timelineToday.push({ hour, state: hourStateMap.get(hour) ?? null })
+      }
+
+      // Streak: consecutive deep_work-dominant sessions
+      let maxStreakSec = 0
+      let curStreakSec = 0
+      for (const s of userSess) {
+        const cb = parseCategoryBreakdown(s.category_breakdown)
+        if (dominantFlowState(cb) === 'deep_work') {
+          curStreakSec += s.duration_seconds
+          maxStreakSec = Math.max(maxStreakSec, curStreakSec)
+        } else {
+          curStreakSec = 0
+        }
+      }
+      longestStreakMin = Math.round((maxStreakSec / 60) * 10) / 10
+
+      // Recovery: interrupted→deep_work session transitions
+      const recoveryGaps: number[] = []
+      for (let i = 0; i < userSess.length - 1; i++) {
+        const cb1 = parseCategoryBreakdown(userSess[i].category_breakdown)
+        if (dominantFlowState(cb1) === 'interrupted') {
+          for (let j = i + 1; j < userSess.length; j++) {
+            const cb2 = parseCategoryBreakdown(userSess[j].category_breakdown)
+            if (dominantFlowState(cb2) === 'deep_work') {
+              const gap = (new Date(userSess[j].created_at).getTime() - new Date(userSess[i].created_at).getTime()) / 60000
+              recoveryGaps.push(gap)
+              break
+            }
+          }
+        }
+      }
+      recoveryTimeAvg = recoveryGaps.length > 0
+        ? Math.round(recoveryGaps.reduce((a, b) => a + b, 0) / recoveryGaps.length)
+        : 0
     }
-    const recoveryTimeAvg = recoveryGaps.length > 0
-      ? Math.round(recoveryGaps.reduce((a, b) => a + b, 0) / recoveryGaps.length)
-      : 0
 
     return {
       ...base,
@@ -336,8 +479,8 @@ export async function getContextLoadData(
       .from('activity_reports')
       .select('user_id, category, captured_at, jira_ticket_id')
       .eq('team_id', teamId)
-      .gte('captured_at', `${startStr}T00:00:00`)
-      .lte('captured_at', `${endStr}T23:59:59`)
+      .gte('captured_at', dayStartISO(weekStart))
+      .lte('captured_at', dayEndISO(weekEnd))
       .order('user_id', { ascending: true })
       .order('captured_at', { ascending: true }),
     supabase
@@ -394,39 +537,71 @@ export async function getContextLoadData(
     }
     const activeBacklogs = projectPrefixes.size
 
-    // Context switches per day: consecutive pairs where category changes
-    const reportsByDay = new Map<string, string[]>()
-    for (const r of uReports) {
-      const day = toDateStr(new Date(r.captured_at))
-      if (!reportsByDay.has(day)) reportsByDay.set(day, [])
-      reportsByDay.get(day)!.push(r.category)
-    }
-
-    let totalSwitches = 0
-    let dayCount = 0
-    for (const categories of Array.from(reportsByDay.values())) {
-      dayCount++
-      for (let i = 1; i < categories.length; i++) {
-        if (categories[i] !== categories[i - 1]) totalSwitches++
+    // Context switches per day
+    let contextSwitchesPerDay: number
+    if (uReports.length > 0) {
+      const reportsByDay = new Map<string, string[]>()
+      for (const r of uReports) {
+        const day = toDateStr(new Date(r.captured_at))
+        if (!reportsByDay.has(day)) reportsByDay.set(day, [])
+        reportsByDay.get(day)!.push(r.category)
       }
-    }
-    const contextSwitchesPerDay = dayCount > 0 ? Math.round((totalSwitches / dayCount) * 10) / 10 : 0
-
-    // Focus streak history: longest consecutive deep_work per day (last 5 days)
-    const focusStreakHistory = streakDates.map((day) => {
-      const dayReports = uReports.filter((r) => toDateStr(new Date(r.captured_at)) === day)
-      let maxStreak = 0
-      let cur = 0
-      for (const r of dayReports) {
-        if (mapFlowState(r.category) === 'deep_work') {
-          cur++
-          maxStreak = Math.max(maxStreak, cur)
-        } else {
-          cur = 0
+      let totalSwitches = 0
+      let dayCount = 0
+      for (const categories of Array.from(reportsByDay.values())) {
+        dayCount++
+        for (let i = 1; i < categories.length; i++) {
+          if (categories[i] !== categories[i - 1]) totalSwitches++
         }
       }
-      return Math.round(maxStreak * (REPORT_INTERVAL_SECONDS / 60) * 10) / 10
-    })
+      contextSwitchesPerDay = dayCount > 0 ? Math.round((totalSwitches / dayCount) * 10) / 10 : 0
+    } else {
+      // Fallback: estimate from distinct categories per session
+      const sessionsByDay = new Map<string, number[]>()
+      for (const s of uSessions) {
+        if (!sessionsByDay.has(s.session_date)) sessionsByDay.set(s.session_date, [])
+        const raw = s.category_breakdown as Record<string, unknown> | null
+        const catCount = raw ? Object.keys(raw).filter((k) => typeof raw[k] === 'number' && (raw[k] as number) > 0).length : 0
+        sessionsByDay.get(s.session_date)!.push(Math.max(0, catCount - 1))
+      }
+      let totalSwitches = 0
+      let dayCount = 0
+      for (const switches of Array.from(sessionsByDay.values())) {
+        dayCount++
+        totalSwitches += switches.reduce((a, b) => a + b, 0)
+      }
+      contextSwitchesPerDay = dayCount > 0 ? Math.round((totalSwitches / dayCount) * 10) / 10 : 0
+    }
+
+    // Focus streak history: longest consecutive deep_work per day (last 5 days)
+    let focusStreakHistory: number[]
+    if (uReports.length > 0) {
+      focusStreakHistory = streakDates.map((day) => {
+        const dayReports = uReports.filter((r) => toDateStr(new Date(r.captured_at)) === day)
+        let maxStreak = 0
+        let cur = 0
+        for (const r of dayReports) {
+          if (mapFlowState(r.category) === 'deep_work') {
+            cur++
+            maxStreak = Math.max(maxStreak, cur)
+          } else {
+            cur = 0
+          }
+        }
+        return Math.round(maxStreak * (REPORT_INTERVAL_SECONDS / 60) * 10) / 10
+      })
+    } else {
+      // Fallback: estimate from deep_work seconds in work_sessions per day
+      focusStreakHistory = streakDates.map((day) => {
+        const daySessions = uSessions.filter((s) => s.session_date === day)
+        let deepWorkSec = 0
+        for (const s of daySessions) {
+          const cb = parseCategoryBreakdown(s.category_breakdown)
+          deepWorkSec += cb.deep_work ?? 0
+        }
+        return Math.round((deepWorkSec / 60) * 10) / 10
+      })
+    }
 
     // Meeting ratio from sessions
     let totalMeetingSec = 0
@@ -540,8 +715,8 @@ export async function getPlanningData(teamId: string, sprintCount = 4): Promise<
       .from('ticket_snapshots')
       .select('user_id, total_seconds, adjusted_seconds, avg_load_factor, avg_active_backlogs, jira_project_key, closed_at')
       .eq('team_id', teamId)
-      .gte('closed_at', `${minDate}T00:00:00`)
-      .lte('closed_at', `${maxDate}T23:59:59`),
+      .gte('closed_at', dayStartISO(new Date(minDate)))
+      .lte('closed_at', dayEndISO(new Date(maxDate))),
   ])
 
   if (sessionsRes.error) throw new Error(`FlowSight [getPlanningData]: ${sessionsRes.error.message}`)
@@ -718,8 +893,8 @@ export async function getMeetingsData(
       .from('activity_reports')
       .select('user_id, category, captured_at, duration_seconds, description')
       .eq('team_id', teamId)
-      .gte('captured_at', `${startStr}T00:00:00`)
-      .lte('captured_at', `${endStr}T23:59:59`)
+      .gte('captured_at', dayStartISO(weekStart))
+      .lte('captured_at', dayEndISO(weekEnd))
       .order('user_id', { ascending: true })
       .order('captured_at', { ascending: true }),
     supabase
@@ -795,21 +970,47 @@ export async function getMeetingsData(
   const meetingFlags: Record<string, boolean> = {}
   let maxCount = 1
 
-  for (const r of allReports) {
-    const dt = new Date(r.captured_at)
-    const dow = dt.getDay()
-    if (dow < 1 || dow > 5) continue
-    const hour = dt.getHours()
-    if (hour < 8 || hour > 17) continue
-    const day = dow - 1 // 0=Mon
-    const key = `${day}-${hour}`
+  if (allReports.length > 0) {
+    for (const r of allReports) {
+      const dt = new Date(r.captured_at)
+      const dow = dt.getDay()
+      if (dow < 1 || dow > 5) continue
+      const hour = dt.getHours()
+      if (hour < 8 || hour > 17) continue
+      const day = dow - 1
+      const key = `${day}-${hour}`
 
-    if (mapFlowState(r.category) === 'deep_work') {
-      deepWorkCounts[key] = (deepWorkCounts[key] || 0) + 1
-      maxCount = Math.max(maxCount, deepWorkCounts[key])
+      if (mapFlowState(r.category) === 'deep_work') {
+        deepWorkCounts[key] = (deepWorkCounts[key] || 0) + 1
+        maxCount = Math.max(maxCount, deepWorkCounts[key])
+      }
+      if (mapFlowState(r.category) === 'meeting') {
+        meetingFlags[key] = true
+      }
     }
-    if (mapFlowState(r.category) === 'meeting') {
-      meetingFlags[key] = true
+  } else {
+    // Fallback: derive heatmap from work_sessions created_at + category_breakdown
+    for (const s of allSessions) {
+      const dt = new Date(s.session_date + 'T12:00:00')
+      const dow = dt.getDay()
+      if (dow < 1 || dow > 5) continue
+      const day = dow - 1
+      const cb = parseCategoryBreakdown(s.category_breakdown)
+      const deepSec = cb.deep_work ?? 0
+      const meetSec = cb.meeting ?? 0
+      const totalSec = sumBreakdown(cb)
+      if (totalSec <= 0) continue
+
+      const deepRatio = deepSec / totalSec
+      const hasMeet = meetSec > 0
+
+      for (let hour = 8; hour <= 17; hour++) {
+        const key = `${day}-${hour}`
+        const weight = Math.round(deepRatio * 10)
+        deepWorkCounts[key] = (deepWorkCounts[key] || 0) + weight
+        maxCount = Math.max(maxCount, deepWorkCounts[key])
+        if (hasMeet) meetingFlags[key] = true
+      }
     }
   }
 
@@ -912,14 +1113,20 @@ export async function getWorkflowData(teamId: string, date: Date): Promise<Workf
   const supabase = await createClient()
   const dateStr = toDateStr(date)
 
-  const [reportsRes, membersRes] = await Promise.all([
+  const [reportsRes, sessionsRes, membersRes] = await Promise.all([
     supabase
       .from('activity_reports')
       .select('user_id, description, category, jira_ticket_id, captured_at, duration_seconds')
       .eq('team_id', teamId)
-      .gte('captured_at', `${dateStr}T00:00:00`)
-      .lt('captured_at', `${dateStr}T23:59:59`)
+      .gte('captured_at', dayStartISO(date))
+      .lte('captured_at', dayEndISO(date))
       .order('captured_at', { ascending: false }),
+    supabase
+      .from('work_sessions')
+      .select('user_id, summary, category_breakdown, jira_breakdown, duration_seconds, created_at')
+      .eq('team_id', teamId)
+      .eq('session_date', dateStr)
+      .order('created_at', { ascending: false }),
     supabase
       .from('team_members')
       .select('user_id, profile:profiles!team_members_user_id_fkey(id, display_name, avatar_url)')
@@ -927,37 +1134,62 @@ export async function getWorkflowData(teamId: string, date: Date): Promise<Workf
   ])
 
   if (reportsRes.error) throw new Error(`FlowSight [getWorkflowData]: ${reportsRes.error.message}`)
+  if (sessionsRes.error) throw new Error(`FlowSight [getWorkflowData]: ${sessionsRes.error.message}`)
   if (membersRes.error) throw new Error(`FlowSight [getWorkflowData]: ${membersRes.error.message}`)
 
   const reports = reportsRes.data ?? []
+  const wsSessions = sessionsRes.data ?? []
   const membersRaw = (membersRes.data ?? []) as unknown as Array<{
     user_id: string
     profile: { id: string; display_name: string | null; avatar_url: string | null }
   }>
 
-  const userReports = new Map<string, typeof reports>()
-  for (const r of reports) {
-    if (!userReports.has(r.user_id)) userReports.set(r.user_id, [])
-    userReports.get(r.user_id)!.push(r)
+  if (reports.length > 0) {
+    // Primary path: use granular activity_reports
+    const userReports = new Map<string, typeof reports>()
+    for (const r of reports) {
+      if (!userReports.has(r.user_id)) userReports.set(r.user_id, [])
+      userReports.get(r.user_id)!.push(r)
+    }
+
+    const members: MemberWorkflow[] = membersRaw.map((m) => {
+      const base = buildMemberBase(m.profile)
+      const reps = userReports.get(m.user_id) ?? []
+
+      const entries: WorkflowEntry[] = reps.map((r) => ({
+        category: r.category,
+        description: r.description,
+        jiraTicketId: r.jira_ticket_id,
+        capturedAt: r.captured_at,
+        durationSeconds: r.duration_seconds,
+      }))
+
+      return { ...base, currentActivity: entries[0] ?? null, entries }
+    })
+
+    return { members }
+  }
+
+  // Fallback: derive workflow entries from work_sessions
+  const userSessions = new Map<string, typeof wsSessions>()
+  for (const s of wsSessions) {
+    if (!userSessions.has(s.user_id)) userSessions.set(s.user_id, [])
+    userSessions.get(s.user_id)!.push(s)
   }
 
   const members: MemberWorkflow[] = membersRaw.map((m) => {
     const base = buildMemberBase(m.profile)
-    const reps = userReports.get(m.user_id) ?? []
+    const sess = userSessions.get(m.user_id) ?? []
 
-    const entries: WorkflowEntry[] = reps.map((r) => ({
-      category: r.category,
-      description: r.description,
-      jiraTicketId: r.jira_ticket_id,
-      capturedAt: r.captured_at,
-      durationSeconds: r.duration_seconds,
+    const entries: WorkflowEntry[] = sess.map((s) => ({
+      category: dominantRawCategory(s.category_breakdown),
+      description: s.summary ?? 'Work session',
+      jiraTicketId: extractFirstJiraKey(s.jira_breakdown),
+      capturedAt: s.created_at,
+      durationSeconds: s.duration_seconds,
     }))
 
-    return {
-      ...base,
-      currentActivity: entries[0] ?? null,
-      entries,
-    }
+    return { ...base, currentActivity: entries[0] ?? null, entries }
   })
 
   return { members }
@@ -1003,8 +1235,8 @@ export async function syncTicketSnapshot(ticketId: string, teamId: string): Prom
     .eq('user_id', userId)
     .eq('team_id', teamId)
     .eq('jira_ticket_id', ticketId)
-    .gte('captured_at', `${startStr}T00:00:00`)
-    .lte('captured_at', `${endStr}T23:59:59`)
+    .gte('captured_at', dayStartISO(created))
+    .lte('captured_at', dayEndISO(closed))
 
   if (reportsError) throw new Error(`FlowSight [syncTicketSnapshot]: ${reportsError.message}`)
 
