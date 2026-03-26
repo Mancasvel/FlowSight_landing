@@ -1,7 +1,7 @@
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { getActiveTeamId } from '@/lib/getActiveTeamId'
-import { getFlowStateData, getContextLoadData, getPlanningData, getMeetingsData } from '@/lib/dashboardData'
+import { getFlowStateData, getContextLoadData, getPlanningData, getMeetingsData, getWorkflowData } from '@/lib/dashboardData'
 import OverviewDashboard from '@/components/dashboard/OverviewDashboard'
 
 export default async function DashboardPage() {
@@ -26,11 +26,12 @@ export default async function DashboardPage() {
   weekStart.setDate(now.getDate() + mondayOffset)
   weekStart.setHours(0, 0, 0, 0)
 
-  const [flowData, contextData, planningData, meetingsData] = await Promise.all([
+  const [flowData, contextData, planningData, meetingsData, workflowData] = await Promise.all([
     getFlowStateData(teamId, now),
     getContextLoadData(teamId, weekStart, now),
     getPlanningData(teamId, 4),
     getMeetingsData(teamId, weekStart, now),
+    getWorkflowData(teamId, now),
   ])
 
   return (
@@ -39,6 +40,7 @@ export default async function DashboardPage() {
       context={contextData}
       planning={planningData}
       meetings={meetingsData}
+      workflow={workflowData}
     />
   )
 }

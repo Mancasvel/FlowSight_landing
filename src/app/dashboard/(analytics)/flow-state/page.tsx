@@ -1,11 +1,12 @@
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { getActiveTeamId } from '@/lib/getActiveTeamId'
-import { getFlowStateData } from '@/lib/dashboardData'
+import { getFlowStateData, getWorkflowData } from '@/lib/dashboardData'
 import FlowScore from '@/components/dashboard/flow-state/FlowScore'
 import FlowTrend from '@/components/dashboard/flow-state/FlowTrend'
 import FlowTimeline from '@/components/dashboard/flow-state/FlowTimeline'
 import KPICards from '@/components/dashboard/flow-state/KPICards'
+import WorkflowFeed from '@/components/dashboard/flow-state/WorkflowFeed'
 
 export default async function FlowStatePage() {
   const headerStore = await headers()
@@ -22,7 +23,11 @@ export default async function FlowStatePage() {
     )
   }
 
-  const data = await getFlowStateData(teamId, new Date())
+  const today = new Date()
+  const [data, workflow] = await Promise.all([
+    getFlowStateData(teamId, today),
+    getWorkflowData(teamId, today),
+  ])
 
   return (
     <div className="space-y-5">
@@ -45,6 +50,8 @@ export default async function FlowStatePage() {
       <FlowTimeline members={data.members} />
 
       <KPICards members={data.members} isLoaded />
+
+      <WorkflowFeed members={workflow.members} />
     </div>
   )
 }

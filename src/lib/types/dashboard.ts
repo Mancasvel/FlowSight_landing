@@ -132,3 +132,20 @@ export type MeetingsData = {
 }
 
 export type RoleView = 'me' | 'team' | 'org'
+
+export type WorkflowEntry = {
+  category: string
+  description: string
+  jiraTicketId: string | null
+  capturedAt: string
+  durationSeconds: number
+}
+
+export type MemberWorkflow = MemberBase & {
+  currentActivity: WorkflowEntry | null
+  entries: WorkflowEntry[]
+}
+
+export type WorkflowData = {
+  members: MemberWorkflow[]
+}

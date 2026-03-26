@@ -12,13 +12,15 @@ import {
   TrendingUp, TrendingDown, Minus, ArrowRight, Timer, Flame, AlertTriangle,
   Clock, Zap, DollarSign,
 } from 'lucide-react'
-import type { FlowStateData, ContextLoadData, PlanningData, MeetingsData } from '@/lib/types/dashboard'
+import { getMetaCategory, META_CATEGORY_CONFIG } from '@/lib/categories'
+import type { FlowStateData, ContextLoadData, PlanningData, MeetingsData, WorkflowData } from '@/lib/types/dashboard'
 
 type Props = {
   flow: FlowStateData
   context: ContextLoadData
   planning: PlanningData
   meetings: MeetingsData
+  workflow: WorkflowData
 }
 
 function scoreColor(s: number): 'success' | 'warning' | 'danger' {
@@ -39,11 +41,13 @@ function SectionLink({ href, label }: { href: string; label: string }) {
   )
 }
 
-export default function OverviewDashboard({ flow, context, planning, meetings }: Props) {
+export default function OverviewDashboard({ flow, context, planning, meetings, workflow }: Props) {
   const { teamFlowScore, trend30d, members: flowMembers } = flow
   const { members: contextMembers } = context
   const { sprints, costBreakdown } = planning
   const { impact } = meetings
+
+  const workflowByUser = new Map(workflow.members.map((m) => [m.userId, m]))
 
   const last7 = trend30d.slice(-7)
   const trendDiff = (last7[last7.length - 1]?.score ?? 0) - (last7[0]?.score ?? 0)
@@ -177,19 +181,35 @@ export default function OverviewDashboard({ flow, context, planning, meetings }:
             ) : (
               flowMembers.map((m) => {
                 const color = scoreColor(m.flowScoreToday)
+                const wf = workflowByUser.get(m.userId)
+                const current = wf?.currentActivity ?? null
+                const currentMeta = current ? getMetaCategory(current.category) : null
+                const currentMetaConfig = currentMeta ? META_CATEGORY_CONFIG[currentMeta] : null
                 return (
-                  <div key={m.userId} className="flex items-center gap-3">
-                    <Avatar src={m.avatarUrl || undefined} name={m.displayName} size="sm" />
+                  <div key={m.userId} className="flex items-start gap-3">
+                    <Avatar src={m.avatarUrl || undefined} name={m.displayName} size="sm" className="mt-0.5" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-zinc-700 truncate">{m.displayName}</p>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <Progress value={m.flowScoreToday} maxValue={100} color={color} size="sm" />
-                        <span className="text-xs text-zinc-400 tabular-nums shrink-0">{m.flowScoreToday}%</span>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium text-zinc-700 truncate">{m.displayName}</p>
+                        <Chip color={color} className="shrink-0">
+                          {m.flowScoreToday >= 70 ? 'Focused' : m.flowScoreToday >= 45 ? 'Mixed' : 'Low'}
+                        </Chip>
                       </div>
+                      {current ? (
+                        <p className="text-[11px] text-zinc-500 mt-1 truncate">
+                          <span
+                            className="inline-block w-1.5 h-1.5 rounded-full mr-1 relative -top-px"
+                            style={{ backgroundColor: currentMetaConfig?.color ?? '#94a3b8' }}
+                          />
+                          {current.description}
+                          {current.jiraTicketId && (
+                            <span className="text-zinc-400 ml-1">{current.jiraTicketId}</span>
+                          )}
+                        </p>
+                      ) : (
+                        <p className="text-[11px] text-zinc-400 mt-1">No activity today</p>
+                      )}
                     </div>
-                    <Chip color={color} className="shrink-0">
-                      {m.flowScoreToday >= 70 ? 'Focused' : m.flowScoreToday >= 45 ? 'Mixed' : 'Low'}
-                    </Chip>
                   </div>
                 )
               })

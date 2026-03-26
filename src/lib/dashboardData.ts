@@ -21,6 +21,9 @@ import type {
   FlaggedWindow,
   StandupHealthData,
   MemberBase,
+  WorkflowData,
+  WorkflowEntry,
+  MemberWorkflow,
 } from '@/lib/types/dashboard'
 import type { TicketSnapshot } from '@/lib/supabase/database.types'
 
@@ -892,6 +895,63 @@ export async function getMeetingsData(
     flaggedWindows,
     standupHealth,
   }
+}
+
+// ============ getWorkflowData ============
+
+export async function getWorkflowData(teamId: string, date: Date): Promise<WorkflowData> {
+  const supabase = await createClient()
+  const dateStr = toDateStr(date)
+
+  const [reportsRes, membersRes] = await Promise.all([
+    supabase
+      .from('activity_reports')
+      .select('user_id, description, category, jira_ticket_id, captured_at, duration_seconds')
+      .eq('team_id', teamId)
+      .gte('captured_at', `${dateStr}T00:00:00`)
+      .lt('captured_at', `${dateStr}T23:59:59`)
+      .order('captured_at', { ascending: false }),
+    supabase
+      .from('team_members')
+      .select('user_id, profile:profiles!team_members_user_id_fkey(id, display_name, avatar_url)')
+      .eq('team_id', teamId),
+  ])
+
+  if (reportsRes.error) throw new Error(`FlowSight [getWorkflowData]: ${reportsRes.error.message}`)
+  if (membersRes.error) throw new Error(`FlowSight [getWorkflowData]: ${membersRes.error.message}`)
+
+  const reports = reportsRes.data ?? []
+  const membersRaw = (membersRes.data ?? []) as unknown as Array<{
+    user_id: string
+    profile: { id: string; display_name: string | null; avatar_url: string | null }
+  }>
+
+  const userReports = new Map<string, typeof reports>()
+  for (const r of reports) {
+    if (!userReports.has(r.user_id)) userReports.set(r.user_id, [])
+    userReports.get(r.user_id)!.push(r)
+  }
+
+  const members: MemberWorkflow[] = membersRaw.map((m) => {
+    const base = buildMemberBase(m.profile)
+    const reps = userReports.get(m.user_id) ?? []
+
+    const entries: WorkflowEntry[] = reps.map((r) => ({
+      category: r.category,
+      description: r.description,
+      jiraTicketId: r.jira_ticket_id,
+      capturedAt: r.captured_at,
+      durationSeconds: r.duration_seconds,
+    }))
+
+    return {
+      ...base,
+      currentActivity: entries[0] ?? null,
+      entries,
+    }
+  })
+
+  return { members }
 }
 
 // ============ syncTicketSnapshot ============
