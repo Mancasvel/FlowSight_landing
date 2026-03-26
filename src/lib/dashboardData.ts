@@ -713,18 +713,10 @@ export async function getMeetingsData(
   const startStr = toDateStr(weekStart)
   const endStr = toDateStr(weekEnd)
 
-  const [meetingReportsRes, allReportsRes, sessionsRes] = await Promise.all([
+  const [allReportsRes, sessionsRes] = await Promise.all([
     supabase
       .from('activity_reports')
-      .select('user_id, captured_at, duration_seconds')
-      .eq('team_id', teamId)
-      .eq('category', 'meeting')
-      .gte('captured_at', `${startStr}T00:00:00`)
-      .lte('captured_at', `${endStr}T23:59:59`)
-      .order('captured_at', { ascending: true }),
-    supabase
-      .from('activity_reports')
-      .select('user_id, category, captured_at, description')
+      .select('user_id, category, captured_at, duration_seconds, description')
       .eq('team_id', teamId)
       .gte('captured_at', `${startStr}T00:00:00`)
       .lte('captured_at', `${endStr}T23:59:59`)
@@ -738,13 +730,13 @@ export async function getMeetingsData(
       .lte('session_date', endStr),
   ])
 
-  if (meetingReportsRes.error) throw new Error(`FlowSight [getMeetingsData]: ${meetingReportsRes.error.message}`)
   if (allReportsRes.error) throw new Error(`FlowSight [getMeetingsData]: ${allReportsRes.error.message}`)
   if (sessionsRes.error) throw new Error(`FlowSight [getMeetingsData]: ${sessionsRes.error.message}`)
 
-  const meetingReports = meetingReportsRes.data ?? []
   const allReports = allReportsRes.data ?? []
   const allSessions = sessionsRes.data ?? []
+
+  const meetingReports = allReports.filter((r) => mapFlowState(r.category) === 'meeting')
 
   // Total meeting time and percentage
   let totalMeetingSec = 0

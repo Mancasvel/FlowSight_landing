@@ -2,6 +2,7 @@ import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { getActiveTeamId } from '@/lib/getActiveTeamId'
 import { getPlanningData } from '@/lib/dashboardData'
+import { Alert } from '@/components/ui'
 import EstimationChart from '@/components/dashboard/planning/EstimationChart'
 import CapacityForecast from '@/components/dashboard/planning/CapacityForecast'
 import CostBreakdown from '@/components/dashboard/planning/CostBreakdown'
@@ -24,28 +25,42 @@ export default async function PlanningPage() {
 
   const data = await getPlanningData(teamId, 4)
   const latestSprint = data.sprints[data.sprints.length - 1] ?? null
+  const hasSprintData = data.sprints.length > 0
 
   return (
     <div className="space-y-5">
       <div>
         <h1 className="text-xl 2xl:text-2xl font-semibold text-zinc-900 tracking-tight">Planning</h1>
         <p className="text-sm text-zinc-400 mt-0.5">
-          Sprint estimation, capacity and cost analysis · {data.estimations.length} members · Last {data.sprints.length} sprints
+          Sprint estimation, capacity and cost analysis
+          {hasSprintData
+            ? ` · ${data.estimations.length} members · Last ${data.sprints.length} sprints`
+            : ''}
         </p>
       </div>
 
+      {!hasSprintData && (
+        <Alert color="primary" dismissible={false}>
+          Sprint commitment data is not configured yet. Once sprint commitments are added, this page will show estimation vs. reality charts, capacity forecasts, cost breakdowns and per-person estimations.
+        </Alert>
+      )}
+
       <EstimationChart sprints={data.sprints} />
 
-      <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
-        <CapacityForecast sprint={latestSprint} />
-        <CostBreakdown
-          costBreakdown={data.costBreakdown}
-          perPersonGap={data.perPersonGap}
-          costPerHour={data.costPerHour}
-        />
-      </div>
+      {hasSprintData && (
+        <>
+          <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
+            <CapacityForecast sprint={latestSprint} />
+            <CostBreakdown
+              costBreakdown={data.costBreakdown}
+              perPersonGap={data.perPersonGap}
+              costPerHour={data.costPerHour}
+            />
+          </div>
 
-      <EstimationEngine estimations={data.estimations} />
+          <EstimationEngine estimations={data.estimations} />
+        </>
+      )}
     </div>
   )
 }
