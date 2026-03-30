@@ -613,9 +613,9 @@ export async function getContextLoadData(
     }
     const meetingRatio = totalSec > 0 ? totalMeetingSec / totalSec : 0
 
-    // Burnout index: composite signal
+    // Burnout index: composite signal (first backlog is expected, only excess backlogs contribute)
     const rawBurnout =
-      activeBacklogs * BURNOUT_BACKLOG_WEIGHT +
+      Math.max(0, activeBacklogs - 1) * BURNOUT_BACKLOG_WEIGHT +
       contextSwitchesPerDay * BURNOUT_SWITCH_WEIGHT +
       meetingRatio * BURNOUT_MEETING_WEIGHT
     const burnoutIndex = clamp(Math.round(rawBurnout), 0, 100)

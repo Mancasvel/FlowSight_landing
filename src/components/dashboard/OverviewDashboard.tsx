@@ -239,23 +239,28 @@ export default function OverviewDashboard({ flow, context, planning, meetings, w
               </div>
             </div>
 
-            {contextMembers
-              .filter((m) => m.burnoutLevel === 'danger')
-              .slice(0, 2)
-              .map((m) => (
-                <div key={m.userId} className="flex items-center gap-2">
-                  <Avatar src={m.avatarUrl || undefined} name={m.displayName} size="sm" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-zinc-700 truncate">{m.displayName}</p>
-                    <Progress value={m.burnoutIndex} maxValue={100} color="danger" size="sm" />
+            {[...contextMembers]
+              .sort((a, b) => b.burnoutIndex - a.burnoutIndex)
+              .slice(0, 4)
+              .map((m) => {
+                const barColor = m.burnoutLevel === 'danger' ? 'danger' : m.burnoutLevel === 'warning' ? 'warning' : 'success'
+                return (
+                  <div key={m.userId} className="flex items-center gap-2">
+                    <Avatar src={m.avatarUrl || undefined} name={m.displayName} size="sm" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-zinc-700 truncate">{m.displayName}</p>
+                      <Progress value={m.burnoutIndex} maxValue={100} color={barColor} size="sm" />
+                    </div>
+                    <span className="text-xs text-zinc-400 tabular-nums">{m.burnoutIndex}</span>
                   </div>
-                  <span className="text-xs text-zinc-400 tabular-nums">{m.burnoutIndex}</span>
-                </div>
-              ))}
+                )
+              })}
 
-            {atRisk > 0 && (
-              <Alert color="primary" dismissible={false}>
-                {atRisk} member{atRisk > 1 ? 's' : ''} showing elevated burnout signals. Review workloads.
+            {(atRisk > 0 || warningCount > 0) && (
+              <Alert color={atRisk > 0 ? 'primary' : 'warning'} dismissible={false}>
+                {atRisk > 0
+                  ? `${atRisk} member${atRisk > 1 ? 's' : ''} showing elevated burnout signals. Review workloads.`
+                  : `${warningCount} member${warningCount > 1 ? 's' : ''} approaching burnout threshold. Monitor closely.`}
               </Alert>
             )}
           </CardBody>
