@@ -3,12 +3,14 @@
 import { ReactNode, useState, useRef, useEffect } from 'react'
 
 type TooltipProps = {
-  content: string
+  content: ReactNode
   children: ReactNode
   className?: string
+  /** Wider panel for multi-section explanations (e.g. flow score math). */
+  wide?: boolean
 }
 
-export function Tooltip({ content, children, className = '' }: TooltipProps) {
+export function Tooltip({ content, children, className = '', wide = false }: TooltipProps) {
   const [show, setShow] = useState(false)
   const [position, setPosition] = useState<'top' | 'bottom'>('top')
   const triggerRef = useRef<HTMLDivElement>(null)
@@ -31,7 +33,8 @@ export function Tooltip({ content, children, className = '' }: TooltipProps) {
       {show && (
         <div
           className={`absolute z-50 px-3 py-2 text-xs text-white bg-zinc-800 
-            rounded-lg shadow-lg max-w-[260px] whitespace-normal pointer-events-none
+            rounded-lg shadow-lg whitespace-normal pointer-events-none
+            ${wide ? 'max-w-[min(100vw-24px,380px)]' : 'max-w-[260px]'}
             ${position === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'} left-1/2 -translate-x-1/2`}
         >
           {content}

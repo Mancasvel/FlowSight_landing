@@ -1,6 +1,6 @@
 'use client'
 
-import { Card, CardHeader, CardBody } from '@/components/ui'
+import { Card, CardHeader, CardBody, Tooltip } from '@/components/ui'
 import {
   LineChart,
   Line,
@@ -20,7 +20,28 @@ export default function FlowTrend({ trend }: Props) {
   return (
     <Card className="h-full">
       <CardHeader>
-        <h3 className="text-sm font-medium text-zinc-800">30-Day Trend</h3>
+        <Tooltip
+          wide
+          content={
+            <div className="space-y-2 text-left leading-snug">
+              <p className="font-semibold text-white text-[11px] uppercase tracking-wide">30-day line — each point</p>
+              <p className="text-[11px] text-zinc-200">
+                For each calendar day: every <code className="rounded bg-zinc-700/80 px-1 text-indigo-200">work_session</code> on that date gets one score = (deep-work seconds ÷ total seconds in its{' '}
+                <code className="text-indigo-200">category_breakdown</code>) × 100, using the same category→bucket mapping as the main score.
+              </p>
+              <p className="text-[11px] text-zinc-200">
+                The plotted point = <span className="font-medium text-zinc-50">average of those session scores</span> for that day (all members’ sessions together), rounded. This is slightly different from first averaging per person then averaging people (the big ring uses the latter for “today”).
+              </p>
+              <p className="text-[11px] text-zinc-300 border-t border-zinc-600 pt-2">
+                The dot marks the latest day. The trend chip beside the ring compares the first vs last of the last 7 daily points on this line.
+              </p>
+            </div>
+          }
+        >
+          <h3 className="text-sm font-medium text-zinc-800 cursor-help border-b border-dotted border-zinc-300 inline-block">
+            30-Day Trend
+          </h3>
+        </Tooltip>
       </CardHeader>
       <CardBody className="min-h-[160px]">
         <ResponsiveContainer width="100%" height={200}>

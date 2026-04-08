@@ -24,6 +24,7 @@ import type {
   WorkflowData,
   WorkflowEntry,
   MemberWorkflow,
+  TeamFlowScorePart,
 } from '@/lib/types/dashboard'
 import type { TicketSnapshot } from '@/lib/supabase/database.types'
 
@@ -260,7 +261,25 @@ async function fetchFlowStateData(teamId: string, date: Date): Promise<FlowState
     ? Math.round(allScores.reduce((a, b) => a + b, 0) / allScores.length)
     : 0
 
-  // 30-day trend: per day, mean of all members' flow scores
+  const teamFlowScoreBreakdown: TeamFlowScorePart[] = members.map((m) => {
+    const uid = m.user_id
+    const breakdowns = userSessionMap.get(uid) ?? []
+    let totalDeep = 0
+    let totalAll = 0
+    for (const b of breakdowns) {
+      totalDeep += b.deep_work ?? 0
+      totalAll += sumBreakdown(b)
+    }
+    return {
+      userId: uid,
+      displayName: m.profile.display_name ?? 'Unknown',
+      scorePercent: Math.round(userFlowScores.get(uid) ?? 0),
+      deepWorkSeconds: totalDeep,
+      totalTrackedSeconds: totalAll,
+    }
+  })
+
+  // 30-day trend: per day, mean of per-session flow scores (each session → deep/total %, then average all sessions that day)
   const dayScores = new Map<string, number[]>()
   for (const s of trendSessions) {
     const cb = parseCategoryBreakdown(s.category_breakdown)
@@ -450,7 +469,7 @@ async function fetchFlowStateData(teamId: string, date: Date): Promise<FlowState
     }
   })
 
-  return { teamFlowScore, trend30d, members: memberResults }
+  return { teamFlowScore, trend30d, members: memberResults, teamFlowScoreBreakdown }
 }
 
 export async function getFlowStateData(teamId: string, date: Date): Promise<FlowStateData> {

@@ -32,10 +32,21 @@ export type TrendPoint = {
   score: number
 }
 
+/** Per-member inputs used to explain Team Flow Score in the UI (from work_sessions today). */
+export type TeamFlowScorePart = {
+  userId: string
+  displayName: string
+  scorePercent: number
+  deepWorkSeconds: number
+  totalTrackedSeconds: number
+}
+
 export type FlowStateData = {
   teamFlowScore: number
   trend30d: TrendPoint[]
   members: MemberFlowState[]
+  /** Present when the server computed today’s scores; drives “how it’s calculated” tooltips. */
+  teamFlowScoreBreakdown?: TeamFlowScorePart[]
 }
 
 export type MemberContextLoad = MemberBase & {

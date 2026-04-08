@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import { getMetaCategory, META_CATEGORY_CONFIG } from '@/lib/categories'
 import type { FlowStateData, ContextLoadData, PlanningData, MeetingsData, WorkflowData } from '@/lib/types/dashboard'
+import { TeamFlowScoreTooltipBody } from '@/components/dashboard/flow-state/TeamFlowScoreTooltipBody'
 
 type Props = {
   flow: FlowStateData
@@ -42,7 +43,7 @@ function SectionLink({ href, label }: { href: string; label: string }) {
 }
 
 export default function OverviewDashboard({ flow, context, planning, meetings, workflow }: Props) {
-  const { teamFlowScore, trend30d, members: flowMembers } = flow
+  const { teamFlowScore, trend30d, members: flowMembers, teamFlowScoreBreakdown } = flow
   const { members: contextMembers } = context
   const { sprints, costBreakdown } = planning
   const { impact } = meetings
@@ -81,8 +82,15 @@ export default function OverviewDashboard({ flow, context, planning, meetings, w
         {/* Flow Score */}
         <Card className="xl:col-span-3">
           <CardBody className="flex flex-col items-center justify-center py-6 gap-3">
-            <Tooltip content="Percentage of today's tracked time spent in uninterrupted deep work">
-              <button type="button" className="cursor-default bg-transparent border-0 p-0 focus:outline-none">
+            <Tooltip
+              wide
+              content={<TeamFlowScoreTooltipBody breakdown={teamFlowScoreBreakdown} />}
+            >
+              <button
+                type="button"
+                className="cursor-help bg-transparent border-0 p-0 focus:outline-none"
+                aria-label="How Team Flow Score is calculated — hover for details"
+              >
                 <CircularProgress value={teamFlowScore} maxValue={100} color={scoreColor(teamFlowScore)} size="lg">
                   <div className="text-center">
                     <span className="text-3xl font-bold text-zinc-800">{teamFlowScore}</span>
@@ -91,7 +99,9 @@ export default function OverviewDashboard({ flow, context, planning, meetings, w
                 </CircularProgress>
               </button>
             </Tooltip>
-            <p className="text-sm text-zinc-500">Team Flow Score</p>
+            <Tooltip content="Same as the large ring on Flow State: team average of each person’s deep-work % today. Hover the percentage for formula and per-person deep/total seconds.">
+              <p className="text-sm text-zinc-500 cursor-help border-b border-dotted border-zinc-300 inline-block">Team Flow Score</p>
+            </Tooltip>
             <Chip color={trendColor}>
               <span className="flex items-center gap-1">
                 <TrendIcon size={12} />
@@ -105,7 +115,21 @@ export default function OverviewDashboard({ flow, context, planning, meetings, w
         {/* 30-Day Trend */}
         <Card className="xl:col-span-5">
           <CardHeader>
-            <h3 className="text-sm font-medium text-zinc-800">30-Day Flow Trend</h3>
+            <Tooltip
+              wide
+              content={
+                <div className="space-y-2 text-left leading-snug">
+                  <p className="font-semibold text-white text-[11px] uppercase tracking-wide">Each day on this chart</p>
+                  <p className="text-[11px] text-zinc-200">
+                    Average of per-session scores: every <code className="rounded bg-zinc-700/80 px-1 text-indigo-200">work_session</code> that day gets (deep ÷ total from <code className="text-indigo-200">category_breakdown</code>) × 100; we average all those session scores. Slightly different from the team ring, which averages people after pooling each person’s sessions for today.
+                  </p>
+                </div>
+              }
+            >
+              <h3 className="text-sm font-medium text-zinc-800 cursor-help border-b border-dotted border-zinc-300 inline-block">
+                30-Day Flow Trend
+              </h3>
+            </Tooltip>
           </CardHeader>
           <CardBody>
             <ResponsiveContainer width="100%" height={180}>

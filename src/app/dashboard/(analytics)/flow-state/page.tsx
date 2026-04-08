@@ -40,7 +40,11 @@ export default async function FlowStatePage() {
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-5">
         <div className="xl:col-span-2">
-          <FlowScore score={data.teamFlowScore} trend={data.trend30d} />
+          <FlowScore
+            score={data.teamFlowScore}
+            trend={data.trend30d}
+            teamFlowScoreBreakdown={data.teamFlowScoreBreakdown}
+          />
         </div>
         <div className="xl:col-span-3">
           <FlowTrend trend={data.trend30d} />
