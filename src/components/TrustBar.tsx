@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 
 export function TrustBar() {
     return (
-        <section className="py-12 bg-white border-y border-slate-100 overflow-hidden">
+        <section id="about-flowsight" className="py-12 bg-white border-y border-slate-100 overflow-hidden scroll-mt-24">
             <div className="container px-4 md:px-6 mx-auto mb-8 text-center">
                 <p className="text-sm font-semibold text-slate-400 uppercase tracking-widest">Supported by</p>
             </div>
