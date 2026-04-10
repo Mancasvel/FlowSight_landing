@@ -1,12 +1,17 @@
 'use client'
 
 import { useEffect } from 'react'
+import { useConsent } from '@/context/ConsentContext'
 
 /**
- * Records every click (global counter) and optional labeled counts via data-track="my-label".
+ * Aggregated click counts (non-essential). Only runs after opt-in consent (GDPR / ePrivacy).
  */
 export function ClickAnalytics() {
+  const { hydrated, analyticsAllowed } = useConsent()
+
   useEffect(() => {
+    if (!hydrated || !analyticsAllowed) return
+
     const send = (key?: string) => {
       fetch('/api/analytics/click', {
         method: 'POST',
@@ -27,7 +32,7 @@ export function ClickAnalytics() {
 
     document.addEventListener('click', onClick, true)
     return () => document.removeEventListener('click', onClick, true)
-  }, [])
+  }, [hydrated, analyticsAllowed])
 
   return null
 }

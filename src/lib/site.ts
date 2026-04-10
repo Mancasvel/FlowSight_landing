@@ -28,6 +28,19 @@ export const siteConfig = {
   areaServed: ['US', 'GB', 'AT', 'BE', 'DE', 'ES', 'FR', 'IE', 'IT', 'NL', 'PT', 'EU'] as const,
   /** Add real profile URLs when available — empty avoids placeholder links in schema. */
   sameAs: [] as string[],
+  /**
+   * GDPR Art. 13/14 — contact for privacy requests. Replace with counsel-approved addresses.
+   */
+  privacyEmail: 'privacy@flowsight.com',
+  /**
+   * EU GDPR Art. 27 — EU representative (if applicable). Set when you appoint one; leave empty otherwise.
+   */
+  euRepresentativeContactEmail: null as string | null,
+  /**
+   * Controller identity — add full postal address with your legal team (Art. 13(1)(a)).
+   */
+  controllerPostalSummary:
+    'FlowSight Inc., United States. A complete postal address is available on request to privacy@flowsight.com.',
 }
 
 export function absoluteUrl(path: string): string {

@@ -9,7 +9,7 @@ const badges = [
     { icon: <XCircle className="w-5 h-5 text-red-500" />, text: "We don't see your data", type: "negative" },
     { icon: <CheckCircle2 className="w-5 h-5 text-green-500" />, text: "Only text descriptions sent", type: "positive" },
     { icon: <CheckCircle2 className="w-5 h-5 text-green-500" />, text: "Encrypted at rest", type: "positive" },
-    { icon: <CheckCircle2 className="w-5 h-5 text-green-500" />, text: "GDPR compliant", type: "positive" },
+    { icon: <CheckCircle2 className="w-5 h-5 text-green-500" />, text: "GDPR-aligned programme", type: "positive" },
 ];
 
 export function PrivacySection() {

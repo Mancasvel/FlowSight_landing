@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import Navigation from '@/components/Navigation'
 import Footer from '@/components/Footer'
 
@@ -39,9 +40,9 @@ export default function LegalSecurityPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-bold text-white mb-3">Zero Data Collection</h3>
+                <h3 className="text-lg font-bold text-white mb-3">Local-first workspace context</h3>
                 <p className="text-gray-400 leading-relaxed">
-                  We don't collect or store any of your code or development data. Everything stays local.
+                  Sensitive development context is designed to be processed on the device. Account and service data needed to operate the product are handled under our privacy programme.
                 </p>
               </div>
 
@@ -51,9 +52,9 @@ export default function LegalSecurityPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-bold text-white mb-3">Local Processing</h3>
+                <h3 className="text-lg font-bold text-white mb-3">Local processing</h3>
                 <p className="text-gray-400 leading-relaxed">
-                  All AI processing happens on your machine. No external servers or cloud processing.
+                  Core analysis is architected to run on your machine. Network features use encrypted connections where applicable.
                 </p>
               </div>
 
@@ -63,55 +64,48 @@ export default function LegalSecurityPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-bold text-white mb-3">Regular Audits</h3>
+                <h3 className="text-lg font-bold text-white mb-3">Risk-based security reviews</h3>
                 <p className="text-gray-400 leading-relaxed">
-                  We conduct regular security audits and maintain industry-standard security practices.
+                  We apply access controls, monitoring, vulnerability management, and vendor reviews proportionate to risk.
                 </p>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Compliance */}
+        {/* Compliance — accurate positioning (no implied ISO/HIPAA certification) */}
         <section className="py-16 sm:py-24 bg-slate-900/50">
           <div className="container-max px-4 sm:px-6 lg:px-12">
             <div className="text-center mb-12 md:mb-16">
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-6">
-                Compliance & Certifications
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-4">
+                GDPR &amp; trust programme (SOC 2–aligned)
               </h2>
+              <p className="text-gray-400 max-w-3xl mx-auto text-sm sm:text-base">
+                We describe our practices accurately: compliance is an ongoing programme of controls, policies, and contracts — not a one-line badge.
+              </p>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-slate-800 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl font-bold text-teal-400">GDPR</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+              <div className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-2xl p-8 border border-teal-500/20">
+                <div className="text-2xl font-bold text-teal-400 mb-4">GDPR</div>
+                <p className="text-gray-400 leading-relaxed mb-4">
+                  We support EU/EEA/UK data protection requirements with transparent notices, lawful bases, data subject rights, subprocessors assessments, and international transfer safeguards (such as Standard Contractual Clauses where applicable).
+                </p>
+                <div className="flex flex-wrap gap-3 text-sm">
+                  <Link href="/privacy-policy" className="text-teal-400 hover:text-teal-300 underline underline-offset-2">Privacy Policy</Link>
+                  <Link href="/cookie-policy" className="text-teal-400 hover:text-teal-300 underline underline-offset-2">Cookie Policy</Link>
+                  <Link href="/gdpr" className="text-teal-400 hover:text-teal-300 underline underline-offset-2">GDPR overview</Link>
                 </div>
-                <h3 className="text-lg font-semibold text-white mb-2">GDPR</h3>
-                <p className="text-sm text-gray-400">EU data protection</p>
               </div>
 
-              <div className="text-center">
-                <div className="w-16 h-16 bg-slate-800 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl font-bold text-blue-400">SOC2</span>
-                </div>
-                <h3 className="text-lg font-semibold text-white mb-2">SOC 2</h3>
-                <p className="text-sm text-gray-400">Security standards</p>
-              </div>
-
-              <div className="text-center">
-                <div className="w-16 h-16 bg-slate-800 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl font-bold text-purple-400">ISO</span>
-                </div>
-                <h3 className="text-lg font-semibold text-white mb-2">ISO 27001</h3>
-                <p className="text-sm text-gray-400">Information security</p>
-              </div>
-
-              <div className="text-center">
-                <div className="w-16 h-16 bg-slate-800 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl font-bold text-green-400">HIPAA</span>
-                </div>
-                <h3 className="text-lg font-semibold text-white mb-2">HIPAA</h3>
-                <p className="text-sm text-gray-400">Healthcare data</p>
+              <div className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-2xl p-8 border border-blue-500/20">
+                <div className="text-2xl font-bold text-blue-400 mb-4">SOC 2 readiness</div>
+                <p className="text-gray-400 leading-relaxed mb-4">
+                  We align internal controls with the AICPA Trust Services Criteria (Security, and where applicable Availability and Confidentiality) as part of a roadmap toward independent assurance. A SOC 2 Type II report, when available, is typically provided to customers under confidentiality — it does not replace your own legal or compliance review.
+                </p>
+                <p className="text-xs text-gray-500 leading-relaxed">
+                  Industry-specific regimes (for example HIPAA or ISO 27001 certification) require separate contractual and technical measures; contact us if your organisation needs a regulated deployment.
+                </p>
               </div>
             </div>
           </div>
