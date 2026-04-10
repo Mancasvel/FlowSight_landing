@@ -1,4 +1,4 @@
-/** Desktop agent artifacts served from `public/downloadables` → repo `downloadables/` */
+/** Desktop agent artifacts in `public/downloadables/` (real folder — required for Vercel; symlinks break static export). */
 export const AGENT_VERSION = '0.1.0' as const
 
 export const downloadUrls = {
