@@ -40,7 +40,6 @@ export function DownloadSection() {
                 >
                     <video
                         className="w-full rounded-2xl border border-slate-200 bg-black shadow-2xl object-contain max-h-[min(60vh,640px)]"
-                        autoPlay
                         loop
                         playsInline
                         controls
