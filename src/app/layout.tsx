@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import Footer from '@/components/Footer'
+import { ClickAnalytics } from '@/components/ClickAnalytics'
 import { RootJsonLd } from '@/components/seo/RootJsonLd'
 import { absoluteUrl, siteConfig } from '@/lib/site'
 
@@ -81,6 +82,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className} suppressHydrationWarning>
+        <ClickAnalytics />
         <RootJsonLd />
         {children}
         {/* </main> */}
