@@ -276,7 +276,7 @@ const flowSteps = [
         id: 2,
         icon: <Cpu className="w-6 h-6" />,
         title: "AI Analyzes Locally",
-        description: "Qwen3-VL 2B processes each screenshot directly on the device. The AI understands tools being used and tasks being worked on.",
+        description: "On-device AI processes each screenshot locally. It understands tools being used and tasks being worked on.",
         glowColor: "purple",
         badge: "🔒 Privacy-first",
         details: ["On-device AI", "No screenshots uploaded", "Instant analysis"],

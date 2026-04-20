@@ -13,7 +13,7 @@ const steps = [
     {
         icon: <Cpu className="w-8 h-8 text-white" />,
         title: "AI Analyzes Locally",
-        description: "Qwen3-VL processes screenshot. Only text sent to cloud.",
+        description: "On-device AI analyzes each screenshot. Only text is sent to the cloud.",
         color: "bg-purple-500",
         badge: "🔒 Privacy-first",
     },
