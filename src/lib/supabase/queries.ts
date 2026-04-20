@@ -14,12 +14,14 @@ export interface Profile {
 
 export interface License {
     id: string;
-    owner_id: string;
+    owner_id: string | null;
     plan_type: 'starter' | 'professional' | 'enterprise';
     max_members: number;
     starts_at: string;
     expires_at: string;
     is_active: boolean;
+    code: string | null;
+    claimed_at: string | null;
     created_at: string;
 }
 
@@ -119,6 +121,38 @@ export async function getLicense(supabase: SupabaseDb, ownerId: string): Promise
 
     if (error) throw error;
     return data;
+}
+
+/**
+ * Redeems a license code for the currently authenticated user.
+ *
+ * Uses the SECURITY DEFINER RPC `public.claim_license`, which atomically:
+ *  - locates the license by `code` (case-insensitive, trimmed)
+ *  - verifies it is unclaimed, active, and not expired
+ *  - sets `owner_id = auth.uid()` and `claimed_at = now()`
+ *
+ * Throws a user-friendly Error if the code is invalid / already claimed / expired.
+ */
+export async function claimLicense(supabase: SupabaseDb, code: string): Promise<License> {
+    const normalized = code.trim().toUpperCase();
+
+    const { data, error } = await supabase.rpc('claim_license', { p_code: normalized });
+
+    if (error) {
+        if (error.code === '28000') {
+            throw new Error('You must be signed in to activate a license.');
+        }
+        if (error.code === 'P0002') {
+            throw new Error('This license code is invalid, already claimed, expired or inactive.');
+        }
+        throw error;
+    }
+
+    if (!data) {
+        throw new Error('Could not activate license. Please try again.');
+    }
+
+    return data as License;
 }
 
 export async function getLicenseMemberCount(supabase: SupabaseDb, licenseId: string): Promise<number> {
