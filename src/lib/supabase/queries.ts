@@ -287,6 +287,26 @@ export async function getActivityReports(
     return data ?? [];
 }
 
+/**
+ * Returns the most recent activity_report for a user across all dates, or null if none.
+ * Used to derive presence ("online" if the last report is very recent).
+ */
+export async function getLatestActivityReport(
+    supabase: SupabaseDb,
+    userId: string
+): Promise<ActivityReport | null> {
+    const { data, error } = await supabase
+        .from('activity_reports')
+        .select('*')
+        .eq('user_id', userId)
+        .order('captured_at', { ascending: false })
+        .limit(1);
+
+    if (error) throw error;
+    const row = Array.isArray(data) ? data[0] : null;
+    return row ?? null;
+}
+
 export async function getTeamActivityReports(
     supabase: SupabaseDb,
     teamId: string,

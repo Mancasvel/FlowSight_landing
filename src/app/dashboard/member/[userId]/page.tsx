@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Calendar, RefreshCw, Clock } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Clock, FileDown } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import {
     getProfile,
     getActivityReports,
+    getLatestActivityReport,
     getUserWorkSessions,
     aggregateCategoryBreakdown,
     secondsToHours,
@@ -23,6 +24,9 @@ import {
     type MetaCategory,
 } from '@/lib/categories';
 import SparkLine from '@/components/dashboard/SparkLine';
+import MemberActivityFeed from '@/components/dashboard/MemberActivityFeed';
+import type { MemberWorkflow, WorkflowEntry } from '@/lib/types/dashboard';
+import { downloadMemberDayReport } from '@/lib/memberReportPdf';
 import {
     BarChart,
     Bar,
@@ -51,13 +55,17 @@ export default function MemberTimelinePage() {
 
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+    const [exportingPdf, setExportingPdf] = useState(false);
     const [profile, setProfile] = useState<Profile | null>(null);
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+    const [rawReports, setRawReports] = useState<ActivityReport[]>([]);
     const [timeline, setTimeline] = useState<TimelineEntry[]>([]);
     const [categoryBreakdown, setCategoryBreakdown] = useState<{ name: string; hours: number; color: string }[]>([]);
     const [totalHours, setTotalHours] = useState(0);
     const [weeklyHoursData, setWeeklyHoursData] = useState<number[]>([]);
+    const [weeklyDates, setWeeklyDates] = useState<string[]>([]);
     const [focusPercent, setFocusPercent] = useState(0);
+    const [lastReportAt, setLastReportAt] = useState<string | null>(null);
 
     const fetchMemberData = useCallback(async (showRefresh = false) => {
         if (showRefresh) setRefreshing(true);
@@ -68,13 +76,16 @@ export default function MemberTimelinePage() {
             const weekAgoStr = weekAgo.toISOString().split('T')[0];
             const todayStr = new Date().toISOString().split('T')[0];
 
-            const [memberProfile, reports, sessions] = await Promise.all([
+            const [memberProfile, reports, sessions, latestReport] = await Promise.all([
                 getProfile(supabase, userId),
                 getActivityReports(supabase, userId, selectedDate),
                 getUserWorkSessions(supabase, userId, weekAgoStr, todayStr),
+                getLatestActivityReport(supabase, userId),
             ]);
 
             setProfile(memberProfile);
+            setRawReports(reports);
+            setLastReportAt(latestReport?.captured_at ?? null);
 
             // Timeline entries
             const timelineEntries: TimelineEntry[] = reports.map((r: ActivityReport) => ({
@@ -116,6 +127,7 @@ export default function MemberTimelinePage() {
                 d.setDate(d.getDate() - (6 - i));
                 return d.toISOString().split('T')[0];
             });
+            setWeeklyDates(last7Days);
             setWeeklyHoursData(last7Days.map(d => secondsToHours(dailyMap[d] || 0)));
 
             // Focus percent
@@ -133,6 +145,81 @@ export default function MemberTimelinePage() {
     useEffect(() => {
         fetchMemberData();
     }, [fetchMemberData]);
+
+    /** Recompute presence on a cadence so "Online" clears after 11 min without a full page refresh. */
+    const [presenceTick, setPresenceTick] = useState(0);
+    useEffect(() => {
+        const id = window.setInterval(() => setPresenceTick((t) => t + 1), 30_000);
+        return () => window.clearInterval(id);
+    }, []);
+
+    /**
+     * Presence rule: a member is "Online" when their most recent activity_report
+     * was captured within the last 11 minutes. We rely on the latest report
+     * across all dates (not only the selected one) so browsing past days does
+     * not falsely mark the person as offline.
+     */
+    const ONLINE_THRESHOLD_MS = 11 * 60 * 1000;
+    const isOnline = useMemo(() => {
+        if (!lastReportAt) return false;
+        const t = new Date(lastReportAt).getTime();
+        if (Number.isNaN(t)) return false;
+        const ageMs = Date.now() - t;
+        return ageMs >= 0 && ageMs < ONLINE_THRESHOLD_MS;
+    }, [lastReportAt, presenceTick]);
+
+    const workflow: MemberWorkflow = useMemo(() => {
+        // MemberActivityFeed expects entries sorted by most recent first.
+        const sortedReports = [...rawReports].sort(
+            (a, b) => new Date(b.captured_at).getTime() - new Date(a.captured_at).getTime()
+        );
+        const entries: WorkflowEntry[] = sortedReports.map((r) => ({
+            category: r.category,
+            description: r.description,
+            jiraTicketId: r.jira_ticket_id,
+            capturedAt: r.captured_at,
+            durationSeconds: r.duration_seconds,
+        }));
+        return {
+            userId: profile?.id ?? userId,
+            displayName: profile?.display_name ?? 'Unknown',
+            avatarUrl: profile?.avatar_url ?? '',
+            currentActivity: entries[0] ?? null,
+            entries,
+        };
+    }, [rawReports, profile?.id, profile?.display_name, profile?.avatar_url, userId]);
+
+    const handleDownloadPdf = useCallback(async () => {
+        if (!profile) return;
+        setExportingPdf(true);
+        try {
+            const initials = (profile.display_name || 'U')
+                .split(' ')
+                .map((n) => n[0])
+                .join('')
+                .slice(0, 2);
+
+            downloadMemberDayReport({
+                displayName: profile.display_name ?? 'Unknown member',
+                role: profile.role ?? 'worker',
+                avatarInitials: initials,
+                isOnline,
+                selectedDate,
+                totalHoursToday: totalHours,
+                focusPercent,
+                weeklyHoursByDay: weeklyDates.map((date, i) => ({
+                    date,
+                    hours: weeklyHoursData[i] ?? 0,
+                })),
+                categoryBreakdown,
+                entries: workflow.entries,
+            });
+        } catch (err) {
+            console.error('Failed to export PDF:', err);
+        } finally {
+            setExportingPdf(false);
+        }
+    }, [profile, isOnline, selectedDate, totalHours, focusPercent, weeklyDates, weeklyHoursData, categoryBreakdown, workflow.entries]);
 
     if (loading) {
         return (
@@ -159,10 +246,6 @@ export default function MemberTimelinePage() {
         );
     }
 
-    const isOnline = profile.last_seen_at
-        ? (Date.now() - new Date(profile.last_seen_at).getTime()) < 5 * 60 * 1000
-        : false;
-
     // Build Gantt-style blocks grouped by hour
     const ganttBlocks = timeline.reduce<Record<number, TimelineEntry[]>>((acc, entry) => {
         const hour = entry.timeRaw.getHours();
@@ -188,18 +271,27 @@ export default function MemberTimelinePage() {
                         <ArrowLeft size={22} />
                     </button>
                     <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 bg-zinc-100 rounded-full flex items-center justify-center relative overflow-hidden">
-                            {profile.avatar_url ? (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img src={profile.avatar_url} alt={profile.display_name || ''} className="w-full h-full object-cover" />
-                            ) : (
-                                <span className="text-zinc-500 font-semibold text-lg">
-                                    {(profile.display_name || 'U').split(' ').map(n => n[0]).join('').slice(0, 2)}
-                                </span>
-                            )}
-                            {isOnline && (
-                                <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-400 rounded-full border-2 border-white" />
-                            )}
+                        {/* Ring around the photo: green when online, neutral when offline (same outer size) */}
+                        <div
+                            className={`h-14 w-14 shrink-0 rounded-full p-[2.5px] ${
+                                isOnline ? 'bg-emerald-500 shadow-[0_0_0_1px_rgba(16,185,129,0.25)]' : 'bg-zinc-300/80'
+                            }`}
+                            title={isOnline ? 'Online' : 'Offline'}
+                        >
+                            <div className="relative h-full w-full overflow-hidden rounded-full bg-zinc-100">
+                                {profile.avatar_url ? (
+                                    // eslint-disable-next-line @next/next/no-img-element
+                                    <img
+                                        src={profile.avatar_url}
+                                        alt={profile.display_name || ''}
+                                        className="block h-full w-full object-cover"
+                                    />
+                                ) : (
+                                    <span className="flex h-full w-full items-center justify-center text-lg font-semibold text-zinc-500">
+                                        {(profile.display_name || 'U').split(' ').map(n => n[0]).join('').slice(0, 2)}
+                                    </span>
+                                )}
+                            </div>
                         </div>
                         <div>
                             <h1 className="text-xl font-semibold text-zinc-900 tracking-tight">{profile.display_name || 'Unknown'}</h1>
@@ -221,16 +313,14 @@ export default function MemberTimelinePage() {
                     <SparkLine data={weeklyHoursData} color="#6366F1" width={80} height={28} showDots />
                     <span className="text-[10px] text-dashboard-muted">7d trend</span>
 
-                    <div className="relative">
-                        <input
-                            type="date"
-                            value={selectedDate}
-                            onChange={(e) => setSelectedDate(e.target.value)}
-                            max={new Date().toISOString().split('T')[0]}
-                            className="px-3 py-2 bg-dashboard-card border border-dashboard-border rounded-lg text-dashboard-text text-sm"
-                        />
-                        <Calendar className="absolute right-2.5 top-1/2 -translate-y-1/2 text-dashboard-muted pointer-events-none" size={14} />
-                    </div>
+                    <input
+                        type="date"
+                        value={selectedDate}
+                        onChange={(e) => setSelectedDate(e.target.value)}
+                        max={new Date().toISOString().split('T')[0]}
+                        className="min-w-[10.5rem] rounded-lg border border-dashboard-border bg-dashboard-card px-3 py-2 text-sm text-dashboard-text [color-scheme:light]"
+                        title="Select day"
+                    />
 
                     <button
                         onClick={() => fetchMemberData(true)}
@@ -239,7 +329,45 @@ export default function MemberTimelinePage() {
                     >
                         <RefreshCw className={refreshing ? 'animate-spin' : ''} size={16} />
                     </button>
+
+                    <button
+                        onClick={handleDownloadPdf}
+                        disabled={exportingPdf || timeline.length === 0}
+                        className="flex items-center gap-2 px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors shadow-sm"
+                        title="Download PDF report of this day"
+                    >
+                        <FileDown size={16} className={exportingPdf ? 'animate-pulse' : ''} />
+                        <span className="hidden sm:inline">
+                            {exportingPdf ? 'Generating…' : 'Export PDF'}
+                        </span>
+                    </button>
                 </div>
+            </div>
+
+            {/* Real-time activity feed — first thing the PM sees */}
+            <div className="dashboard-card p-6">
+                <div className="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 className="text-[15px] font-semibold text-zinc-800">
+                            Real-time activity
+                        </h3>
+                        <p className="text-xs text-zinc-500 mt-0.5">
+                            Full log of what this member has been working on · click an entry to read the complete report
+                        </p>
+                    </div>
+                    {workflow.currentActivity && (
+                        <span className="flex items-center gap-1.5 text-[11px] font-medium text-emerald-600">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            Live
+                        </span>
+                    )}
+                </div>
+                <MemberActivityFeed
+                    member={workflow}
+                    hideHeader
+                    maxScrollHeight="420px"
+                    emptyLabel="No activity recorded for this date"
+                />
             </div>
 
             {/* Gantt Timeline */}
