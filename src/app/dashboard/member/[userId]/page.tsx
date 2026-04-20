@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Calendar, RefreshCw, Clock, FileDown } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Clock, FileDown } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import {
     getProfile,
@@ -146,6 +146,13 @@ export default function MemberTimelinePage() {
         fetchMemberData();
     }, [fetchMemberData]);
 
+    /** Recompute presence on a cadence so "Online" clears after 11 min without a full page refresh. */
+    const [presenceTick, setPresenceTick] = useState(0);
+    useEffect(() => {
+        const id = window.setInterval(() => setPresenceTick((t) => t + 1), 30_000);
+        return () => window.clearInterval(id);
+    }, []);
+
     /**
      * Presence rule: a member is "Online" when their most recent activity_report
      * was captured within the last 11 minutes. We rely on the latest report
@@ -155,8 +162,11 @@ export default function MemberTimelinePage() {
     const ONLINE_THRESHOLD_MS = 11 * 60 * 1000;
     const isOnline = useMemo(() => {
         if (!lastReportAt) return false;
-        return Date.now() - new Date(lastReportAt).getTime() < ONLINE_THRESHOLD_MS;
-    }, [lastReportAt]);
+        const t = new Date(lastReportAt).getTime();
+        if (Number.isNaN(t)) return false;
+        const ageMs = Date.now() - t;
+        return ageMs >= 0 && ageMs < ONLINE_THRESHOLD_MS;
+    }, [lastReportAt, presenceTick]);
 
     const workflow: MemberWorkflow = useMemo(() => {
         // MemberActivityFeed expects entries sorted by most recent first.
@@ -261,18 +271,27 @@ export default function MemberTimelinePage() {
                         <ArrowLeft size={22} />
                     </button>
                     <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 bg-zinc-100 rounded-full flex items-center justify-center relative overflow-hidden">
-                            {profile.avatar_url ? (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img src={profile.avatar_url} alt={profile.display_name || ''} className="w-full h-full object-cover" />
-                            ) : (
-                                <span className="text-zinc-500 font-semibold text-lg">
-                                    {(profile.display_name || 'U').split(' ').map(n => n[0]).join('').slice(0, 2)}
-                                </span>
-                            )}
-                            {isOnline && (
-                                <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-400 rounded-full border-2 border-white" />
-                            )}
+                        {/* Ring around the photo: green when online, neutral when offline (same outer size) */}
+                        <div
+                            className={`h-14 w-14 shrink-0 rounded-full p-[2.5px] ${
+                                isOnline ? 'bg-emerald-500 shadow-[0_0_0_1px_rgba(16,185,129,0.25)]' : 'bg-zinc-300/80'
+                            }`}
+                            title={isOnline ? 'Online' : 'Offline'}
+                        >
+                            <div className="relative h-full w-full overflow-hidden rounded-full bg-zinc-100">
+                                {profile.avatar_url ? (
+                                    // eslint-disable-next-line @next/next/no-img-element
+                                    <img
+                                        src={profile.avatar_url}
+                                        alt={profile.display_name || ''}
+                                        className="block h-full w-full object-cover"
+                                    />
+                                ) : (
+                                    <span className="flex h-full w-full items-center justify-center text-lg font-semibold text-zinc-500">
+                                        {(profile.display_name || 'U').split(' ').map(n => n[0]).join('').slice(0, 2)}
+                                    </span>
+                                )}
+                            </div>
                         </div>
                         <div>
                             <h1 className="text-xl font-semibold text-zinc-900 tracking-tight">{profile.display_name || 'Unknown'}</h1>
@@ -294,16 +313,14 @@ export default function MemberTimelinePage() {
                     <SparkLine data={weeklyHoursData} color="#6366F1" width={80} height={28} showDots />
                     <span className="text-[10px] text-dashboard-muted">7d trend</span>
 
-                    <div className="relative">
-                        <input
-                            type="date"
-                            value={selectedDate}
-                            onChange={(e) => setSelectedDate(e.target.value)}
-                            max={new Date().toISOString().split('T')[0]}
-                            className="px-3 py-2 bg-dashboard-card border border-dashboard-border rounded-lg text-dashboard-text text-sm"
-                        />
-                        <Calendar className="absolute right-2.5 top-1/2 -translate-y-1/2 text-dashboard-muted pointer-events-none" size={14} />
-                    </div>
+                    <input
+                        type="date"
+                        value={selectedDate}
+                        onChange={(e) => setSelectedDate(e.target.value)}
+                        max={new Date().toISOString().split('T')[0]}
+                        className="min-w-[10.5rem] rounded-lg border border-dashboard-border bg-dashboard-card px-3 py-2 text-sm text-dashboard-text [color-scheme:light]"
+                        title="Select day"
+                    />
 
                     <button
                         onClick={() => fetchMemberData(true)}

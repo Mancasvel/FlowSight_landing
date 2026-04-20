@@ -300,11 +300,11 @@ export async function getLatestActivityReport(
         .select('*')
         .eq('user_id', userId)
         .order('captured_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+        .limit(1);
 
     if (error) throw error;
-    return data ?? null;
+    const row = Array.isArray(data) ? data[0] : null;
+    return row ?? null;
 }
 
 export async function getTeamActivityReports(
