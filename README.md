@@ -4,7 +4,7 @@ A modern, high-performance landing page for **FlowSight** - the privacy-first AI
 
 ## 🚀 Features
 
-- **Privacy-First Architecture**: Emphasizes local processing (Qwen3-VL 2B) and GDPR compliance.
+- **Privacy-First Architecture**: Emphasizes local on-device processing and GDPR compliance.
 - **Interactive Flow**: "Zero Friction" section with animated mockups (Agent, AI, Dashboard, Privacy).
 - ** responsive Design**: Fully optimized for Mobile, Tablet, and Desktop.
 - **Dark & Light Modes**: Clean, professional UI with slate/navy accents.
