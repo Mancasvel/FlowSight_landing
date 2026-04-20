@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import {
     getProfile,
     getActivityReports,
+    getLatestActivityReport,
     getUserWorkSessions,
     aggregateCategoryBreakdown,
     secondsToHours,
@@ -64,6 +65,7 @@ export default function MemberTimelinePage() {
     const [weeklyHoursData, setWeeklyHoursData] = useState<number[]>([]);
     const [weeklyDates, setWeeklyDates] = useState<string[]>([]);
     const [focusPercent, setFocusPercent] = useState(0);
+    const [lastReportAt, setLastReportAt] = useState<string | null>(null);
 
     const fetchMemberData = useCallback(async (showRefresh = false) => {
         if (showRefresh) setRefreshing(true);
@@ -74,14 +76,16 @@ export default function MemberTimelinePage() {
             const weekAgoStr = weekAgo.toISOString().split('T')[0];
             const todayStr = new Date().toISOString().split('T')[0];
 
-            const [memberProfile, reports, sessions] = await Promise.all([
+            const [memberProfile, reports, sessions, latestReport] = await Promise.all([
                 getProfile(supabase, userId),
                 getActivityReports(supabase, userId, selectedDate),
                 getUserWorkSessions(supabase, userId, weekAgoStr, todayStr),
+                getLatestActivityReport(supabase, userId),
             ]);
 
             setProfile(memberProfile);
             setRawReports(reports);
+            setLastReportAt(latestReport?.captured_at ?? null);
 
             // Timeline entries
             const timelineEntries: TimelineEntry[] = reports.map((r: ActivityReport) => ({
@@ -142,6 +146,18 @@ export default function MemberTimelinePage() {
         fetchMemberData();
     }, [fetchMemberData]);
 
+    /**
+     * Presence rule: a member is "Online" when their most recent activity_report
+     * was captured within the last 11 minutes. We rely on the latest report
+     * across all dates (not only the selected one) so browsing past days does
+     * not falsely mark the person as offline.
+     */
+    const ONLINE_THRESHOLD_MS = 11 * 60 * 1000;
+    const isOnline = useMemo(() => {
+        if (!lastReportAt) return false;
+        return Date.now() - new Date(lastReportAt).getTime() < ONLINE_THRESHOLD_MS;
+    }, [lastReportAt]);
+
     const workflow: MemberWorkflow = useMemo(() => {
         // MemberActivityFeed expects entries sorted by most recent first.
         const sortedReports = [...rawReports].sort(
@@ -177,9 +193,7 @@ export default function MemberTimelinePage() {
                 displayName: profile.display_name ?? 'Unknown member',
                 role: profile.role ?? 'worker',
                 avatarInitials: initials,
-                isOnline: profile.last_seen_at
-                    ? Date.now() - new Date(profile.last_seen_at).getTime() < 5 * 60 * 1000
-                    : false,
+                isOnline,
                 selectedDate,
                 totalHoursToday: totalHours,
                 focusPercent,
@@ -195,7 +209,7 @@ export default function MemberTimelinePage() {
         } finally {
             setExportingPdf(false);
         }
-    }, [profile, selectedDate, totalHours, focusPercent, weeklyDates, weeklyHoursData, categoryBreakdown, workflow.entries]);
+    }, [profile, isOnline, selectedDate, totalHours, focusPercent, weeklyDates, weeklyHoursData, categoryBreakdown, workflow.entries]);
 
     if (loading) {
         return (
@@ -221,10 +235,6 @@ export default function MemberTimelinePage() {
             </div>
         );
     }
-
-    const isOnline = profile.last_seen_at
-        ? (Date.now() - new Date(profile.last_seen_at).getTime()) < 5 * 60 * 1000
-        : false;
 
     // Build Gantt-style blocks grouped by hour
     const ganttBlocks = timeline.reduce<Record<number, TimelineEntry[]>>((acc, entry) => {
