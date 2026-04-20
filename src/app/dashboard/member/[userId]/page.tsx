@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Calendar, RefreshCw, Clock } from 'lucide-react';
+import { ArrowLeft, Calendar, RefreshCw, Clock, FileDown } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import {
     getProfile,
@@ -23,6 +23,9 @@ import {
     type MetaCategory,
 } from '@/lib/categories';
 import SparkLine from '@/components/dashboard/SparkLine';
+import MemberActivityFeed from '@/components/dashboard/MemberActivityFeed';
+import type { MemberWorkflow, WorkflowEntry } from '@/lib/types/dashboard';
+import { downloadMemberDayReport } from '@/lib/memberReportPdf';
 import {
     BarChart,
     Bar,
@@ -51,12 +54,15 @@ export default function MemberTimelinePage() {
 
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+    const [exportingPdf, setExportingPdf] = useState(false);
     const [profile, setProfile] = useState<Profile | null>(null);
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+    const [rawReports, setRawReports] = useState<ActivityReport[]>([]);
     const [timeline, setTimeline] = useState<TimelineEntry[]>([]);
     const [categoryBreakdown, setCategoryBreakdown] = useState<{ name: string; hours: number; color: string }[]>([]);
     const [totalHours, setTotalHours] = useState(0);
     const [weeklyHoursData, setWeeklyHoursData] = useState<number[]>([]);
+    const [weeklyDates, setWeeklyDates] = useState<string[]>([]);
     const [focusPercent, setFocusPercent] = useState(0);
 
     const fetchMemberData = useCallback(async (showRefresh = false) => {
@@ -75,6 +81,7 @@ export default function MemberTimelinePage() {
             ]);
 
             setProfile(memberProfile);
+            setRawReports(reports);
 
             // Timeline entries
             const timelineEntries: TimelineEntry[] = reports.map((r: ActivityReport) => ({
@@ -116,6 +123,7 @@ export default function MemberTimelinePage() {
                 d.setDate(d.getDate() - (6 - i));
                 return d.toISOString().split('T')[0];
             });
+            setWeeklyDates(last7Days);
             setWeeklyHoursData(last7Days.map(d => secondsToHours(dailyMap[d] || 0)));
 
             // Focus percent
@@ -133,6 +141,61 @@ export default function MemberTimelinePage() {
     useEffect(() => {
         fetchMemberData();
     }, [fetchMemberData]);
+
+    const workflow: MemberWorkflow = useMemo(() => {
+        // MemberActivityFeed expects entries sorted by most recent first.
+        const sortedReports = [...rawReports].sort(
+            (a, b) => new Date(b.captured_at).getTime() - new Date(a.captured_at).getTime()
+        );
+        const entries: WorkflowEntry[] = sortedReports.map((r) => ({
+            category: r.category,
+            description: r.description,
+            jiraTicketId: r.jira_ticket_id,
+            capturedAt: r.captured_at,
+            durationSeconds: r.duration_seconds,
+        }));
+        return {
+            userId: profile?.id ?? userId,
+            displayName: profile?.display_name ?? 'Unknown',
+            avatarUrl: profile?.avatar_url ?? '',
+            currentActivity: entries[0] ?? null,
+            entries,
+        };
+    }, [rawReports, profile?.id, profile?.display_name, profile?.avatar_url, userId]);
+
+    const handleDownloadPdf = useCallback(async () => {
+        if (!profile) return;
+        setExportingPdf(true);
+        try {
+            const initials = (profile.display_name || 'U')
+                .split(' ')
+                .map((n) => n[0])
+                .join('')
+                .slice(0, 2);
+
+            downloadMemberDayReport({
+                displayName: profile.display_name ?? 'Unknown member',
+                role: profile.role ?? 'worker',
+                avatarInitials: initials,
+                isOnline: profile.last_seen_at
+                    ? Date.now() - new Date(profile.last_seen_at).getTime() < 5 * 60 * 1000
+                    : false,
+                selectedDate,
+                totalHoursToday: totalHours,
+                focusPercent,
+                weeklyHoursByDay: weeklyDates.map((date, i) => ({
+                    date,
+                    hours: weeklyHoursData[i] ?? 0,
+                })),
+                categoryBreakdown,
+                entries: workflow.entries,
+            });
+        } catch (err) {
+            console.error('Failed to export PDF:', err);
+        } finally {
+            setExportingPdf(false);
+        }
+    }, [profile, selectedDate, totalHours, focusPercent, weeklyDates, weeklyHoursData, categoryBreakdown, workflow.entries]);
 
     if (loading) {
         return (
@@ -239,7 +302,45 @@ export default function MemberTimelinePage() {
                     >
                         <RefreshCw className={refreshing ? 'animate-spin' : ''} size={16} />
                     </button>
+
+                    <button
+                        onClick={handleDownloadPdf}
+                        disabled={exportingPdf || timeline.length === 0}
+                        className="flex items-center gap-2 px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors shadow-sm"
+                        title="Download PDF report of this day"
+                    >
+                        <FileDown size={16} className={exportingPdf ? 'animate-pulse' : ''} />
+                        <span className="hidden sm:inline">
+                            {exportingPdf ? 'Generating…' : 'Export PDF'}
+                        </span>
+                    </button>
                 </div>
+            </div>
+
+            {/* Real-time activity feed — first thing the PM sees */}
+            <div className="dashboard-card p-6">
+                <div className="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 className="text-[15px] font-semibold text-zinc-800">
+                            Real-time activity
+                        </h3>
+                        <p className="text-xs text-zinc-500 mt-0.5">
+                            Full log of what this member has been working on · click an entry to read the complete report
+                        </p>
+                    </div>
+                    {workflow.currentActivity && (
+                        <span className="flex items-center gap-1.5 text-[11px] font-medium text-emerald-600">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            Live
+                        </span>
+                    )}
+                </div>
+                <MemberActivityFeed
+                    member={workflow}
+                    hideHeader
+                    maxScrollHeight="420px"
+                    emptyLabel="No activity recorded for this date"
+                />
             </div>
 
             {/* Gantt Timeline */}
