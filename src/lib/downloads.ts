@@ -1,36 +1,60 @@
 /**
- * Desktop agent artifacts.
+ * Client-safe metadata + types for the desktop agent downloads.
  *
- * We serve the binaries directly from GitHub Releases instead of hosting them
- * under `public/downloadables/`. This keeps the Vercel bundle small and
- * guarantees users always pull the same artifacts we publish on GitHub.
- *
- * `AGENT_RELEASE_TAG` is resolved at build time in `next.config.js`, which
- * queries the GitHub API for the newest release that actually ships the
- * `FlowSight.Agent_*` installers and injects the tag via
- * `NEXT_PUBLIC_AGENT_RELEASE_TAG`. The literal fallback below only kicks in if
- * the build-time fetch is unavailable (e.g. fully offline build); CI can also
- * pin a specific tag by setting `NEXT_PUBLIC_AGENT_RELEASE_TAG` explicitly.
+ * Actual URLs are resolved at request time by `downloads.server.ts`, which
+ * queries the GitHub Releases API and caches for 1h via Next's Data Cache.
+ * This module stays import-safe from both server and client components, and
+ * provides a static fallback used when the live fetch is unavailable (offline
+ * build, rate-limited CI, etc.).
  */
 
-const GITHUB_REPO = 'Mancasvel/FlowSight.AI' as const
+export const GITHUB_REPO = 'Mancasvel/FlowSight.AI' as const
 
-/** Tauri bundle version embedded in the artifact filenames. */
-export const AGENT_VERSION = '0.1.0' as const
+export const releasesUrl =
+  `https://github.com/${GITHUB_REPO}/releases` as const
 
-/** Resolved at build time; never read from the browser's `window`. */
-export const AGENT_RELEASE_TAG: string =
-  process.env.NEXT_PUBLIC_AGENT_RELEASE_TAG || 'v1.0.1'
+/** Last-known-good values, used only as an offline fallback. */
+export const FALLBACK_AGENT_RELEASE_TAG = 'v1.0.1' as const
+export const FALLBACK_AGENT_VERSION = '0.1.0' as const
 
-const releaseAsset = (filename: string) =>
-  `https://github.com/${GITHUB_REPO}/releases/download/${AGENT_RELEASE_TAG}/${filename}`
+export type AgentDownloadUrls = {
+  windowsExe?: string
+  windowsMsi?: string
+  macDmgAarch64?: string
+  linuxDeb?: string
+  linuxAppImage?: string
+}
 
-export const downloadUrls = {
-  windowsExe: releaseAsset(`FlowSight.Agent_${AGENT_VERSION}_x64-setup.exe`),
-  windowsMsi: releaseAsset(`FlowSight.Agent_${AGENT_VERSION}_x64_en-US.msi`),
-  macDmgAarch64: releaseAsset(`FlowSight.Agent_${AGENT_VERSION}_aarch64.dmg`),
-  linuxDeb: releaseAsset(`FlowSight.Agent_${AGENT_VERSION}_amd64.deb`),
-  linuxAppImage: releaseAsset(`FlowSight.Agent_${AGENT_VERSION}_amd64.AppImage`),
-} as const
+export type AgentRelease = {
+  /** GitHub release tag that currently hosts the binaries (e.g. "v1.0.1"). */
+  tag: string
+  /** Tauri bundle version embedded in the artifact filenames (e.g. "0.1.0"). */
+  version: string
+  /** Direct `browser_download_url`s for each platform artifact. */
+  downloadUrls: AgentDownloadUrls
+}
 
-export const releasesUrl = `https://github.com/${GITHUB_REPO}/releases` as const
+/**
+ * Build a fully-formed release descriptor pointing at a specific tag/version
+ * using our known filename convention. Used as the offline fallback when the
+ * GitHub API is unreachable.
+ */
+export function buildFallbackAgentRelease(
+  tag: string = FALLBACK_AGENT_RELEASE_TAG,
+  version: string = FALLBACK_AGENT_VERSION
+): AgentRelease {
+  const at = (filename: string) =>
+    `https://github.com/${GITHUB_REPO}/releases/download/${tag}/${filename}`
+
+  return {
+    tag,
+    version,
+    downloadUrls: {
+      windowsExe: at(`FlowSight.Agent_${version}_x64-setup.exe`),
+      windowsMsi: at(`FlowSight.Agent_${version}_x64_en-US.msi`),
+      macDmgAarch64: at(`FlowSight.Agent_${version}_aarch64.dmg`),
+      linuxDeb: at(`FlowSight.Agent_${version}_amd64.deb`),
+      linuxAppImage: at(`FlowSight.Agent_${version}_amd64.AppImage`),
+    },
+  }
+}
