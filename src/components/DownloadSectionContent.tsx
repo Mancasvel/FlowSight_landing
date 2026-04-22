@@ -9,7 +9,7 @@ type Props = {
 };
 
 export function DownloadSectionContent({ release }: Props) {
-    const { tag, version, downloadUrls } = release;
+    const { desktopTag, linuxTag, version, downloadUrls } = release;
 
     return (
         <section id="download" className="py-24 bg-white overflow-hidden relative">
@@ -80,7 +80,7 @@ export function DownloadSectionContent({ release }: Props) {
                             <Download className="w-5 h-5 group-hover:translate-y-0.5 transition-transform" />
                             Download for Windows
                         </a>
-                        <p className="mt-4 text-xs text-slate-400">v{version} • .exe installer • release {tag}</p>
+                        <p className="mt-4 text-xs text-slate-400">v{version} • .exe installer • release {desktopTag}</p>
                     </motion.div>
 
                     {/* macOS */}
@@ -107,7 +107,7 @@ export function DownloadSectionContent({ release }: Props) {
                             <Download className="w-5 h-5 group-hover:translate-y-0.5 transition-transform" />
                             Download for macOS
                         </a>
-                        <p className="mt-4 text-xs text-slate-400">v{version} • .dmg (aarch64) • release {tag}</p>
+                        <p className="mt-4 text-xs text-slate-400">v{version} • .dmg (aarch64) • release {desktopTag}</p>
                     </motion.div>
 
                     {/* Linux */}
@@ -143,7 +143,7 @@ export function DownloadSectionContent({ release }: Props) {
                             <Download className="w-4 h-4" />
                             AppImage (portable)
                         </a>
-                        <p className="mt-4 text-xs text-slate-400">v{version} • .deb or AppImage • release {tag}</p>
+                        <p className="mt-4 text-xs text-slate-400">v{version} • .deb or AppImage • release {linuxTag}</p>
                     </motion.div>
                 </div>
             </div>
