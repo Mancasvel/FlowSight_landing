@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { UserPlus, Link as LinkIcon, Bell, Shield, Check, Plus, Trash2, Copy, RefreshCw, CreditCard, Users, MessageSquare, Palette, AlertTriangle, Mail } from 'lucide-react';
+import { UserPlus, Link as LinkIcon, Bell, Shield, Check, Plus, Trash2, Copy, RefreshCw, CreditCard, Users, MessageSquare, Palette, AlertTriangle, Mail, KeyRound } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import {
     getLicense,
@@ -9,6 +9,7 @@ import {
     getTeamMembers,
     createTeam,
     removeTeamMember,
+    claimLicense,
     secondsToHours,
     type License,
     type Team,
@@ -54,6 +55,12 @@ export default function SettingsPage() {
     const [creatingTeam, setCreatingTeam] = useState(false);
     const [inviteLink, setInviteLink] = useState<string | null>(null);
     const [generatingInvite, setGeneratingInvite] = useState(false);
+
+    // License claim state
+    const [licenseCode, setLicenseCode] = useState('');
+    const [claimingLicense, setClaimingLicense] = useState(false);
+    const [claimError, setClaimError] = useState<string | null>(null);
+    const [claimSuccess, setClaimSuccess] = useState<string | null>(null);
 
     // Notification settings
     const [dailyEmail, setDailyEmail] = useState(true);
@@ -202,6 +209,29 @@ export default function SettingsPage() {
         }
     }, []);
 
+    const handleClaimLicense = async () => {
+        const code = licenseCode.trim();
+        if (!code) return;
+
+        setClaimingLicense(true);
+        setClaimError(null);
+        setClaimSuccess(null);
+
+        try {
+            const claimed = await claimLicense(supabase, code);
+            setLicense(claimed);
+            setLicenseCode('');
+            setClaimSuccess(
+                `License activated. You now have ${claimed.max_members} seats on the ${claimed.plan_type} plan.`
+            );
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'Failed to activate license.';
+            setClaimError(message);
+        } finally {
+            setClaimingLicense(false);
+        }
+    };
+
     const handleTeamSelect = async (team: Team) => {
         setSelectedTeam(team);
         const members = await getTeamMembers(supabase, team.id);
@@ -347,6 +377,70 @@ export default function SettingsPage() {
                         </button>
                     </div>
                 )}
+
+                {/* Activate a license code (promo / bulk / gift codes) */}
+                <div className={`${license ? 'mt-6 pt-6 border-t border-dashboard-border' : 'mt-2'}`}>
+                    <div className="flex items-center gap-2 mb-2">
+                        <KeyRound size={16} className="text-primary-blue" />
+                        <h3 className="font-medium text-dashboard-text text-sm">
+                            {license ? 'Have another license code?' : 'Activate a license code'}
+                        </h3>
+                    </div>
+                    <p className="text-xs text-dashboard-muted mb-3">
+                        Paste a code like <span className="font-mono">FS-XXXX-XXXX</span> to activate it on your account.
+                    </p>
+
+                    <div className="flex flex-col sm:flex-row gap-2">
+                        <input
+                            type="text"
+                            value={licenseCode}
+                            onChange={(e) => {
+                                setLicenseCode(e.target.value);
+                                if (claimError) setClaimError(null);
+                                if (claimSuccess) setClaimSuccess(null);
+                            }}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' && !claimingLicense) handleClaimLicense();
+                            }}
+                            placeholder="FS-XXXX-XXXX"
+                            autoComplete="off"
+                            spellCheck={false}
+                            disabled={claimingLicense}
+                            aria-label="License code"
+                            className="flex-1 px-4 py-2 bg-dashboard-card border border-dashboard-border rounded-lg text-dashboard-text font-mono tracking-wider uppercase placeholder:text-dashboard-muted placeholder:font-sans placeholder:normal-case focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
+                        />
+                        <button
+                            onClick={handleClaimLicense}
+                            disabled={claimingLicense || !licenseCode.trim()}
+                            className="flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                            {claimingLicense ? (
+                                <>
+                                    <RefreshCw className="animate-spin" size={16} />
+                                    Activating...
+                                </>
+                            ) : (
+                                <>
+                                    <Check size={16} />
+                                    Activate
+                                </>
+                            )}
+                        </button>
+                    </div>
+
+                    {claimError && (
+                        <div className="mt-3 flex items-start gap-2 p-3 bg-accent-red/10 border border-accent-red/30 rounded-lg text-sm text-accent-red">
+                            <AlertTriangle size={16} className="mt-0.5 shrink-0" />
+                            <span>{claimError}</span>
+                        </div>
+                    )}
+                    {claimSuccess && (
+                        <div className="mt-3 flex items-start gap-2 p-3 bg-accent-green/10 border border-accent-green/30 rounded-lg text-sm text-accent-green">
+                            <Check size={16} className="mt-0.5 shrink-0" />
+                            <span>{claimSuccess}</span>
+                        </div>
+                    )}
+                </div>
             </section>
 
             {/* Team Management */}

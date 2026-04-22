@@ -44,7 +44,7 @@ export interface Database {
             licenses: {
                 Row: {
                     id: string;
-                    owner_id: string;
+                    owner_id: string | null;
                     plan_type: 'starter' | 'professional' | 'enterprise';
                     max_members: number;
                     starts_at: string;
@@ -52,11 +52,13 @@ export interface Database {
                     is_active: boolean;
                     stripe_subscription_id: string | null;
                     stripe_customer_id: string | null;
+                    code: string | null;
+                    claimed_at: string | null;
                     created_at: string;
                 };
                 Insert: {
                     id?: string;
-                    owner_id: string;
+                    owner_id?: string | null;
                     plan_type?: 'starter' | 'professional' | 'enterprise';
                     max_members?: number;
                     starts_at?: string;
@@ -64,11 +66,13 @@ export interface Database {
                     is_active?: boolean;
                     stripe_subscription_id?: string | null;
                     stripe_customer_id?: string | null;
+                    code?: string | null;
+                    claimed_at?: string | null;
                     created_at?: string;
                 };
                 Update: {
                     id?: string;
-                    owner_id?: string;
+                    owner_id?: string | null;
                     plan_type?: 'starter' | 'professional' | 'enterprise';
                     max_members?: number;
                     starts_at?: string;
@@ -76,6 +80,8 @@ export interface Database {
                     is_active?: boolean;
                     stripe_subscription_id?: string | null;
                     stripe_customer_id?: string | null;
+                    code?: string | null;
+                    claimed_at?: string | null;
                     created_at?: string;
                 };
             };
@@ -342,6 +348,10 @@ export interface Database {
             get_license_member_count: {
                 Args: { license_id: string };
                 Returns: number;
+            };
+            claim_license: {
+                Args: { p_code: string };
+                Returns: Database['public']['Tables']['licenses']['Row'];
             };
         };
         Enums: {};

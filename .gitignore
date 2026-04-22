@@ -174,3 +174,6 @@ brain/
 
 # Supabase local migration scripts
 supabase/
+
+# Local seed outputs (generated licenses, etc.)
+seed-output/
