@@ -1,16 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { UserPlus, Link as LinkIcon, Bell, Shield, Check, Plus, Trash2, Copy, RefreshCw, CreditCard, Users, MessageSquare, Palette, AlertTriangle, Mail, KeyRound } from 'lucide-react';
+import { UserPlus, Link as LinkIcon, Bell, Shield, Check, Plus, Trash2, Copy, RefreshCw, CreditCard, Users, MessageSquare, Palette, AlertTriangle, Mail, KeyRound, Pencil, Save, X } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import {
     getLicense,
     getTeams,
     getTeamMembers,
     createTeam,
-    removeTeamMember,
     claimLicense,
-    secondsToHours,
     type License,
     type Team,
     type TeamMember,
@@ -20,6 +18,11 @@ import {
 interface ToggleProps {
     enabled: boolean;
     onChange: (enabled: boolean) => void;
+}
+
+interface WorkerCredentials {
+    email: string;
+    password: string;
 }
 
 function Toggle({ enabled, onChange }: ToggleProps) {
@@ -55,6 +58,18 @@ export default function SettingsPage() {
     const [creatingTeam, setCreatingTeam] = useState(false);
     const [inviteLink, setInviteLink] = useState<string | null>(null);
     const [generatingInvite, setGeneratingInvite] = useState(false);
+    const [newWorkerName, setNewWorkerName] = useState('');
+    const [newWorkerEmail, setNewWorkerEmail] = useState('');
+    const [newWorkerPassword, setNewWorkerPassword] = useState('');
+    const [creatingWorker, setCreatingWorker] = useState(false);
+    const [workerCredentials, setWorkerCredentials] = useState<WorkerCredentials | null>(null);
+    const [workerError, setWorkerError] = useState<string | null>(null);
+    const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
+    const [editWorkerName, setEditWorkerName] = useState('');
+    const [editWorkerEmail, setEditWorkerEmail] = useState('');
+    const [editWorkerPassword, setEditWorkerPassword] = useState('');
+    const [savingWorkerId, setSavingWorkerId] = useState<string | null>(null);
+    const [deletingWorkerId, setDeletingWorkerId] = useState<string | null>(null);
 
     // License claim state
     const [licenseCode, setLicenseCode] = useState('');
@@ -238,6 +253,12 @@ export default function SettingsPage() {
         setTeamMembers(members);
     };
 
+    const refreshTeamMembers = async (team = selectedTeam) => {
+        if (!team) return;
+        const members = await getTeamMembers(supabase, team.id);
+        setTeamMembers(members);
+    };
+
     const handleCreateTeam = async () => {
         if (!newTeamName.trim() || !userId || !license) return;
         setCreatingTeam(true);
@@ -261,15 +282,126 @@ export default function SettingsPage() {
         }
     };
 
-    const handleRemoveMember = async (memberId: string) => {
-        if (!selectedTeam || !confirm('Remove this member from the team?')) return;
+    const handleCreateWorker = async () => {
+        if (!selectedTeam) return;
+
+        setCreatingWorker(true);
+        setWorkerError(null);
+        setWorkerCredentials(null);
 
         try {
-            await removeTeamMember(supabase, selectedTeam.id, memberId);
-            setTeamMembers(teamMembers.filter(m => m.user_id !== memberId));
+            const response = await fetch('/api/team-workers', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    teamId: selectedTeam.id,
+                    displayName: newWorkerName,
+                    email: newWorkerEmail,
+                    password: newWorkerPassword || undefined,
+                }),
+            });
+            const payload = await response.json();
+
+            if (!response.ok) {
+                throw new Error(payload.error || 'Failed to create worker.');
+            }
+
+            setWorkerCredentials(payload.credentials);
+            setNewWorkerName('');
+            setNewWorkerEmail('');
+            setNewWorkerPassword('');
+            await refreshTeamMembers();
         } catch (err) {
-            console.error('Error removing member:', err);
-            alert('Failed to remove member');
+            setWorkerError(err instanceof Error ? err.message : 'Failed to create worker.');
+        } finally {
+            setCreatingWorker(false);
+        }
+    };
+
+    const copyWorkerCredentials = () => {
+        if (!workerCredentials) return;
+
+        navigator.clipboard.writeText(
+            `Email: ${workerCredentials.email}\nPassword: ${workerCredentials.password}`
+        );
+        alert('Worker credentials copied!');
+    };
+
+    const startEditingWorker = (member: TeamMember & { profile: Profile }) => {
+        setEditingMemberId(member.user_id);
+        setEditWorkerName(member.profile.display_name || '');
+        setEditWorkerEmail('');
+        setEditWorkerPassword('');
+        setWorkerError(null);
+    };
+
+    const cancelEditingWorker = () => {
+        setEditingMemberId(null);
+        setEditWorkerName('');
+        setEditWorkerEmail('');
+        setEditWorkerPassword('');
+    };
+
+    const handleUpdateWorker = async (member: TeamMember & { profile: Profile }) => {
+        if (!selectedTeam) return;
+
+        setSavingWorkerId(member.user_id);
+        setWorkerError(null);
+
+        try {
+            const response = await fetch(`/api/team-workers/${member.user_id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    teamId: selectedTeam.id,
+                    displayName: editWorkerName,
+                    email: editWorkerEmail,
+                    password: editWorkerPassword || undefined,
+                }),
+            });
+            const payload = await response.json();
+
+            if (!response.ok) {
+                throw new Error(payload.error || 'Failed to update worker.');
+            }
+
+            cancelEditingWorker();
+            await refreshTeamMembers();
+        } catch (err) {
+            setWorkerError(err instanceof Error ? err.message : 'Failed to update worker.');
+        } finally {
+            setSavingWorkerId(null);
+        }
+    };
+
+    const handleDeleteWorker = async (member: TeamMember & { profile: Profile }) => {
+        if (!selectedTeam) return;
+
+        const name = member.profile.display_name || 'this worker';
+        const firstConfirm = confirm(`Delete ${name} from FlowSight? This removes their login credentials.`);
+        if (!firstConfirm) return;
+
+        const secondConfirm = confirm('This action deletes the worker account and cannot be undone. Continue?');
+        if (!secondConfirm) return;
+
+        setDeletingWorkerId(member.user_id);
+        setWorkerError(null);
+
+        try {
+            const response = await fetch(`/api/team-workers/${member.user_id}?teamId=${selectedTeam.id}`, {
+                method: 'DELETE',
+            });
+            const payload = await response.json();
+
+            if (!response.ok) {
+                throw new Error(payload.error || 'Failed to delete worker.');
+            }
+
+            setTeamMembers(teamMembers.filter(m => m.user_id !== member.user_id));
+        } catch (err) {
+            setWorkerError(err instanceof Error ? err.message : 'Failed to delete worker.');
+        } finally {
+            setDeletingWorkerId(null);
         }
     };
 
@@ -524,6 +656,72 @@ export default function SettingsPage() {
                             </button>
                         </div>
 
+                        <div className="p-4 bg-dashboard-bg rounded-lg space-y-3">
+                            <div>
+                                <h4 className="font-medium text-dashboard-text text-sm">Create worker account</h4>
+                                <p className="text-xs text-dashboard-muted">
+                                    Add a worker directly and share the generated credentials with them.
+                                </p>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                                <input
+                                    type="text"
+                                    value={newWorkerName}
+                                    onChange={(e) => setNewWorkerName(e.target.value)}
+                                    placeholder="Worker name"
+                                    className="px-4 py-2 bg-dashboard-card border border-dashboard-border rounded-lg text-dashboard-text"
+                                />
+                                <input
+                                    type="email"
+                                    value={newWorkerEmail}
+                                    onChange={(e) => setNewWorkerEmail(e.target.value)}
+                                    placeholder="worker@company.com"
+                                    className="px-4 py-2 bg-dashboard-card border border-dashboard-border rounded-lg text-dashboard-text"
+                                />
+                                <input
+                                    type="text"
+                                    value={newWorkerPassword}
+                                    onChange={(e) => setNewWorkerPassword(e.target.value)}
+                                    placeholder="Password (auto if empty)"
+                                    autoComplete="new-password"
+                                    className="px-4 py-2 bg-dashboard-card border border-dashboard-border rounded-lg text-dashboard-text"
+                                />
+                            </div>
+                            <button
+                                onClick={handleCreateWorker}
+                                disabled={creatingWorker || !newWorkerName.trim() || !newWorkerEmail.trim()}
+                                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+                            >
+                                {creatingWorker ? <RefreshCw className="animate-spin" size={16} /> : <UserPlus size={16} />}
+                                {creatingWorker ? 'Creating worker...' : 'Create worker'}
+                            </button>
+                        </div>
+
+                        {workerError && (
+                            <div className="flex items-start gap-2 p-3 bg-accent-red/10 border border-accent-red/30 rounded-lg text-sm text-accent-red">
+                                <AlertTriangle size={16} className="mt-0.5 shrink-0" />
+                                <span>{workerError}</span>
+                            </div>
+                        )}
+
+                        {workerCredentials && (
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 p-3 bg-accent-green/10 border border-accent-green/30 rounded-lg">
+                                <div className="flex-1 text-sm text-dashboard-text">
+                                    <div className="font-medium">Worker credentials ready</div>
+                                    <div className="font-mono text-xs text-dashboard-muted break-all">
+                                        {workerCredentials.email} / {workerCredentials.password}
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={copyWorkerCredentials}
+                                    className="flex items-center justify-center gap-2 px-3 py-2 text-sm bg-dashboard-card rounded-lg text-dashboard-text hover:bg-dashboard-border"
+                                >
+                                    <Copy size={14} />
+                                    Copy credentials
+                                </button>
+                            </div>
+                        )}
+
                         {/* Invite Code */}
                         {inviteLink && (
                             <div className="flex items-center gap-2 p-3 bg-accent-green/10 border border-accent-green/30 rounded-lg">
@@ -541,9 +739,12 @@ export default function SettingsPage() {
                         )}
 
                         {teamMembers.length > 0 ? (
-                            teamMembers.map((member) => (
-                                <div key={member.id} className="flex items-center justify-between p-4 bg-dashboard-bg rounded-lg">
-                                    <div className="flex items-center gap-3">
+                            teamMembers.map((member) => {
+                                const isEditing = editingMemberId === member.user_id;
+
+                                return (
+                                <div key={member.id} className="flex flex-col gap-3 p-4 bg-dashboard-bg rounded-lg sm:flex-row sm:items-center sm:justify-between">
+                                    <div className="flex items-center gap-3 min-w-0">
                                         <div className="w-10 h-10 bg-gradient-to-br from-primary-blue to-primary-teal rounded-full flex items-center justify-center">
                                             {member.profile.avatar_url ? (
                                                 // eslint-disable-next-line @next/next/no-img-element
@@ -554,24 +755,87 @@ export default function SettingsPage() {
                                                 </span>
                                             )}
                                         </div>
-                                        <div>
-                                            <div className="font-medium text-dashboard-text">{member.profile.display_name || 'Unknown'}</div>
-                                            <div className="text-sm text-dashboard-muted capitalize">{member.role}</div>
+                                        <div className="min-w-0">
+                                            {isEditing ? (
+                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                                                    <input
+                                                        type="text"
+                                                        value={editWorkerName}
+                                                        onChange={(e) => setEditWorkerName(e.target.value)}
+                                                        placeholder="Worker name"
+                                                        className="px-3 py-2 bg-dashboard-card border border-dashboard-border rounded-lg text-dashboard-text text-sm"
+                                                    />
+                                                    <input
+                                                        type="email"
+                                                        value={editWorkerEmail}
+                                                        onChange={(e) => setEditWorkerEmail(e.target.value)}
+                                                        placeholder="New email (optional)"
+                                                        className="px-3 py-2 bg-dashboard-card border border-dashboard-border rounded-lg text-dashboard-text text-sm"
+                                                    />
+                                                    <input
+                                                        type="text"
+                                                        value={editWorkerPassword}
+                                                        onChange={(e) => setEditWorkerPassword(e.target.value)}
+                                                        placeholder="New password (optional)"
+                                                        autoComplete="new-password"
+                                                        className="px-3 py-2 bg-dashboard-card border border-dashboard-border rounded-lg text-dashboard-text text-sm"
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <div className="font-medium text-dashboard-text truncate">{member.profile.display_name || 'Unknown'}</div>
+                                                    <div className="text-sm text-dashboard-muted capitalize truncate">{member.role}</div>
+                                                </>
+                                            )}
                                         </div>
                                     </div>
                                     {member.user_id !== userId && (
-                                        <button
-                                            onClick={() => handleRemoveMember(member.user_id)}
-                                            className="p-2 text-accent-red hover:bg-accent-red/10 rounded-lg transition-colors"
-                                        >
-                                            <Trash2 size={18} />
-                                        </button>
+                                        <div className="flex items-center gap-2 self-end sm:self-auto">
+                                            {isEditing ? (
+                                                <>
+                                                    <button
+                                                        onClick={() => handleUpdateWorker(member)}
+                                                        disabled={savingWorkerId === member.user_id}
+                                                        className="p-2 text-accent-green hover:bg-accent-green/10 rounded-lg transition-colors disabled:opacity-50"
+                                                        title="Save worker"
+                                                    >
+                                                        {savingWorkerId === member.user_id ? <RefreshCw className="animate-spin" size={18} /> : <Save size={18} />}
+                                                    </button>
+                                                    <button
+                                                        onClick={cancelEditingWorker}
+                                                        className="p-2 text-dashboard-muted hover:bg-dashboard-border rounded-lg transition-colors"
+                                                        title="Cancel"
+                                                    >
+                                                        <X size={18} />
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <button
+                                                        onClick={() => startEditingWorker(member)}
+                                                        className="p-2 text-dashboard-muted hover:bg-dashboard-border rounded-lg transition-colors"
+                                                        title="Edit worker"
+                                                    >
+                                                        <Pencil size={18} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteWorker(member)}
+                                                        disabled={deletingWorkerId === member.user_id}
+                                                        className="p-2 text-accent-red hover:bg-accent-red/10 rounded-lg transition-colors disabled:opacity-50"
+                                                        title="Delete worker account"
+                                                    >
+                                                        {deletingWorkerId === member.user_id ? <RefreshCw className="animate-spin" size={18} /> : <Trash2 size={18} />}
+                                                    </button>
+                                                </>
+                                            )}
+                                        </div>
                                     )}
                                 </div>
-                            ))
+                                );
+                            })
                         ) : (
                             <div className="text-center py-4 text-dashboard-muted">
-                                No members yet. Generate an invite link to add workers.
+                                No members yet. Create a worker account or generate an invite code.
                             </div>
                         )}
                     </div>
