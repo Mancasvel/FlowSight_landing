@@ -20,7 +20,7 @@ export default function TeamPage() {
                 Founded by a Developer Operations Engineer
               </h1>
               <p className="text-base sm:text-lg md:text-xl text-gray-400 max-w-2xl mx-auto px-4">
-                Building the future of organizational intelligence
+                Building worker-owned cognitive intelligence
               </p>
             </div>
           </div>
@@ -35,7 +35,7 @@ export default function TeamPage() {
                   <div className="flex-shrink-0">
                     <Image
                       src="/mc_profile.jpg"
-                      alt="Manuel Castillejo - Founder & CEO"
+                      alt="Manuel Castillejo, Founder and CEO"
                       width={128}
                       height={128}
                       className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full object-cover border-4 border-slate-700 shadow-lg"
@@ -61,7 +61,7 @@ export default function TeamPage() {
                       </p>
 
                       <p>
-                        <strong className="text-gray-300">Vision:</strong> I'm founding the discipline of Organizational Intelligence Engineering. FlowSight is the first application.
+                        <strong className="text-gray-300">Vision:</strong> FlowSight proves you can instrument work without dehumanizing workers: cognitive health first, client receipts second, surveillance never.
                       </p>
                     </div>
 

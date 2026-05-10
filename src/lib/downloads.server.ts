@@ -15,9 +15,9 @@
  * publishes its first release that ships a `.deb` or `.AppImage`.
  *
  * Env knobs:
- * - `NEXT_PUBLIC_AGENT_RELEASE_TAG`       — pin Win/Mac to a specific tag.
- * - `NEXT_PUBLIC_AGENT_LINUX_RELEASE_TAG` — pin Linux to a specific tag.
- * - `GITHUB_TOKEN`                        — authenticated rate limit (5k/h).
+ * - `NEXT_PUBLIC_AGENT_RELEASE_TAG`      , pin Win/Mac to a specific tag.
+ * - `NEXT_PUBLIC_AGENT_LINUX_RELEASE_TAG`, pin Linux to a specific tag.
+ * - `GITHUB_TOKEN`                       , authenticated rate limit (5k/h).
  */
 
 import {

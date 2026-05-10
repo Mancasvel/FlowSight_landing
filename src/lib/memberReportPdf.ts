@@ -63,7 +63,7 @@ function formatTime(iso: string): string {
 }
 
 function formatDuration(seconds: number): string {
-  if (!Number.isFinite(seconds) || seconds <= 0) return '—'
+  if (!Number.isFinite(seconds) || seconds <= 0) return 'n/a'
   const total = Math.round(seconds)
   if (total < 60) return `${total}s`
   const mins = Math.floor(total / 60)
@@ -211,7 +211,7 @@ function drawHighlights(doc: jsPDF, input: MemberReportInput, startY: number): n
   const topMeta = (Object.entries(totals) as [MetaCategory, number][])
     .sort((a, b) => b[1] - a[1])
     .find(([, v]) => v > 0)
-  const topMetaLabel = topMeta ? topMeta[0] : '—'
+  const topMetaLabel = topMeta ? topMeta[0] : 'n/a'
   const topMetaHours = topMeta ? topMeta[1] / 3600 : 0
 
   const jiraTickets = new Set(input.entries.map((e) => e.jiraTicketId).filter(Boolean))
@@ -219,8 +219,8 @@ function drawHighlights(doc: jsPDF, input: MemberReportInput, startY: number): n
   const firstEntry = input.entries[0]
   const lastEntry = input.entries[input.entries.length - 1]
   const timeRange = firstEntry && lastEntry
-    ? `${formatTime(firstEntry.capturedAt)} – ${formatTime(lastEntry.capturedAt)}`
-    : '—'
+    ? `${formatTime(firstEntry.capturedAt)} to ${formatTime(lastEntry.capturedAt)}`
+    : 'n/a'
 
   const cards: Array<{ label: string; value: string; hint: string }> = [
     {
@@ -444,13 +444,13 @@ function drawActivitySummary(doc: jsPDF, input: MemberReportInput, startY: numbe
 
   const body = summaries.map((s) => {
     const pct = totalSeconds > 0 ? Math.round((s.totalSeconds / totalSeconds) * 100) : 0
-    const window = `${formatTime(s.firstAt)}–${formatTime(s.lastAt)}`
+    const window = `${formatTime(s.firstAt)} to ${formatTime(s.lastAt)}`
     const jira = s.jiraTickets.length === 0
-      ? '—'
+      ? 'n/a'
       : s.jiraTickets.slice(0, 3).join(', ') + (s.jiraTickets.length > 3 ? ` +${s.jiraTickets.length - 3}` : '')
     const rawHighlight = s.highlight ? s.highlight.replace(/\s+/g, ' ') : ''
     const highlight = !rawHighlight
-      ? '—'
+      ? 'n/a'
       : rawHighlight.length > 160
         ? rawHighlight.slice(0, 160).trimEnd() + '…'
         : rawHighlight

@@ -28,12 +28,12 @@ export default function CapacityForecast({ sprint }: Props) {
     if (!sprint) return
     const ctx = contextSwitchingHours(sprint)
     const text = [
-      `FlowSight — Sprint capacity forecast`,
+      `FlowSight, Sprint capacity forecast`,
       `Sprint: ${sprint.label}`,
       `Committed: ${sprint.committedHours}h`,
       `Expected delivery: ${sprint.expectedDelivery}h`,
       `Efficiency: ${Math.round(sprint.efficiencyRatio * 100)}%`,
-      `Loss — meetings: ${sprint.meetingHours}h, interruptions: ${sprint.interruptedHours}h, context: ${ctx}h`,
+      `Loss, meetings: ${sprint.meetingHours}h, interruptions: ${sprint.interruptedHours}h, context: ${ctx}h`,
     ].join('\n')
     void navigator.clipboard.writeText(text).then(() => showToast('Forecast copied to clipboard'))
   }, [sprint, showToast])
@@ -41,7 +41,7 @@ export default function CapacityForecast({ sprint }: Props) {
   const copyShare = useCallback(() => {
     if (!sprint) return
     const text = `Next sprint (${sprint.label}): we committed ${sprint.committedHours}h; FlowSight forecasts ~${sprint.expectedDelivery}h of effective delivery (${Math.round(sprint.efficiencyRatio * 100)}% efficiency).`
-    void navigator.clipboard.writeText(text).then(() => showToast('Summary copied — ready to share'))
+    void navigator.clipboard.writeText(text).then(() => showToast('Summary copied, ready to share'))
   }, [sprint, showToast])
 
   if (!sprint) {

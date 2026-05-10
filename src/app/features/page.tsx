@@ -22,15 +22,15 @@ export default function FeaturesPage() {
           <div className="relative z-10 container-max px-4 sm:px-6 lg:px-12">
             <div className="text-center mb-12 md:mb-16">
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
-                Powerful Features for
+                Everything you need to
                 <span className="block bg-gradient-to-r from-teal-400 to-blue-400 bg-clip-text text-transparent">
-                  Seamless Workflow
+                  protect focus &amp; prove output
                 </span>
               </h1>
 
               <p className="text-lg sm:text-xl text-gray-400 leading-relaxed max-w-3xl mx-auto px-4">
-                Discover how FlowSight's intelligent features transform your team's workflow
-                with zero interruption and complete privacy.
+                FlowSight pairs local on device AI with ergonomic insights so freelancers, agencies, and marketplace talent can stay healthy
+                while clients still get receipts, and our application code stays open to inspect.
               </p>
             </div>
           </div>
@@ -48,10 +48,10 @@ export default function FeaturesPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                   </svg>
                 </div>
-                <h3 className="text-lg sm:text-xl font-bold text-white mb-4">Automatic Task Detection</h3>
+                <h3 className="text-lg sm:text-xl font-bold text-white mb-4">Automatic work narratives</h3>
                 <p className="text-gray-400 leading-relaxed">
-                  AI-powered context understanding automatically identifies and tracks tasks
-                  as you work, eliminating manual time entry and status updates.
+                  Local vision-language models infer what you shipped, what stalled, and which tools dominated your day, without turning your
+                  desktop into a live surveillance feed.
                 </p>
               </div>
 
@@ -62,10 +62,9 @@ export default function FeaturesPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                   </svg>
                 </div>
-                <h3 className="text-lg sm:text-xl font-bold text-white mb-4">Privacy-First Architecture</h3>
+                <h3 className="text-lg sm:text-xl font-bold text-white mb-4">Worker-owned architecture</h3>
                 <p className="text-gray-400 leading-relaxed">
-                  All processing happens locally on your machine. No code leaves your environment,
-                  ensuring complete data privacy and security.
+                  Local AI inference stays on device under the worker’s control. Optional exports are explicit, with no silent exfiltration of screenshots, and you can read FlowSight’s source to verify behavior.
                 </p>
               </div>
 
@@ -76,10 +75,9 @@ export default function FeaturesPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
                 </div>
-                <h3 className="text-lg sm:text-xl font-bold text-white mb-4">Intelligent Context Analysis</h3>
+                <h3 className="text-lg sm:text-xl font-bold text-white mb-4">Cognitive load radar</h3>
                 <p className="text-gray-400 leading-relaxed">
-                  Advanced AI understands your work changes, documents, and work patterns
-                  to provide accurate task tracking and progress updates.
+                  Detect context switching, meeting sprawl, and interruption overload so you can intervene before burnout shows up in your calendar.
                 </p>
               </div>
 
@@ -90,10 +88,9 @@ export default function FeaturesPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                   </svg>
                 </div>
-                <h3 className="text-lg sm:text-xl font-bold text-white mb-4">Seamless Integration</h3>
+                <h3 className="text-lg sm:text-xl font-bold text-white mb-4">Client ready exports</h3>
                 <p className="text-gray-400 leading-relaxed">
-                  Works with your existing tools and workflows. No changes to your
-                  process required - just install and start working naturally.
+                  One-click proof of work packets summarize the week in language hiring managers already understand, ideal for retainers, SOWs, and marketplace SLAs.
                 </p>
               </div>
 
@@ -104,10 +101,9 @@ export default function FeaturesPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                   </svg>
                 </div>
-                <h3 className="text-lg sm:text-xl font-bold text-white mb-4">Real-time Progress Tracking</h3>
+                <h3 className="text-lg sm:text-xl font-bold text-white mb-4">Flow-state telemetry</h3>
                 <p className="text-gray-400 leading-relaxed">
-                  Live updates of task progress and status as you work. Automatic time tracking
-                  and completion detection for accurate project management.
+                  Live focus depth, switch counts, and recovery windows help you defend deep work blocks instead of guessing why the day vanished.
                 </p>
               </div>
 
@@ -118,10 +114,9 @@ export default function FeaturesPage() {
                     <path d="M11.571 4.714h1.715v5.143H11.57zm-4.286.428h1.715v5.143H7.285zM20 12c0 4.418-4.03 8-9 8-4.97 0-9-3.582-9-8s4.03-8 9-8c4.97 0 9 3.582 9 8zm-9 6c3.859 0 7-2.56 7-6s-3.141-6-7-6-7 2.56-7 6 3.141 6 7 6z" />
                   </svg>
                 </div>
-                <h3 className="text-lg sm:text-xl font-bold text-white mb-4">Jira Integration</h3>
+                <h3 className="text-lg sm:text-xl font-bold text-white mb-4">Toolchain aware (roadmap)</h3>
                 <p className="text-gray-400 leading-relaxed">
-                  Automatic linking to Jira tickets and status updates. Keep your project management
-                  tools in sync without manual intervention.
+                  Upcoming connectors will map local narratives to Jira, Linear, or GitHub when teams want ticket hygiene, still driven by worker consent.
                 </p>
               </div>
             </div>
@@ -133,10 +128,10 @@ export default function FeaturesPage() {
           <div className="container-max px-4 sm:px-6 lg:px-12">
             <div className="text-center mb-12 md:mb-16">
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-6">
-                How FlowSight Works
+                How FlowSight works
               </h2>
               <p className="text-lg text-gray-400 max-w-2xl mx-auto">
-                Experience the future of workforce management
+                Install → local AI understands your session → cognitive + client insights appear → you choose what leaves the machine.
               </p>
             </div>
 
@@ -146,10 +141,9 @@ export default function FeaturesPage() {
                 <div className="w-16 h-16 bg-teal-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
                   <span className="text-2xl font-bold text-teal-400">1</span>
                 </div>
-                <h3 className="text-xl font-bold text-white mb-4">Install & Connect</h3>
+                <h3 className="text-xl font-bold text-white mb-4">Install the agent</h3>
                 <p className="text-gray-400">
-                  Install FlowSight and connect it to your work environment.
-                  No complex setup required.
+                  Download the FlowSight desktop agent for macOS, Windows, or Linux. Sign in once; the heavy models stay local.
                 </p>
               </div>
 
@@ -158,10 +152,9 @@ export default function FeaturesPage() {
                 <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
                   <span className="text-2xl font-bold text-blue-400">2</span>
                 </div>
-                <h3 className="text-xl font-bold text-white mb-4">Work Naturally</h3>
+                <h3 className="text-xl font-bold text-white mb-4">Work like you always do</h3>
                 <p className="text-gray-400">
-                  Continue working as you always do. FlowSight analyzes your context
-                  in the background.
+                  FlowSight passively observes the same screens you already stare at, with no manual timers and no performative check-ins.
                 </p>
               </div>
 
@@ -170,10 +163,9 @@ export default function FeaturesPage() {
                 <div className="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
                   <span className="text-2xl font-bold text-purple-400">3</span>
                 </div>
-                <h3 className="text-xl font-bold text-white mb-4">Automatic Updates</h3>
+                <h3 className="text-xl font-bold text-white mb-4">Review &amp; share</h3>
                 <p className="text-gray-400">
-                  Tasks are automatically tracked, updated, and synced with your
-                  project management tools.
+                  When you are ready, ship a polished proof of work packet to clients or platform ops. Everything else remains on device history.
                 </p>
               </div>
             </div>
@@ -186,10 +178,10 @@ export default function FeaturesPage() {
             <div className="bg-gradient-to-r from-teal-900/20 to-blue-900/20 rounded-3xl p-8 sm:p-12 md:p-16 border border-teal-500/20">
               <div className="text-center">
                 <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-6">
-                  Ready to Experience the Future?
+                  Ready to protect your cognition?
                 </h2>
                 <p className="text-lg text-gray-400 mb-8 max-w-2xl mx-auto">
-                  Join thousands of professionals who have transformed their workflow with FlowSight.
+                  Start the free trial and feel what changes when receipts write themselves, without surveillance economics.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <button

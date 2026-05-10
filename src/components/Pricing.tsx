@@ -10,23 +10,41 @@ const tiers = [
         name: "SIMPLE",
         price: "€12",
         id: "simple",
-        desc: "For freelancers & individuals",
-        features: ["Daily insights", "7-day history", "Self-hosted option", "Email support", "Jira Integration"],
+        desc: "Freelancers & solo remote workers",
+        features: [
+            "Daily cognitive + focus digest",
+            "7 day on device history",
+            "Manual client export templates",
+            "Email support",
+            "Local AI on device; FlowSight code open to inspect",
+        ],
     },
     {
         name: "ADVANCED",
         price: "€16",
         id: "advanced",
-        desc: "For small distributed teams",
-        features: ["Weekly AI reports", "Unlimited history", "Burnout alerts", "Slack integration", "Priority support"],
+        desc: "Small teams with external clients",
+        features: [
+            "Automated weekly proof of work PDFs",
+            "Unlimited local history",
+            "Burnout + interruption alerts",
+            "Slack / email handoff (roadmap)",
+            "Priority support",
+        ],
         featured: true,
     },
     {
         name: "BUSINESS",
         price: "€40",
         id: "business",
-        desc: "For large organizations",
-        features: ["Daily AI analysis", "Advanced analytics", "API Access", "SSO & Audit Logs", "Dedicated account manager"],
+        desc: "Marketplaces & regulated vendors",
+        features: [
+            "Platform-grade reporting APIs",
+            "Advanced workforce wellbeing analytics",
+            "SSO, audit trails, custom DPAs",
+            "Dedicated success engineer",
+            "B2B2B rollout playbooks",
+        ],
     },
 ];
 
@@ -36,9 +54,9 @@ export function Pricing() {
             <div className="container px-4 md:px-6 mx-auto">
                 <div className="text-center mb-16">
                     <h2 className="text-3xl md:text-5xl font-bold mb-4 text-secondary-navy">
-                        Simple, transparent pricing. Don't pay for extra add-ons.
+                        Simple pricing. Local AI, not storage rent.
                     </h2>
-                    <p className="text-slate-500">Per seat / month. Cancel anytime.</p>
+                    <p className="text-slate-500">Per seat per month. Cancel anytime. Annual plans save 20%.</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto items-center">

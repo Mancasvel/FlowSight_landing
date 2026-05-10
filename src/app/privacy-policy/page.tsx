@@ -94,11 +94,11 @@ export default function PrivacyPolicyPage() {
                 <div className="bg-slate-800/50 rounded-xl p-6 border border-slate-700/50">
                   <h2 className="text-xl font-bold text-white mt-0">5. Purposes and legal bases (GDPR Art. 6)</h2>
                   <ul className="list-disc pl-5 space-y-2 text-gray-400">
-                    <li><strong>Delivering the service and website</strong> — Art. 6(1)(b) (contract) and Art. 6(1)(f) (legitimate interests in reliable operation).</li>
-                    <li><strong>Security, abuse prevention, and debugging</strong> — Art. 6(1)(f) (legitimate interests), and where strictly necessary Art. 6(1)(c) (legal obligation).</li>
-                    <li><strong>Aggregated analytics on this site</strong> — Art. 6(1)(a) (consent), where not strictly necessary.</li>
-                    <li><strong>Newsletters or marketing</strong> — Art. 6(1)(a) (consent) or Art. 6(1)(f) with opt-out where permitted by law.</li>
-                    <li><strong>Legal compliance</strong> — Art. 6(1)(c) where applicable.</li>
+                    <li><strong>Delivering the service and website</strong>, Art. 6(1)(b) (contract) and Art. 6(1)(f) (legitimate interests in reliable operation).</li>
+                    <li><strong>Security, abuse prevention, and debugging</strong>, Art. 6(1)(f) (legitimate interests), and where strictly necessary Art. 6(1)(c) (legal obligation).</li>
+                    <li><strong>Aggregated analytics on this site</strong>, Art. 6(1)(a) (consent), where not strictly necessary.</li>
+                    <li><strong>Newsletters or marketing</strong>, Art. 6(1)(a) (consent) or Art. 6(1)(f) with opt-out where permitted by law.</li>
+                    <li><strong>Legal compliance</strong>, Art. 6(1)(c) where applicable.</li>
                   </ul>
                 </div>
 

@@ -6,7 +6,8 @@ export function BlogIndexJsonLd({ posts }: { posts: BlogPost[] }) {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
     name: `${siteConfig.name} Blog`,
-    description: 'Articles comparing FlowSight to alternatives and explaining privacy-first team visibility.',
+    description:
+      'Articles on local AI proof of work, cognitive health at work, and ethical alternatives to surveillance time trackers.',
     url: absoluteUrl('/blog'),
     isPartOf: { '@type': 'WebSite', name: siteConfig.name, url: siteConfig.url },
     mainEntity: {

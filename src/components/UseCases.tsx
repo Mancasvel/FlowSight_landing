@@ -6,48 +6,48 @@ import { PenTool, FileText, Code, MousePointer2, Image as ImageIcon, GitBranch, 
 const workMockups = [
     {
         id: 1,
-        title: "Design Teams",
-        description: "Track billable hours automatically. Know design iteration time.",
+        title: "Freelancers & remote ICs",
+        description: "Protect deep work, see context switches and interruption load, and understand your own patterns, without self-surveillance.",
         icon: <PenTool className="w-5 h-5" />,
         color: "bg-primary-cyan",
         mockup: "figma",
     },
     {
         id: 2,
-        title: "Content Teams",
-        description: "Word count tracking and research time analysis.",
+        title: "Clients & hiring managers",
+        description: "Receive polished proof of work summaries from accumulated activity, with no chasing timesheets or status threads.",
         icon: <FileText className="w-5 h-5" />,
         color: "bg-primary-teal",
         mockup: "docs",
     },
     {
         id: 3,
-        title: "Marketing Teams",
-        description: "Campaign flow tracking and asset management insights.",
+        title: "Outsourcing marketplaces",
+        description: "Differentiate with transparency and worker wellbeing: credible delivery signal without bossware optics.",
         icon: <Megaphone className="w-5 h-5" />,
         color: "bg-accent-orange",
         mockup: "marketing",
     },
     {
         id: 4,
-        title: "Sales Teams",
-        description: "CRM activity logging and call duration analytics.",
+        title: "Consulting & services",
+        description: "Automatic narratives of what shipped this week: billable truth that reads professional, not invasive.",
         icon: <DollarSign className="w-5 h-5" />,
         color: "bg-accent-green",
         mockup: "sales",
     },
     {
         id: 5,
-        title: "Project Managers",
-        description: "Kanban board movement and ticket resolution timing.",
+        title: "Product & delivery leads",
+        description: "Spot fragmentation and burnout signals early while workers keep control of what gets shared outward.",
         icon: <Layout className="w-5 h-5" />,
         color: "bg-blue-500",
         mockup: "kanban",
     },
     {
         id: 6,
-        title: "Engineering Teams",
-        description: "Git commit patterns, reading documentation and coding focus time.",
+        title: "Engineering & maker roles",
+        description: "Local vision-language context from the screen you already use (IDE, browser, docs) stays on device until you export.",
         icon: <Code className="w-5 h-5" />,
         color: "bg-secondary-navy",
         mockup: "code",
@@ -338,10 +338,10 @@ export function UseCases() {
             <div className="container px-4 md:px-6 mx-auto">
                 <div className="text-center mb-16">
                     <h2 className="text-3xl md:text-5xl font-bold mb-4 text-secondary-navy">
-                        Built for remote knowledge workers
+                        Built to protect your well-being and attention
                     </h2>
                     <p className="text-slate-500 max-w-2xl mx-auto">
-                        Tailored insights for every role in your organization.
+                        Individual-first: help workers stay healthy and legible, then let proof travel to clients and platforms.
                     </p>
                 </div>
             </div>

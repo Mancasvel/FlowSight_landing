@@ -10,12 +10,12 @@ import { FinalCTA } from '@/components/FinalCTA'
 import { absoluteUrl, siteConfig } from '@/lib/site'
 
 export const metadata: Metadata = {
-  title: 'Task visibility without employee surveillance',
+  title: 'Cognitive health and proof of work · local AI, zero surveillance',
   description: siteConfig.description,
   alternates: { canonical: absoluteUrl('/') },
   openGraph: {
     url: absoluteUrl('/'),
-    title: `${siteConfig.name} — Task visibility without employee surveillance`,
+    title: `${siteConfig.name} · Protect your focus. Prove your work. Automatically.`,
     description: siteConfig.description,
   },
 }

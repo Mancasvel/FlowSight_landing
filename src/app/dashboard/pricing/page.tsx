@@ -269,7 +269,7 @@ export default function DashboardPricingPage() {
             {/* Info */}
             <div className="text-center text-sm text-dashboard-muted space-y-2">
                 <p>All plans include a 14-day free trial. Cancel anytime.</p>
-                <p>Annual billing available — save 20%.</p>
+                <p>Annual billing available, save 20%.</p>
                 <p>
                     Need a custom solution?{' '}
                     <a href="mailto:sales@flowsight.ai" className="text-primary-blue hover:underline">

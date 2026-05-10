@@ -12,15 +12,15 @@ export default function PricingPage() {
       tier: "Basic",
       price: "€12/user/mo",
       features: {
-        "Task Traceability": "Local only",
-        "Local Storage": "7 days",
-        "PM Dashboard": "Not available",
-        "Context Intelligence": "Basic (rules)",
-        "Integrations": "None",
-        "Max Team Size": "10 users",
+        "Local AI on device + open codebase": "Included",
+        "Cognitive + focus digest": "Daily email",
+        "Local session history": "7 days",
+        "Proof-of-work exports": "Manual templates",
+        "Burnout & overload signals": "Core heuristics",
+        "Client sharing controls": "Self-serve links",
+        "Marketplace / API program": "Not included",
         "SSO (SAML)": "No",
-        "Cloud Sync": "Not available",
-        "Dedicated Support": "Community"
+        "Support": "Community + docs"
       },
       cta: "Create Free Account",
       ctaClass: "border-2 border-slate-600 text-gray-300 hover:border-teal-500 hover:text-teal-400 font-semibold px-6 py-3 rounded-xl transition-all duration-200"
@@ -29,15 +29,15 @@ export default function PricingPage() {
       tier: "Pro",
       price: "€19/user/mo",
       features: {
-        "Task Traceability": "Full + cloud sync",
-        "Local Storage": "90 days",
-        "PM Dashboard": "Real-time context",
-        "Context Intelligence": "Full (LLM+RAG)",
-        "Integrations": "Jira, Linear, GitHub",
-        "Max Team Size": "Unlimited",
-        "SSO (SAML)": "No",
-        "Cloud Sync": "Optional (encrypted)",
-        "Dedicated Support": "Email"
+        "Local AI on device + open codebase": "Included + faster builds",
+        "Cognitive + focus digest": "Realtime + weekly recap",
+        "Local session history": "365 days",
+        "Proof-of-work exports": "Automated weekly PDF",
+        "Burnout & overload signals": "Predictive alerts",
+        "Client sharing controls": "Branded portals",
+        "Marketplace / API program": "Coming soon",
+        "SSO (SAML)": "Roadmap",
+        "Support": "Priority email (< 8h)"
       },
       cta: "Start 14-Day Trial",
       ctaClass: "bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white font-semibold px-6 py-3 rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-teal-500/25",
@@ -47,15 +47,15 @@ export default function PricingPage() {
       tier: "Enterprise",
       price: "Custom",
       features: {
-        "Task Traceability": "Full + API",
-        "Local Storage": "Unlimited",
-        "PM Dashboard": "Real-time + custom",
-        "Context Intelligence": "Full + custom training",
-        "Integrations": "All + custom",
-        "Max Team Size": "Unlimited",
-        "SSO (SAML)": "Yes",
-        "Cloud Sync": "Required + compliant",
-        "Dedicated Support": "Slack + engineer"
+        "Local AI on device + open codebase": "Custom rollout images",
+        "Cognitive + focus digest": "Exec + HR analytics",
+        "Local session history": "Unlimited + legal hold",
+        "Proof-of-work exports": "White-label + API",
+        "Burnout & overload signals": "Custom models",
+        "Client sharing controls": "Granular policy engine",
+        "Marketplace / API program": "B2B2B integrations",
+        "SSO (SAML)": "Yes + SCIM",
+        "Support": "Slack + solutions engineer"
       },
       cta: "Contact Sales",
       ctaClass: "border-2 border-slate-600 text-gray-300 hover:border-teal-500 hover:text-teal-400 font-semibold px-6 py-3 rounded-xl transition-all duration-200"
@@ -78,7 +78,7 @@ export default function PricingPage() {
           <div className="relative z-10 container-max px-4 sm:px-6 lg:px-12">
             <div className="text-center mb-10 md:mb-16">
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
-                Pricing That Makes Sense
+                Invest in cognition, not spyware seats
               </h1>
             </div>
           </div>
@@ -173,7 +173,7 @@ export default function PricingPage() {
             {/* Pricing Note */}
             <div className="text-center mt-6 sm:mt-8 px-4">
               <p className="text-sm sm:text-base text-gray-400">
-                Annual billing available—save 20%. Volume discounts for teams 500+.
+                Annual billing available (save 20%). Volume discounts for teams 500+.
               </p>
             </div>
           </div>

@@ -24,8 +24,8 @@ export default function AboutPage() {
               </h1>
 
               <p className="text-lg sm:text-xl text-gray-400 leading-relaxed max-w-3xl mx-auto px-4">
-                We're building the future of workforce management
-                with AI-powered context understanding and privacy-first architecture.
+                We are building cognitive health infrastructure for knowledge workers, with local AI that keeps screenshots on device while
+                still answering the client question: “What did we get this week?”
               </p>
             </div>
           </div>
@@ -39,9 +39,9 @@ export default function AboutPage() {
                 Our Mission
               </h2>
               <p className="text-lg sm:text-xl text-gray-400 leading-relaxed mb-12">
-                Traditional time tracking and project management tools interrupt your flow and compromise your privacy.
-                FlowSight changes this by understanding your work context automatically, tracking progress seamlessly,
-                and keeping everything local and secure.
+                Surveillance trackers and blank timesheets both steal the same thing: uninterrupted cognition. FlowSight replaces them
+                with a local agent that reads your screen where it already exists, runs AI on your hardware, and turns honest work
+                signals into narratives clients can trust. FlowSight’s codebase is open to inspect.
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -51,8 +51,8 @@ export default function AboutPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
                   </div>
-                  <h3 className="text-lg font-bold text-white mb-3">Zero Interruption</h3>
-                  <p className="text-gray-400">Work naturally without switching contexts or manual tracking.</p>
+                  <h3 className="text-lg font-bold text-white mb-3">Flow-state guardrails</h3>
+                  <p className="text-gray-400">Surface context switching and interruption debt before your calendar does.</p>
                 </div>
 
                 <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-2xl p-6 border border-slate-700/50">
@@ -61,8 +61,8 @@ export default function AboutPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
                   </div>
-                  <h3 className="text-lg font-bold text-white mb-3">Privacy First</h3>
-                  <p className="text-gray-400">All processing happens locally - your code never leaves your machine.</p>
+                  <h3 className="text-lg font-bold text-white mb-3">Pixels stay yours</h3>
+                  <p className="text-gray-400">Screenshots never leave the worker laptop; exports are explicit and revocable.</p>
                 </div>
 
                 <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-2xl p-6 border border-slate-700/50">
@@ -71,8 +71,8 @@ export default function AboutPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                     </svg>
                   </div>
-                  <h3 className="text-lg font-bold text-white mb-3">AI-Powered</h3>
-                  <p className="text-gray-400">Advanced AI understands your context and automates project management.</p>
+                  <h3 className="text-lg font-bold text-white mb-3">Proof-of-work automation</h3>
+                  <p className="text-gray-400">On-device VL models translate messy days into client-grade summaries.</p>
                 </div>
               </div>
             </div>
@@ -91,27 +91,25 @@ export default function AboutPage() {
                 <div className="bg-slate-800/50 rounded-xl p-6 sm:p-8">
                   <h3 className="text-xl font-bold text-white mb-4">The Problem</h3>
                   <p className="text-gray-400 leading-relaxed">
-                    Employees spend hours each week on administrative tasks - updating Jira tickets,
-                    tracking time, and maintaining project status. This constant context switching breaks
-                    focus and slows down team velocity.
+                    Knowledge workers oscillate between deep creation and administrative proof. Every “quick status ping” costs minutes of
+                    recovery time; every surveillance dashboard erodes trust. The market forces a false binary: spy on people, or fly blind.
                   </p>
                 </div>
 
                 <div className="bg-slate-800/50 rounded-xl p-6 sm:p-8">
                   <h3 className="text-xl font-bold text-white mb-4">The Solution</h3>
                   <p className="text-gray-400 leading-relaxed">
-                    FlowSight uses AI to understand work context automatically. By analyzing
-                    activity, documents, and patterns, it can track progress, link tasks, and update
-                    project management tools without any manual intervention.
+                    FlowSight is a Cognitive Health &amp; Productivity platform: a local agent observes how work actually unfolds, flags
+                    overload patterns, and assembles professional proof of work for clients, without keystroke logging, without cloud screenshot
+                    libraries, and without asking people to become their own accountants.
                   </p>
                 </div>
 
                 <div className="bg-slate-800/50 rounded-xl p-6 sm:p-8">
                   <h3 className="text-xl font-bold text-white mb-4">The Future</h3>
                   <p className="text-gray-400 leading-relaxed">
-                    We're building toward a world where teams can focus entirely on high-value work,
-                    while intelligent systems handle all the administrative overhead. Privacy-first,
-                    AI-powered, and designed for the modern workflow.
+                    Our go-to-market is individual-first: win freelancers and remote ICs, let them viralize polished reports to their clients,
+                    then partner with outsourcing platforms that need credible transparency plus worker wellbeing as a moat.
                   </p>
                 </div>
               </div>
@@ -128,8 +126,7 @@ export default function AboutPage() {
                   Join Our Mission
                 </h2>
                 <p className="text-lg text-gray-400 mb-8 max-w-2xl mx-auto">
-                  Help us build the future of workforce management.
-                  Be part of the team that's changing how teams work.
+                  Help us prove that ethical telemetry can exist: protecting brains first, receipts second.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <button className="bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white font-semibold px-8 py-4 rounded-xl transition-all duration-200 hover:shadow-xl hover:shadow-teal-500/25 transform hover:-translate-y-1">

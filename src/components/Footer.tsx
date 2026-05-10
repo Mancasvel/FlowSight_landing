@@ -18,7 +18,7 @@ export default function Footer() {
               </span>
             </Link>
             <p className="text-sm leading-relaxed mb-6 max-w-xs">
-              Automatic task traceability powered by AI context understanding. Visibility without surveillance.
+              Local AI for cognitive health and proof of work. No bossware.
             </p>
             <div className="flex gap-4">
               <a href="#" className="text-zinc-400 hover:text-indigo-600 transition-colors" aria-label="Twitter">

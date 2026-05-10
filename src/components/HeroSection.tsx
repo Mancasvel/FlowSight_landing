@@ -49,11 +49,11 @@ export default function HeroSection() {
   ]
 
   const statusMessages = [
-    { status: 'analyzing', message: 'Analyzing code context...' },
-    { status: 'detecting', message: 'Detecting task: AUTH-247' },
-    { status: 'linking', message: 'Linking to Jira ticket...' },
-    { status: 'updating', message: 'Updating task status...' },
-    { status: 'complete', message: 'Task updated automatically' },
+    { status: 'analyzing', message: 'Sampling local screen context…' },
+    { status: 'detecting', message: 'Inferring deliverable: AUTH-247' },
+    { status: 'linking', message: 'Mapping to client narrative…' },
+    { status: 'updating', message: 'Drafting proof of work section…' },
+    { status: 'complete', message: 'Report ready for review (local)' },
   ]
 
   useEffect(() => {
@@ -136,15 +136,14 @@ export default function HeroSection() {
         <div className={`text-center mb-8 md:mb-12 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
 
           <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white leading-tight mb-4 px-2">
-            Code Naturally
+            Ship deep work
             <span className="block bg-gradient-to-r from-teal-400 to-blue-400 bg-clip-text text-transparent">
-              We Handle the Rest
+              Let FlowSight narrate it
             </span>
           </h1>
 
           <p className="text-base sm:text-lg md:text-xl text-gray-400 leading-relaxed max-w-3xl mx-auto px-4">
-            Write code as you always do. FlowSight automatically understands context,
-            links to tasks, and updates progress: all locally, with zero interruption.
+            Local AI on your machine, inspectable code, client ready proof. No bossware, no screenshot clouds.
           </p>
         </div>
 
@@ -249,7 +248,7 @@ export default function HeroSection() {
                   height={16}
                   className="w-3 h-3 sm:w-4 sm:h-4"
                 />
-                <span className="truncate">FlowSight — Task Tracker</span>
+                <span className="truncate">FlowSight, Task Tracker</span>
               </div>
               <div className="w-8 sm:w-16"></div>
             </div>

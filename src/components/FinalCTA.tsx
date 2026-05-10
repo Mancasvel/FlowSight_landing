@@ -22,11 +22,11 @@ export function FinalCTA() {
                     className="max-w-3xl mx-auto"
                 >
                     <h2 className="text-4xl md:text-6xl font-bold text-secondary-navy mb-8 tracking-tight">
-                        Ready to make your work <span className="bg-gradient-to-r from-primary-cyan to-primary-teal bg-clip-text text-transparent">visible?</span>
+                        Ready to protect focus and{" "}
+                        <span className="bg-gradient-to-r from-primary-cyan to-primary-teal bg-clip-text text-transparent">prove output?</span>
                     </h2>
                     <p className="text-xl text-slate-500 mb-10 leading-relaxed">
-                        Join forward-thinking teams using FlowSight to build trust, autonomy, and productivity
-                        without invasive surveillance.
+                        For freelancers, agencies, and platforms: cognitive health stays local. Client proof ships when you say so.
                     </p>
 
                     <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">

@@ -23,8 +23,8 @@ export default function ContactPage() {
               </h1>
 
               <p className="text-lg sm:text-xl text-gray-400 leading-relaxed max-w-3xl mx-auto px-4">
-                Have questions about FlowSight? We'd love to hear from you.
-                Send us a message and we'll respond as soon as possible.
+                Questions about local AI, cognitive analytics, or enterprise proof of work programs? We read every note, especially from
+                workers, People teams, and marketplace operators.
               </p>
             </div>
           </div>
@@ -61,7 +61,7 @@ export default function ContactPage() {
                       </div>
                       <div>
                         <h3 className="text-lg font-semibold text-white mb-1">Live Chat</h3>
-                        <p className="text-gray-400">Available 9 AM - 6 PM EST</p>
+                        <p className="text-gray-400">Available 9 AM to 6 PM EST</p>
                       </div>
                     </div>
 

@@ -344,7 +344,7 @@ export default function MemberTimelinePage() {
                 </div>
             </div>
 
-            {/* Real-time activity feed — first thing the PM sees */}
+            {/* Real-time activity feed, first thing the PM sees */}
             <div className="dashboard-card p-6">
                 <div className="flex items-center justify-between mb-4">
                     <div>

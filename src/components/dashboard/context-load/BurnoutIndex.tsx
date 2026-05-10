@@ -57,7 +57,7 @@ export default function BurnoutIndex({ members }: Props) {
       <CardHeader>
         <h2 className="text-lg font-semibold text-zinc-800">Burnout Index</h2>
         <p className="text-sm text-zinc-500 mt-1">
-          Composite signal — higher = more environmental wear
+          Composite signal, higher = more environmental wear
         </p>
       </CardHeader>
       <CardBody className="space-y-4">

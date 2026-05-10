@@ -80,8 +80,8 @@ export default function BetaSignupModal({ isOpen, onClose }: BetaSignupModalProp
                 className="h-10 w-10"
               />
               <div>
-                <h3 className="text-xl font-bold text-white">FlowSight Beta</h3>
-                <p className="text-sm text-gray-300">Exclusive early access</p>
+                <h3 className="text-xl font-bold text-white">FlowSight beta</h3>
+                <p className="text-sm text-gray-300">Local AI · cognitive health · client reports</p>
               </div>
             </div>
 
@@ -100,10 +100,10 @@ export default function BetaSignupModal({ isOpen, onClose }: BetaSignupModalProp
           <div className="px-6 py-6">
             <div className="text-center mb-6">
               <h4 className="text-lg font-semibold text-white mb-2">
-                Join the Exclusive Beta
+                Join the private beta
               </h4>
               <p className="text-sm text-gray-400">
-                Be one of the first to try FlowSight and shape the future of work.
+                Help us ship local AI, cognitive signals, and proof of work. Source stays open.
               </p>
             </div>
 

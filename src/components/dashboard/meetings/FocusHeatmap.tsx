@@ -98,7 +98,7 @@ export default function FocusHeatmap({ heatmap, flaggedWindows }: Props) {
                 let content = inner
                 if (hasMeeting && isFlagged) {
                   content = (
-                    <Tooltip content="Meeting scheduled here · Peak focus time — consider moving this meeting">
+                    <Tooltip content="Meeting scheduled here · Peak focus time, consider moving this meeting">
                       {inner}
                     </Tooltip>
                   )
@@ -106,7 +106,7 @@ export default function FocusHeatmap({ heatmap, flaggedWindows }: Props) {
                   content = <Tooltip content="Meeting scheduled here">{inner}</Tooltip>
                 } else if (isFlagged) {
                   content = (
-                    <Tooltip content="Peak focus time — consider moving this meeting">{inner}</Tooltip>
+                    <Tooltip content="Peak focus time, consider moving this meeting">{inner}</Tooltip>
                   )
                 }
 

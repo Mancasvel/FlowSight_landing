@@ -25,7 +25,8 @@ export function DownloadSectionContent({ release }: Props) {
                         viewport={{ once: true }}
                         className="text-3xl md:text-5xl font-bold mb-6 text-secondary-navy"
                     >
-                        Track Anywhere, <span className="bg-gradient-to-r from-primary-cyan to-primary-teal bg-clip-text text-transparent">Invisible Everywhere.</span>
+                        Local AI.{" "}
+                        <span className="bg-gradient-to-r from-primary-cyan to-primary-teal bg-clip-text text-transparent">Proof only when you send it.</span>
                     </motion.h2>
                     <motion.p
                         initial={{ opacity: 0, y: 20 }}
@@ -34,7 +35,7 @@ export function DownloadSectionContent({ release }: Props) {
                         transition={{ delay: 0.1 }}
                         className="text-slate-500 text-lg max-w-2xl mx-auto"
                     >
-                        Our privacy-first desktop agent runs silently in the background, analyzing context without capturing sensitive data.
+                        Install the desktop agent: cognitive signals and client reports stay local until you export.
                     </motion.p>
                 </div>
 

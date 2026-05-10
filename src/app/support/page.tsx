@@ -22,7 +22,7 @@ export default function SupportPage() {
                 </span>
               </h1>
               <p className="text-lg sm:text-xl text-gray-400 leading-relaxed max-w-3xl mx-auto px-4">
-                Get help with FlowSight. Find answers to common questions and get in touch with our team.
+                Help installing the local agent, understanding cognitive metrics, or rolling out client reports. We are here for workers first.
               </p>
             </div>
           </div>
@@ -97,8 +97,8 @@ export default function SupportPage() {
                 </div>
 
                 <div className="bg-slate-800/50 rounded-xl p-6">
-                  <h3 className="text-lg font-semibold text-white mb-3">Is my code data stored on FlowSight servers?</h3>
-                  <p className="text-gray-400">No, FlowSight processes everything locally on your machine. Your code never leaves your environment.</p>
+                  <h3 className="text-lg font-semibold text-white mb-3">Do my screenshots live in your cloud?</h3>
+                  <p className="text-gray-400">No. FlowSight analyzes frames locally on your device. Anything a client sees must pass through an explicit export or sharing control you trigger, and you can read our source to verify that path.</p>
                 </div>
 
                 <div className="bg-slate-800/50 rounded-xl p-6">

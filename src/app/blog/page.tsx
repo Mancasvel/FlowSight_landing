@@ -6,13 +6,14 @@ import { getAllBlogPosts } from '@/lib/blog/posts'
 import { absoluteUrl, siteConfig } from '@/lib/site'
 
 export const metadata: Metadata = {
-  title: `Blog | ${siteConfig.name} — comparisons, privacy, and product`,
+  title: `Blog | ${siteConfig.name} · cognitive health, local AI, and proof of work`,
   description:
-    'FlowSight blog: how we compare to time trackers and surveillance-style monitoring, GDPR-friendly visibility for EU teams, and why AI context beats screenshot-heavy tools for PMs.',
+    'FlowSight blog: local AI on your device, inspectable FlowSight code, protecting deep work from context switching, automatic client reports without bossware, and how freelancers stay GDPR-savvy.',
   keywords: [
     ...siteConfig.keywords,
     'FlowSight blog',
-    'workforce visibility comparisons',
+    'local AI productivity',
+    'proof of work freelancing',
     'EU GDPR analytics',
   ],
   alternates: { canonical: absoluteUrl('/blog') },
@@ -22,14 +23,14 @@ export const metadata: Metadata = {
     siteName: siteConfig.name,
     title: `Blog | ${siteConfig.name}`,
     description:
-      'Comparisons, privacy, and product thinking—why teams choose FlowSight over classic time trackers and invasive monitoring.',
+      'Guides for knowledge workers choosing FlowSight over surveillance trackers, manual timesheets, and “just log everything” PM theater.',
     locale: siteConfig.locale,
     images: [{ url: absoluteUrl(siteConfig.defaultOgImage), width: 512, height: 512, alt: siteConfig.name }],
   },
   twitter: {
     card: 'summary_large_image',
     title: `Blog | ${siteConfig.name}`,
-    description: 'Comparisons and guides for privacy-first team visibility.',
+    description: 'Guides for local-first cognitive health and ethical proof of work.',
   },
   robots: { index: true, follow: true },
 }
@@ -61,8 +62,8 @@ export default function BlogPage() {
                 <span className="block bg-gradient-to-r from-teal-400 to-blue-400 bg-clip-text text-transparent">Blog</span>
               </h1>
               <p className="text-lg sm:text-xl text-gray-400 leading-relaxed max-w-3xl mx-auto px-4">
-                Guides for buyers comparing FlowSight to time trackers, monitoring tools, and manual PM workflows—plus
-                privacy-first visibility for US and European teams.
+                Deep dives on local AI, open code you can trust, cognitive ergonomics, and how to give clients confidence without turning workers into
+                suspects, written for freelancers, remote ICs, and marketplace operators.
               </p>
             </div>
           </div>

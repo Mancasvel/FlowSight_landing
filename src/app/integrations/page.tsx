@@ -23,8 +23,7 @@ export default function IntegrationsPage() {
               </h1>
 
               <p className="text-lg sm:text-xl text-gray-400 leading-relaxed max-w-3xl mx-auto px-4">
-                Connect FlowSight with your favorite tools and platforms.
-                Workflows that adapt to your environment.
+                Optional connectors let FlowSight meet your stack, always gated by worker consent so local truth stays local until you publish it.
               </p>
             </div>
           </div>
@@ -44,8 +43,7 @@ export default function IntegrationsPage() {
                 </div>
                 <h3 className="text-lg sm:text-xl font-bold text-white mb-4">Jira</h3>
                 <p className="text-gray-400 leading-relaxed mb-4">
-                  Automatic task linking, status updates, and time tracking synchronization
-                  with Jira tickets and epics.
+                  Map local proof of work narratives to Jira epics when teams want ticket hygiene, without forcing workers into manual timers.
                 </p>
                 <div className="flex items-center text-sm text-green-400">
                   <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
@@ -64,8 +62,7 @@ export default function IntegrationsPage() {
                 </div>
                 <h3 className="text-lg sm:text-xl font-bold text-white mb-4">GitHub</h3>
                 <p className="text-gray-400 leading-relaxed mb-4">
-                  Link commits to tasks, track pull requests, and maintain
-                  development context across your GitHub repositories.
+                  Enrich client reports with commit and PR context so engineering effort reads credibly to non-technical stakeholders.
                 </p>
                 <div className="flex items-center text-sm text-green-400">
                   <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
@@ -84,8 +81,7 @@ export default function IntegrationsPage() {
                 </div>
                 <h3 className="text-lg sm:text-xl font-bold text-white mb-4">Slack</h3>
                 <p className="text-gray-400 leading-relaxed mb-4">
-                  Get notifications about task updates and receive summaries
-                  directly in your Slack channels and DMs.
+                  Push opt-in digests (focus health, overload warnings, or weekly proof of work summaries) to the channels you already live in.
                 </p>
                 <div className="flex items-center text-sm text-yellow-400">
                   <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
@@ -104,8 +100,7 @@ export default function IntegrationsPage() {
                 </div>
                 <h3 className="text-lg sm:text-xl font-bold text-white mb-4">VS Code</h3>
                 <p className="text-gray-400 leading-relaxed mb-4">
-                  Native integration with Visual Studio Code for seamless
-                  task tracking within your development environment.
+                  Lightweight VS Code companion for tagging deep work blocks and attaching repo metadata to local narratives.
                 </p>
                 <div className="flex items-center text-sm text-green-400">
                   <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
@@ -144,8 +139,7 @@ export default function IntegrationsPage() {
                 </div>
                 <h3 className="text-lg sm:text-xl font-bold text-white mb-4">Toggl Track</h3>
                 <p className="text-gray-400 leading-relaxed mb-4">
-                  Sync time entries automatically with Toggl Track
-                  for comprehensive time tracking across all your tools.
+                  Optional bridge for teams still reconciling hours in Toggl: FlowSight supplies the story, while Toggl keeps the ledger (if you must).
                 </p>
                 <div className="flex items-center text-sm text-yellow-400">
                   <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
@@ -166,7 +160,7 @@ export default function IntegrationsPage() {
                 REST API & Webhooks
               </h2>
               <p className="text-lg text-gray-400 max-w-2xl mx-auto">
-                Build custom integrations with our comprehensive API
+                Automate proof of work delivery to client portals, PSAs, or marketplace QA rails, always subject to explicit worker approvals.
               </p>
             </div>
 
@@ -176,16 +170,14 @@ export default function IntegrationsPage() {
                 <div className="bg-slate-800/50 rounded-xl p-6">
                   <h3 className="text-lg font-semibold text-white mb-3">REST API</h3>
                   <p className="text-gray-400">
-                    Full REST API access to tasks, projects, and time tracking data.
-                    Programmatic access to all FlowSight features.
+                    Programmatic access to curated proof of work payloads, cognitive aggregates, and sharing policies: never raw screenshots by default.
                   </p>
                 </div>
 
                 <div className="bg-slate-800/50 rounded-xl p-6">
                   <h3 className="text-lg font-semibold text-white mb-3">Webhooks</h3>
                   <p className="text-gray-400">
-                    Real-time notifications for task updates, status changes,
-                    and project events delivered to your endpoints.
+                    Webhooks fire when a worker publishes a new client packet or when overload thresholds trip for opted-in managers.
                   </p>
                 </div>
 
@@ -228,8 +220,7 @@ export default function IntegrationsPage() {
                   Ready to Integrate?
                 </h2>
                 <p className="text-lg text-gray-400 mb-8 max-w-2xl mx-auto">
-                  Connect FlowSight with your existing tools and workflows.
-                  Start building the development experience you deserve.
+                  Plug FlowSight into procurement-friendly systems while keeping the sensitive inference path on device.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <button className="bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white font-semibold px-8 py-4 rounded-xl transition-all duration-200 hover:shadow-xl hover:shadow-teal-500/25 transform hover:-translate-y-1">

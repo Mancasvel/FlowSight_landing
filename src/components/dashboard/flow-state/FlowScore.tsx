@@ -39,7 +39,7 @@ export default function FlowScore({ score, trend, teamFlowScoreBreakdown }: Prop
           <button
             type="button"
             className="cursor-help border-0 bg-transparent p-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 rounded-full"
-            aria-label="How Team Flow Score is calculated — hover for details"
+            aria-label="How Team Flow Score is calculated, hover for details"
           >
             <CircularProgress value={score} maxValue={100} color={color} size="lg">
               <div className="text-center">
@@ -49,13 +49,13 @@ export default function FlowScore({ score, trend, teamFlowScoreBreakdown }: Prop
             </CircularProgress>
           </button>
         </Tooltip>
-        <Tooltip content="Same number as the ring: team average of deep-work % today (hover the score for the full formula and per-person breakdown).">
+        <Tooltip content="Same number as the ring: team average of deep work % today (hover the score for the full formula and per-person breakdown).">
           <p className="text-sm text-zinc-500 cursor-help border-b border-dotted border-zinc-300 inline-block">
             Team Flow Score · Today
           </p>
         </Tooltip>
         <Tooltip
-          content="Uses the last 7 points on the 30-day trend line (each point = mean of per-session deep-work % that day). We compare the first vs last of those 7 values to show Improving, Declining, or Flat — not the same aggregation as the big team ring for “today.”"
+          content="Uses the last 7 points on the 30-day trend line (each point = mean of per-session deep work % that day). We compare the first vs last of those 7 values to show Improving, Declining, or Flat, not the same aggregation as the big team ring for “today.”"
         >
           <span className="inline-flex cursor-help">
             <Chip color={trendColor}>

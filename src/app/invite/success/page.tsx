@@ -16,7 +16,7 @@ export default function InviteSuccessPage() {
                     You&apos;re In!
                 </h1>
                 <p className="text-dashboard-muted mb-8">
-                    You&apos;ve successfully joined the team. Download the FlowSight desktop app to start tracking your productivity.
+                    You&apos;ve successfully joined the team. Download the FlowSight desktop app to run the local agent, protect your focus, and auto-generate client ready proof.
                 </p>
 
                 <div className="space-y-4">

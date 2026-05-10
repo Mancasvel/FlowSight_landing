@@ -89,7 +89,7 @@ export default function OverviewDashboard({ flow, context, planning, meetings, w
               <button
                 type="button"
                 className="cursor-help bg-transparent border-0 p-0 focus:outline-none"
-                aria-label="How Team Flow Score is calculated — hover for details"
+                aria-label="How Team Flow Score is calculated, hover for details"
               >
                 <CircularProgress value={teamFlowScore} maxValue={100} color={scoreColor(teamFlowScore)} size="lg">
                   <div className="text-center">
@@ -99,7 +99,7 @@ export default function OverviewDashboard({ flow, context, planning, meetings, w
                 </CircularProgress>
               </button>
             </Tooltip>
-            <Tooltip content="Same as the large ring on Flow State: team average of each person’s deep-work % today. Hover the percentage for formula and per-person deep/total seconds.">
+            <Tooltip content="Same as the large ring on Flow State: team average of each person’s deep work % today. Hover the percentage for formula and per-person deep/total seconds.">
               <p className="text-sm text-zinc-500 cursor-help border-b border-dotted border-zinc-300 inline-block">Team Flow Score</p>
             </Tooltip>
             <Chip color={trendColor}>

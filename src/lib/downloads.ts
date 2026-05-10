@@ -2,8 +2,8 @@
  * Client-safe metadata + types for the desktop agent downloads.
  *
  * The landing pulls binaries from two separate GitHub repositories:
- *  - `FLOWSIGHT_DESKTOP_REPO` (`Mancasvel/FlowSight.AI`) — Windows + macOS.
- *  - `FLOWSIGHT_LINUX_REPO`   (`Mancasvel/FlowSight_linux`) — Linux (.deb + AppImage).
+ *  - `FLOWSIGHT_DESKTOP_REPO` (`Mancasvel/FlowSight.AI`), Windows + macOS.
+ *  - `FLOWSIGHT_LINUX_REPO`   (`Mancasvel/FlowSight_linux`), Linux (.deb + AppImage).
  *
  * Actual URLs are resolved at request time by `downloads.server.ts`, which
  * queries both Releases APIs in parallel and caches for 1h via Next's Data
@@ -23,7 +23,7 @@ export const linuxReleasesUrl =
 export const releasesUrl = desktopReleasesUrl
 
 /**
- * Last-known-good values used only as an offline fallback, and — transitionally —
+ * Last-known-good values used only as an offline fallback, and, transitionally,
  * as the Linux source until `FLOWSIGHT_LINUX_REPO` publishes its first release.
  */
 export const FALLBACK_DESKTOP_RELEASE_TAG = 'v1.0.1' as const

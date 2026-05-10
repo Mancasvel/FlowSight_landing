@@ -132,7 +132,7 @@ function AIProcessingMockup() {
             {/* "On Device" label */}
             <div className="absolute top-2 right-2 flex items-center gap-1 bg-purple-100 border border-purple-200 rounded-full px-2 py-0.5">
                 <WifiOff className="w-2.5 h-2.5 text-purple-500" />
-                <span className="text-[7px] text-purple-600 font-medium">On-device</span>
+                <span className="text-[7px] text-purple-600 font-medium">Local AI · on device</span>
             </div>
 
             {/* Processing text stream */}
@@ -237,7 +237,7 @@ function PrivacyMockup() {
 
                     {/* RIGHT - approved items (text metadata) */}
                     <div className="absolute -right-20 top-1/2 -translate-y-1/2 space-y-1.5">
-                        {["Task: Design", "Tool: Figma", "Focus: 94%"].map((text, i) => (
+                        {["Block: Deep work", "Tool: Figma", "Flow: 94%"].map((text, i) => (
                             <motion.div
                                 key={i}
                                 animate={{ x: [0, 5, 5], opacity: [0, 0.9, 0.9] }}
@@ -266,43 +266,47 @@ const flowSteps = [
     {
         id: 1,
         icon: <Download className="w-6 h-6" />,
-        title: "Install Agent",
-        description: "A lightweight agent runs on each team member's laptop. It takes a screenshot every 5 minutes to understand work context.",
+        title: "Install the local agent",
+        description:
+            "Lightweight agent on your machine: reads the screen locally, no cloud screenshot vault.",
         glowColor: "blue",
-        details: ["< 50MB memory", "No performance impact", "Works offline"],
+        details: ["< 50MB memory", "Runs quietly", "Core analysis offline-capable"],
         mockup: <AgentMockup />,
     },
     {
         id: 2,
         icon: <Cpu className="w-6 h-6" />,
-        title: "AI Analyzes Locally",
-        description: "On-device AI processes each screenshot locally. It understands tools being used and tasks being worked on.",
+        title: "Local AI runs on your device",
+        description:
+            "VL inference on your hardware only. Readable source so behavior matches what you reviewed.",
         glowColor: "purple",
-        badge: "🔒 Privacy-first",
-        details: ["On-device AI", "No screenshots uploaded", "Instant analysis"],
+        badge: "🔒 No screen exfiltration",
+        details: ["Local AI on device", "Screenshots never uploaded", "Open codebase to audit"],
         mockup: <AIProcessingMockup />,
     },
     {
         id: 3,
         icon: <BarChart3 className="w-6 h-6" />,
-        title: "Get Daily Insights",
-        description: "PM dashboard shows team activity patterns, time allocation, and automatically detected blockers.",
+        title: "Cognitive signal + client reports",
+        description:
+            "Spot overload and context switches, then export proof of work clients can skim in minutes.",
         glowColor: "teal",
-        details: ["Real-time dashboards", "Weekly reports", "Blocker detection"],
+        details: ["Flow & fatigue cues", "Auto weekly digest", "Share on your terms"],
         mockup: <DashboardMockup />,
     },
     {
         id: 4,
         icon: <Shield className="w-6 h-6" />,
-        title: "Your Data Stays Private",
-        description: "Screenshots never leave the laptop. Images are analyzed and immediately deleted. Only encrypted text metadata touches our servers.",
+        title: "Worker-owned by default",
+        description:
+            "No keystroke logging, no mouse surveillance, no hidden live feed. Screenshots never leave the device unless you explicitly export or connect optional sync you control.",
         glowColor: "green",
         isPrivacy: true,
         privacyBadges: [
-            { icon: <XCircle className="w-4 h-4 text-red-400" />, text: "No screenshots stored", type: "negative" },
-            { icon: <XCircle className="w-4 h-4 text-red-400" />, text: "No keystroke tracking", type: "negative" },
-            { icon: <CheckCircle2 className="w-4 h-4 text-green-500" />, text: "Only text sent", type: "positive" },
-            { icon: <CheckCircle2 className="w-4 h-4 text-green-500" />, text: "GDPR compliant", type: "positive" },
+            { icon: <XCircle className="w-4 h-4 text-red-400" />, text: "No keystroke or mouse tracking", type: "negative" },
+            { icon: <XCircle className="w-4 h-4 text-red-400" />, text: "No bossware live review", type: "negative" },
+            { icon: <CheckCircle2 className="w-4 h-4 text-green-500" />, text: "You choose what clients see", type: "positive" },
+            { icon: <CheckCircle2 className="w-4 h-4 text-green-500" />, text: "GDPR-minded architecture", type: "positive" },
         ],
         mockup: <PrivacyMockup />,
     },
@@ -339,13 +343,13 @@ export function FlowSection() {
                     className="text-center"
                 >
                     <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-4 text-secondary-navy">
-                        Zero friction.{" "}
+                        Protect your focus.{" "}
                         <span className="bg-gradient-to-r from-primary-cyan to-primary-teal bg-clip-text text-transparent">
-                            Maximum insight.
+                            Prove your work.
                         </span>
                     </h2>
                     <p className="text-slate-500 text-lg max-w-2xl mx-auto">
-                        See how FlowSight works in 4 simple steps
+                        Install to client ready proof in four steps. No surveillance stack.
                     </p>
                 </motion.div>
             </div>

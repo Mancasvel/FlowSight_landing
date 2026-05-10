@@ -19,7 +19,7 @@ export default function TeamSection() {
               <div className="flex-shrink-0">
                 <Image
                   src="/mc_profile.jpg"
-                  alt="Manuel Castillejo - Founder & CEO"
+                  alt="Manuel Castillejo, Founder and CEO"
                   width={128}
                   height={128}
                   className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full object-cover border-4 border-slate-700 shadow-lg"

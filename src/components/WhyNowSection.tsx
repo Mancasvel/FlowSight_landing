@@ -1,20 +1,23 @@
 export default function WhyNowSection() {
   const reasons = [
     {
-      title: "Enterprise Mandate: Zero Surveillance Infrastructure",
-      content: "GDPR fines reach 4–6% of annual revenue. CCPA enforcement accelerates. CISOs now require: employee data never leaves corporate infrastructure. FlowSight's local-first architecture eliminates compliance risk entirely.",
-      stat: "100% GDPR/CCPA compliant by design"
+      title: "Regulators and workers reject bossware",
+      content:
+        "Bossware is a legal and morale liability. FlowSight keeps pixels on the laptop; you publish narratives on purpose.",
+      stat: "Privacy posture buyers can defend",
     },
     {
-      title: "On-Device LLMs Now Production-Grade",
-      content: "Phi-3 Mini, DeepSeek Coder, FastVLM deliver sub-200ms inference on consumer hardware. ONNX and MLX eliminate cross-platform friction. On-device AI is now viable for enterprise.",
-      stat: "10x faster than 2023 alternatives"
+      title: "Vision-language models finally fit on a laptop",
+      content:
+        "Modern vision-language stacks, ONNX/MLX runtimes, and Apple Silicon mean rich local inference no longer requires shipping pixels to a hyperscaler. FlowSight’s code is open to inspect, so “local” is verifiable, not vaporware.",
+      stat: "On device VL, not vaporware",
     },
     {
-      title: "Remote Productivity Is Now Venture-Scale",
-      content: "Every major VC targets workforce productivity. Slack, zoom, Vercel reached $3B+ valuations. Employee productivity is a direct business multiplier. The gap: task visibility + privacy simultaneously (nobody solves both).",
-      stat: "$100B+ total productivity tools market"
-    }
+      title: "Clients still demand receipts",
+      content:
+        "Remote work still wants receipts without spying. FlowSight is proof of work with worker-owned pixels.",
+      stat: "Individuals → clients → platforms",
+    },
   ]
 
   return (
@@ -22,10 +25,10 @@ export default function WhyNowSection() {
       <div className="container-max">
         <div className="text-center mb-16">
           <h2 className="text-4xl lg:text-5xl font-bold text-navy-900 mb-4">
-            Why Now: Market Perfect Storm
+            Why now: brains, law, and GPUs aligned
           </h2>
           <p className="text-xl text-muted max-w-2xl mx-auto">
-            Privacy regulation, AI maturity, and productivity economics align perfectly
+            Cognitive burnout is measurable, VL models run locally, and procurement teams need a story that is not spyware.
           </p>
         </div>
 

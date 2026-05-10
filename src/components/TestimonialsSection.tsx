@@ -13,7 +13,7 @@ export default function TestimonialsSection() {
       rating: 5
     },
     {
-      quote: "\"The AI explains not just 'what' but 'why'—'John is stuck on API timeout' not just 'John is idle.' Context changes everything.\"",
+      quote: "\"The AI explains not just 'what' but 'why', 'John is stuck on API timeout' not just 'John is idle.' Context changes everything.\"",
       attribution: "Tech Lead at ScaleupZ",
       rating: 5
     }
@@ -56,7 +56,7 @@ export default function TestimonialsSection() {
               </blockquote>
 
               <cite className="text-muted font-medium">
-                — {testimonial.attribution}
+                {testimonial.attribution}
               </cite>
             </div>
           ))}

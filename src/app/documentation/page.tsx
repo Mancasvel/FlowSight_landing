@@ -19,7 +19,7 @@ export default function DocumentationPage() {
                 Documentation
               </h1>
               <p className="text-lg sm:text-xl text-gray-400 leading-relaxed max-w-3xl mx-auto px-4">
-                Everything you need to get started with FlowSight and make the most of our platform.
+                Install the desktop agent, understand cognitive metrics, and publish proof of work packets, without sending screenshots to a vendor cloud by default.
               </p>
             </div>
           </div>
@@ -57,8 +57,7 @@ export default function DocumentationPage() {
                 <div className="bg-slate-800/50 rounded-xl p-6">
                   <h3 className="text-lg font-semibold text-white mb-4">3. Start Coding</h3>
                   <p className="text-gray-400 mb-4">
-                    That's it! FlowSight will automatically start analyzing your code context
-                    and updating your project management tools.
+                    That is it: the local agent begins sampling screen context, running AI on your device, and assembling narratives you can review before anything is shared externally. FlowSight’s codebase is open to inspect.
                   </p>
                 </div>
               </div>
@@ -72,7 +71,7 @@ export default function DocumentationPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               <div className="bg-slate-800/50 rounded-xl p-6 hover:bg-slate-800/70 transition-colors">
                 <h3 className="text-lg font-semibold text-white mb-3">User Guide</h3>
-                <p className="text-gray-400 mb-4">Complete guide to using FlowSight features</p>
+                <p className="text-gray-400 mb-4">Deep dive on focus analytics, overload alerts, and client export flows</p>
                 <a href="#" className="text-teal-400 hover:text-teal-300 font-medium">Read Guide →</a>
               </div>
 

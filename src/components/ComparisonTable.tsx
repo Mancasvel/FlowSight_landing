@@ -5,49 +5,49 @@ import { Check, X, ShieldCheck, Eye, AlertTriangle, Brain, Zap, Lock } from "luc
 
 const features = [
     {
-        name: "Screenshots",
-        competitor: "Stored in Cloud",
-        flowsight: "Local only — never uploaded",
+        name: "Screenshot handling",
+        competitor: "Stored in vendor cloud",
+        flowsight: "Processed locally, never uploaded",
         flowType: "good",
         compType: "bad",
         icon: <Eye className="w-4 h-4" />,
     },
     {
-        name: "Keylogging",
-        competitor: "Yes",
-        flowsight: "No — never",
+        name: "Keystroke / mouse surveillance",
+        competitor: "Common",
+        flowsight: "Absolutely none",
         flowType: "good",
         compType: "bad",
         icon: <AlertTriangle className="w-4 h-4" />,
     },
     {
-        name: "Manual data entry",
-        competitor: "Required",
-        flowsight: "Zero — fully automatic",
+        name: "Timesheets & manual proof",
+        competitor: "Required for visibility",
+        flowsight: "Eliminated: narrative from real work",
         flowType: "good",
         compType: "bad",
         icon: <Zap className="w-4 h-4" />,
     },
     {
-        name: "AI Insights",
-        competitor: "Basic / None",
-        flowsight: "Advanced LLM + RAG",
+        name: "Vision-language AI",
+        competitor: "Cloud-only or none",
+        flowsight: "Local AI on your device; FlowSight code open to inspect",
         flowType: "great",
         compType: "neutral",
         icon: <Brain className="w-4 h-4" />,
     },
     {
-        name: "Privacy-first",
-        competitor: "Afterthought",
-        flowsight: "Core architecture",
+        name: "Worker trust & privacy",
+        competitor: "Surveillance posture",
+        flowsight: "Cognitive health + consent-first sharing",
         flowType: "great",
         compType: "neutral",
         icon: <Lock className="w-4 h-4" />,
     },
     {
-        name: "Auto-blockers",
-        competitor: "No",
-        flowsight: "AI-detected in real-time",
+        name: "Focus & burnout signals",
+        competitor: "Rare / activity scores only",
+        flowsight: "Context switches & overload surfaced",
         flowType: "great",
         compType: "neutral",
         icon: <ShieldCheck className="w-4 h-4" />,
@@ -70,10 +70,10 @@ export function ComparisonTable() {
                     className="text-center mb-16 md:mb-20"
                 >
                     <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold text-secondary-navy mb-4">
-                        Intelligence, <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-cyan to-primary-teal">not surveillance</span>
+                        Guard cognition, <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-cyan to-primary-teal">not employees</span>
                     </h2>
                     <p className="text-slate-500 text-lg max-w-2xl mx-auto">
-                        See how FlowSight compares to traditional monitoring tools
+                        Anti-bossware: local AI, your pixels, proof of work on your terms.
                     </p>
                 </motion.div>
 
@@ -161,7 +161,7 @@ export function ComparisonTable() {
                         <div className="inline-flex items-center gap-3 px-6 py-3 rounded-2xl bg-gradient-to-r from-primary-cyan/5 via-primary-teal/5 to-emerald-50 border border-primary-teal/15">
                             <ShieldCheck className="w-5 h-5 text-primary-teal" />
                             <span className="text-sm font-semibold text-secondary-navy">
-                                GDPR Compliant · SOC 2 Ready · On-device AI Processing
+                                GDPR-minded · SOC 2 roadmap · local AI · readable source
                             </span>
                         </div>
                     </motion.div>

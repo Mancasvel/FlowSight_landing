@@ -1057,7 +1057,7 @@ export async function getMeetingsData(
       dayName: dayNames[c.day],
       hour: c.hour,
       intensity: c.intensity,
-      reason: `Low focus activity (${Math.round(c.intensity * 100)}% intensity) — ideal for meetings`,
+      reason: `Low focus activity (${Math.round(c.intensity * 100)}% intensity), ideal for meetings`,
     }))
 
   // Flagged windows: high focus intensity with meetings

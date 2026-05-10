@@ -24,9 +24,9 @@ export default function FlowTrend({ trend }: Props) {
           wide
           content={
             <div className="space-y-2 text-left leading-snug">
-              <p className="font-semibold text-white text-[11px] uppercase tracking-wide">30-day line — each point</p>
+              <p className="font-semibold text-white text-[11px] uppercase tracking-wide">30-day line, each point</p>
               <p className="text-[11px] text-zinc-200">
-                For each calendar day: every <code className="rounded bg-zinc-700/80 px-1 text-indigo-200">work_session</code> on that date gets one score = (deep-work seconds ÷ total seconds in its{' '}
+                For each calendar day: every <code className="rounded bg-zinc-700/80 px-1 text-indigo-200">work_session</code> on that date gets one score = (deep work seconds ÷ total seconds in its{' '}
                 <code className="text-indigo-200">category_breakdown</code>) × 100, using the same category→bucket mapping as the main score.
               </p>
               <p className="text-[11px] text-zinc-200">

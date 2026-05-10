@@ -7,19 +7,19 @@ export default function CareersPage() {
       title: 'Senior AI Engineer',
       type: 'Full-time',
       location: 'Remote',
-      description: 'Build the next generation of AI-powered workforce tools.'
+      description: 'Ship local on device AI that protects cognitive health while automating proof of work. FlowSight code stays open to inspect.'
     },
     {
       title: 'Product Designer',
       type: 'Full-time',
       location: 'Remote',
-      description: 'Design intuitive interfaces for workforce productivity tools.'
+      description: 'Craft humane interfaces for focus analytics and client ready narratives.'
     },
     {
       title: 'DevOps Engineer',
       type: 'Full-time',
       location: 'Remote',
-      description: 'Maintain and scale our infrastructure for millions of users.'
+      description: 'Harden local model delivery, update rails, and secure optional sync paths.'
     }
   ]
 
@@ -44,8 +44,7 @@ export default function CareersPage() {
               </h1>
 
               <p className="text-lg sm:text-xl text-gray-400 leading-relaxed max-w-3xl mx-auto px-4">
-                Help us build the future of workforce management.
-                Work with cutting-edge AI and make an impact on millions of professionals.
+                Help us replace surveillance economics with worker-owned intelligence: local models, ethical telemetry, happier clients.
               </p>
             </div>
           </div>

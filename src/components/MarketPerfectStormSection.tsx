@@ -14,7 +14,7 @@ export default function MarketPerfectStormSection() {
             Project Manager Dashboard
           </h2>
           <p className="text-base sm:text-lg md:text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed px-4">
-            See exactly what your team is working on — without asking them
+            See exactly what your team is working on, without asking them
           </p>
         </div>
 
@@ -28,7 +28,7 @@ export default function MarketPerfectStormSection() {
               <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-green-500 rounded-full"></div>
             </div>
             <div className="text-gray-300 text-xs sm:text-sm font-medium truncate">
-              FlowSight Dashboard - Project Manager View
+              FlowSight Dashboard · Project Manager View
             </div>
             <div className="w-8 sm:w-16"></div>
           </div>
@@ -153,7 +153,7 @@ export default function MarketPerfectStormSection() {
                         <div className="flex items-center justify-between p-2 sm:p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
                           <div className="min-w-0 flex-1">
                             <div className="font-medium text-red-400 text-xs sm:text-sm">TASK-482</div>
-                            <div className="text-xs text-red-300/70 truncate">API timeout - 45min blocked</div>
+                            <div className="text-xs text-red-300/70 truncate">API timeout, 45 min blocked</div>
                           </div>
                           <div className="text-red-400 flex-shrink-0 ml-2">
                             <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20">

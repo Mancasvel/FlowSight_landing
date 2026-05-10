@@ -186,7 +186,7 @@ function LoginContent() {
 
                     {/* Info */}
                     <div className="text-center text-sm text-dashboard-muted">
-                        <p>Workers should use the FlowSight desktop app</p>
+                        <p>Install the FlowSight desktop agent for local cognitive analytics and client ready exports</p>
                     </div>
                 </div>
             </div>

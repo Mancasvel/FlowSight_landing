@@ -23,7 +23,7 @@ export default function LegalSecurityPage() {
                 </span>
               </h1>
               <p className="text-lg sm:text-xl text-gray-400 leading-relaxed max-w-3xl mx-auto px-4">
-                Comprehensive security information and compliance details for FlowSight.
+                How FlowSight keeps cognitive analytics local, how optional sharing is governed, and how we talk about GDPR / SOC 2 readiness with straight answers.
               </p>
             </div>
           </div>
@@ -40,9 +40,9 @@ export default function LegalSecurityPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-bold text-white mb-3">Local-first workspace context</h3>
+                <h3 className="text-lg font-bold text-white mb-3">Local-first cognitive context</h3>
                 <p className="text-gray-400 leading-relaxed">
-                  Sensitive development context is designed to be processed on the device. Account and service data needed to operate the product are handled under our privacy programme.
+                  Screen-derived context is designed to stay on the worker device. Account, billing, and explicitly published proof of work payloads follow our privacy programme and DPA.
                 </p>
               </div>
 
@@ -73,15 +73,15 @@ export default function LegalSecurityPage() {
           </div>
         </section>
 
-        {/* Compliance — accurate positioning (no implied ISO/HIPAA certification) */}
+        {/* Compliance, accurate positioning (no implied ISO/HIPAA certification) */}
         <section className="py-16 sm:py-24 bg-slate-900/50">
           <div className="container-max px-4 sm:px-6 lg:px-12">
             <div className="text-center mb-12 md:mb-16">
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-4">
-                GDPR &amp; trust programme (SOC 2–aligned)
+                GDPR &amp; trust programme (SOC 2 aligned)
               </h2>
               <p className="text-gray-400 max-w-3xl mx-auto text-sm sm:text-base">
-                We describe our practices accurately: compliance is an ongoing programme of controls, policies, and contracts — not a one-line badge.
+                We describe our practices accurately: compliance is an ongoing programme of controls, policies, and contracts, not a one-line badge.
               </p>
             </div>
 
@@ -101,7 +101,7 @@ export default function LegalSecurityPage() {
               <div className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-2xl p-8 border border-blue-500/20">
                 <div className="text-2xl font-bold text-blue-400 mb-4">SOC 2 readiness</div>
                 <p className="text-gray-400 leading-relaxed mb-4">
-                  We align internal controls with the AICPA Trust Services Criteria (Security, and where applicable Availability and Confidentiality) as part of a roadmap toward independent assurance. A SOC 2 Type II report, when available, is typically provided to customers under confidentiality — it does not replace your own legal or compliance review.
+                  We align internal controls with the AICPA Trust Services Criteria (Security, and where applicable Availability and Confidentiality) as part of a roadmap toward independent assurance. A SOC 2 Type II report, when available, is typically provided to customers under confidentiality, it does not replace your own legal or compliance review.
                 </p>
                 <p className="text-xs text-gray-500 leading-relaxed">
                   Industry-specific regimes (for example HIPAA or ISO 27001 certification) require separate contractual and technical measures; contact us if your organisation needs a regulated deployment.

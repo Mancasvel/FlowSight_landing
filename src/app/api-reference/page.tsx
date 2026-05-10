@@ -18,7 +18,7 @@ export default function ApiReferencePage() {
                 API Reference
               </h1>
               <p className="text-lg sm:text-xl text-gray-400 leading-relaxed max-w-3xl mx-auto px-4">
-                Comprehensive API documentation for integrating FlowSight with your applications.
+                Programmatic hooks for publishing proof of work, configuring sharing policies, and integrating FlowSight with client systems, without bypassing worker consent.
               </p>
             </div>
           </div>

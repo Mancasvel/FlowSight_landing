@@ -73,7 +73,7 @@ export default function GdprPage() {
                 <div className="bg-slate-800/50 rounded-xl p-6 border border-slate-700/50">
                   <h2 className="text-xl font-bold text-white mt-0">SOC 2 readiness (trust programme)</h2>
                   <p className="mb-0">
-                    We maintain a security programme aligned with the AICPA Trust Services Criteria (Security, and where applicable Availability and Confidentiality) as a roadmap toward independent assurance. A SOC 2 report, when available, is typically shared with customers under confidentiality — it is not a substitute for your own legal or compliance assessment. See also our <a href="/legal-security">Trust &amp; security overview</a>.
+                    We maintain a security programme aligned with the AICPA Trust Services Criteria (Security, and where applicable Availability and Confidentiality) as a roadmap toward independent assurance. A SOC 2 report, when available, is typically shared with customers under confidentiality; it is not a substitute for your own legal or compliance assessment. See also our <a href="/legal-security">Trust &amp; security overview</a>.
                   </p>
                 </div>
               </div>

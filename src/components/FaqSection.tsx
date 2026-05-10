@@ -8,7 +8,7 @@ export default function FaqSection() {
   const faqs = [
     {
       question: "Is this just another time tracking tool?",
-      answer: "No. Time tracking tools (Clockify, Toggl) are invasive and capture raw activity. FlowSight infers task context automatically—you never enter time manually, and employees never feel surveilled."
+      answer: "No. Time tracking tools (Clockify, Toggl) are invasive and capture raw activity. FlowSight infers task context automatically: you never enter time manually, and employees never feel surveilled."
     },
     {
       question: "Does FlowSight collect my code or screenshots?",
@@ -24,11 +24,11 @@ export default function FaqSection() {
     },
     {
       question: "Can we run this entirely offline?",
-      answer: "Yes. Free and Pro tiers run 100% offline. No internet required. Cloud sync is opt-in—you enable explicitly. Default: zero cloud access."
+      answer: "Yes. Free and Pro tiers run 100% offline. No internet required. Cloud sync is opt-in: you enable it explicitly. Default: zero cloud access."
     },
     {
       question: "How accurate is the AI context inference?",
-      answer: "MVP targets 80-85% accuracy. By month 3-6, with feedback loops, accuracy reaches 90%+. Early accuracy is conservative (better to miss some than have false positives)."
+      answer: "MVP targets 80 to 85% accuracy. By month 3 to 6, with feedback loops, accuracy reaches 90% or higher. Early accuracy is conservative (better to miss some than have false positives)."
     },
     {
       question: "How do you handle compliance (GDPR, CCPA, HIPAA)?",

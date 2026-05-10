@@ -23,7 +23,7 @@ export default function SuggestedWindows({ suggested, flagged }: Props) {
         ) : null}
         {suggested.map((s, i) => (
           <Alert key={`suggested-${s.day}-${s.hour}-${i}`} color="success" dismissible={false}>
-            {s.dayName} {s.hour}:00–{s.hour + 1}:00 · {s.reason}
+            {s.dayName} {s.hour}:00 to {s.hour + 1}:00 · {s.reason}
           </Alert>
         ))}
         {flagged.map((f, i) => (

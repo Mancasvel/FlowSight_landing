@@ -1,14 +1,12 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter } from 'next/font/google'
 import './globals.css'
 import Footer from '@/components/Footer'
 import { ClickAnalytics } from '@/components/ClickAnalytics'
 import { CookieConsent } from '@/components/CookieConsent'
 import { ConsentProvider } from '@/context/ConsentContext'
+import { MicrosoftClarity } from '@/components/MicrosoftClarity'
 import { RootJsonLd } from '@/components/seo/RootJsonLd'
 import { absoluteUrl, siteConfig } from '@/lib/site'
-
-const inter = Inter({ subsets: ['latin'] })
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -22,7 +20,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: {
-    default: `${siteConfig.name} — Task visibility without employee surveillance`,
+    default: `${siteConfig.name} · Protect your focus. Prove your work. Automatically.`,
     template: `%s | ${siteConfig.name}`,
   },
   description: siteConfig.description,
@@ -51,7 +49,7 @@ export const metadata: Metadata = {
     alternateLocale: ['en_GB'],
     url: siteConfig.url,
     siteName: siteConfig.name,
-    title: `${siteConfig.name} — Task visibility without employee surveillance`,
+    title: `${siteConfig.name} · Protect your focus. Prove your work. Automatically.`,
     description: siteConfig.description,
     images: [
       {
@@ -64,7 +62,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: `${siteConfig.name} — Task visibility without surveillance`,
+    title: `${siteConfig.name} · Cognitive health and proof of work, locally`,
     description: siteConfig.description,
     ...(siteConfig.twitterHandle ? { site: siteConfig.twitterHandle, creator: siteConfig.twitterHandle } : {}),
   },
@@ -83,8 +81,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className} suppressHydrationWarning>
+      <body className="font-sans antialiased" suppressHydrationWarning>
         <ConsentProvider>
+          <MicrosoftClarity />
           <ClickAnalytics />
           <CookieConsent />
           <RootJsonLd />

@@ -75,7 +75,7 @@ export default function CookiePolicyPage() {
                           <td className="py-3 pr-4">
                             Understanding aggregated usage (for example aggregated click counters for navigation and downloads). No advertising profiles; no sale of personal data.
                           </td>
-                          <td className="py-3">Art. 6(1)(a) GDPR — consent, obtained through our cookie banner before non-essential analytics run.</td>
+                          <td className="py-3">Art. 6(1)(a) GDPR, consent, obtained through our cookie banner before non-essential analytics run.</td>
                         </tr>
                       </tbody>
                     </table>

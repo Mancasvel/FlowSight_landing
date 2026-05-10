@@ -28,7 +28,7 @@ export default function KPICards({ members, isLoaded = true }: Props) {
   }
 
   const burnoutTooltip =
-    'Count of members with flow score under 45% today — a signal of shallow work, interruptions, or overload. Review workload and focus blocks.'
+    'Count of members with flow score under 45% today, a signal of shallow work, interruptions, or overload. Review workload and focus blocks.'
 
   const burnoutLabel =
     atRisk === 0 ? 'All clear' : atRisk === 1 ? '1 at risk' : `${atRisk} at risk`
@@ -46,7 +46,7 @@ export default function KPICards({ members, isLoaded = true }: Props) {
                 <p className="cursor-help text-xs text-zinc-500">Recovery Time</p>
               </Tooltip>
               <p className="mt-0.5 text-xl font-bold text-zinc-800">
-                {n > 0 ? `${avgRecovery} min` : '—'}
+                {n > 0 ? `${avgRecovery} min` : 'n/a'}
               </p>
             </div>
           </CardBody>
@@ -64,7 +64,7 @@ export default function KPICards({ members, isLoaded = true }: Props) {
                 <p className="cursor-help text-xs text-zinc-500">Longest Streak</p>
               </Tooltip>
               <p className="mt-0.5 text-xl font-bold text-zinc-800">
-                {n > 0 ? `${avgStreak} min` : '—'}
+                {n > 0 ? `${avgStreak} min` : 'n/a'}
               </p>
             </div>
           </CardBody>
@@ -82,7 +82,7 @@ export default function KPICards({ members, isLoaded = true }: Props) {
                 <p className="cursor-help text-xs text-zinc-500">Burnout Risk</p>
               </Tooltip>
               <div className="mt-1 flex flex-wrap items-center gap-2">
-                <span className="text-xl font-bold text-zinc-800">{n > 0 ? atRisk : '—'}</span>
+                <span className="text-xl font-bold text-zinc-800">{n > 0 ? atRisk : 'n/a'}</span>
                 {n > 0 && <Chip color={burnoutChip}>{burnoutLabel}</Chip>}
               </div>
             </div>

@@ -161,7 +161,7 @@ export default function PricingSection() {
         {/* Pricing Note */}
         <div className="text-center mt-6 sm:mt-8 px-4">
           <p className="text-sm sm:text-base text-gray-400">
-            Annual billing available—save 20%. Volume discounts for teams 500+.
+            Annual billing available (save 20%). Volume discounts for teams 500+.
           </p>
         </div>
       </div>
