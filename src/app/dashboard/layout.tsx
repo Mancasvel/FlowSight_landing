@@ -29,13 +29,11 @@ export default async function DashboardLayout({
   if (!profile) {
     const userName = headerStore.get('x-user-name') || ''
     const userAvatar = headerStore.get('x-user-avatar') || null
-    const userEmail = headerStore.get('x-user-email') || ''
 
     const { error: insertError } = await supabase.from('profiles').insert({
       id: userId,
       display_name: userName,
       avatar_url: userAvatar,
-      email: userEmail,
       role: 'pm',
     })
 
