@@ -397,7 +397,7 @@ export default function SettingsPage() {
                 throw new Error(payload.error || 'Failed to delete worker.');
             }
 
-            setTeamMembers(teamMembers.filter(m => m.user_id !== member.user_id));
+            await refreshTeamMembers();
         } catch (err) {
             setWorkerError(err instanceof Error ? err.message : 'Failed to delete worker.');
         } finally {

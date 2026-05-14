@@ -187,6 +187,19 @@ function buildMemberBase(profile: { id: string; display_name: string | null; ava
   }
 }
 
+/** Drop team_members rows whose profile embed is missing (RLS gap or orphan FK). */
+type TeamMemberWithProfileRow = {
+  user_id: string
+  profile: { id: string; display_name: string | null; avatar_url: string | null } | null
+}
+
+function filterTeamMemberRowsWithProfile(rows: TeamMemberWithProfileRow[]) {
+  return rows.filter(
+    (m): m is { user_id: string; profile: { id: string; display_name: string | null; avatar_url: string | null } } =>
+      m.profile != null && m.profile.id === m.user_id
+  )
+}
+
 // ============ getFlowStateData ============
 
 async function fetchFlowStateData(teamId: string, date: Date): Promise<FlowStateData> {
@@ -232,10 +245,9 @@ async function fetchFlowStateData(teamId: string, date: Date): Promise<FlowState
   const reports = reportsRes.data ?? []
   const trendSessions = trendSessionsRes.data ?? []
 
-  const members = (membersRes.data ?? []) as unknown as Array<{
-    user_id: string
-    profile: { id: string; display_name: string | null; avatar_url: string | null }
-  }>
+  const members = filterTeamMemberRowsWithProfile(
+    (membersRes.data ?? []) as unknown as TeamMemberWithProfileRow[]
+  )
 
   // Flow score per user today: deep_work / total * 100
   const userFlowScores = new Map<string, number>()
@@ -514,10 +526,9 @@ export async function getContextLoadData(
 
   const sessions = sessionsRes.data ?? []
   const reports = reportsRes.data ?? []
-  const membersRaw = (membersRes.data ?? []) as unknown as Array<{
-    user_id: string
-    profile: { id: string; display_name: string | null; avatar_url: string | null }
-  }>
+  const membersRaw = filterTeamMemberRowsWithProfile(
+    (membersRes.data ?? []) as unknown as TeamMemberWithProfileRow[]
+  )
 
   // Group sessions and reports by user
   const userSessions = new Map<string, typeof sessions>()
@@ -702,10 +713,9 @@ export async function getPlanningData(teamId: string, sprintCount = 4): Promise<
   if (membersRes.error) throw new Error(`FlowSight [getPlanningData]: ${membersRes.error.message}`)
 
   const commitments = commitmentsRes.data ?? []
-  const membersRaw = (membersRes.data ?? []) as unknown as Array<{
-    user_id: string
-    profile: { id: string; display_name: string | null; avatar_url: string | null }
-  }>
+  const membersRaw = filterTeamMemberRowsWithProfile(
+    (membersRes.data ?? []) as unknown as TeamMemberWithProfileRow[]
+  )
 
   if (commitments.length === 0) {
     return {
@@ -1158,10 +1168,9 @@ export async function getWorkflowData(teamId: string, date: Date): Promise<Workf
 
   const reports = reportsRes.data ?? []
   const wsSessions = sessionsRes.data ?? []
-  const membersRaw = (membersRes.data ?? []) as unknown as Array<{
-    user_id: string
-    profile: { id: string; display_name: string | null; avatar_url: string | null }
-  }>
+  const membersRaw = filterTeamMemberRowsWithProfile(
+    (membersRes.data ?? []) as unknown as TeamMemberWithProfileRow[]
+  )
 
   if (reports.length > 0) {
     // Primary path: use granular activity_reports

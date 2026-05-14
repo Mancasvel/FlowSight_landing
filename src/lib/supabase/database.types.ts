@@ -353,6 +353,14 @@ export interface Database {
                 Args: { p_code: string };
                 Returns: Database['public']['Tables']['licenses']['Row'];
             };
+            prepare_worker_auth_delete: {
+                Args: { p_user_id: string };
+                Returns: undefined;
+            };
+            delete_worker_auth_user: {
+                Args: { p_user_id: string };
+                Returns: undefined;
+            };
         };
         Enums: {};
     };

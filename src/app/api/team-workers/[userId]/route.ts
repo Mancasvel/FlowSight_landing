@@ -1,6 +1,41 @@
 import { NextResponse } from 'next/server';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabaseAdmin';
+
+/** Remove rows that block ON DELETE CASCADE from auth.users → profiles. */
+async function clearProfileDeleteBlockers(admin: SupabaseClient, userId: string) {
+    const { error: invitedByError } = await admin
+        .from('team_members')
+        .update({ invited_by: null })
+        .eq('invited_by', userId);
+    if (invitedByError) {
+        return { error: invitedByError.message };
+    }
+
+    const { error: ticketsError } = await admin.from('ticket_snapshots').delete().eq('user_id', userId);
+    if (ticketsError) {
+        return { error: ticketsError.message };
+    }
+
+    const { error: sprintError } = await admin
+        .from('sprint_commitments')
+        .update({ created_by: null })
+        .eq('created_by', userId);
+    if (sprintError) {
+        return { error: sprintError.message };
+    }
+
+    const { error: inviteAuthError } = await admin
+        .from('invitations')
+        .update({ created_by: null })
+        .eq('created_by', userId);
+    if (inviteAuthError) {
+        return { error: inviteAuthError.message };
+    }
+
+    return { error: null as string | null };
+}
 
 export const dynamic = 'force-dynamic';
 
@@ -89,7 +124,10 @@ export async function PATCH(request: Request, { params }: WorkerParams) {
     try {
         admin = createAdminClient();
     } catch (error) {
-        const message = error instanceof Error ? error.message : 'Supabase secret key is not configured.';
+        const message =
+            error instanceof Error
+                ? error.message
+                : 'Supabase secret key is not configured.';
         return NextResponse.json({ error: message }, { status: 500 });
     }
 
@@ -154,22 +192,71 @@ export async function DELETE(request: Request, { params }: WorkerParams) {
     const access = await requireOwnedWorker(teamId, userId, user.id);
     if (access.error) return access.error;
 
-    let admin;
     try {
-        admin = createAdminClient();
+        const admin = createAdminClient();
+
+        const purge = await clearProfileDeleteBlockers(admin, userId);
+        if (purge.error) {
+            return NextResponse.json({ error: purge.error }, { status: 500 });
+        }
+
+        // Normalize nullable auth string columns (GoTrue admin API can fail scanning NULL → string).
+        const { error: prepAuthError } = await admin.rpc('prepare_worker_auth_delete', { p_user_id: userId });
+        if (prepAuthError) {
+            if (prepAuthError.code === 'PGRST202') {
+                console.warn(
+                    '[team-workers DELETE] Missing RPC prepare_worker_auth_delete on this database; create it in Supabase (SQL) or worker Auth delete may fail.'
+                );
+            } else {
+                console.warn('[team-workers DELETE] prepare_worker_auth_delete:', prepAuthError.message);
+            }
+        }
+
+        const { data: deletedProfiles, error: profileDeleteError } = await admin
+            .from('profiles')
+            .delete()
+            .eq('id', userId)
+            .select('id');
+        if (profileDeleteError) {
+            return NextResponse.json({ error: profileDeleteError.message }, { status: 500 });
+        }
+
+        const profileRemoved = (deletedProfiles?.length ?? 0) > 0;
+
+        const { error: deleteUserError } = await admin.auth.admin.deleteUser(userId);
+
+        if (deleteUserError) {
+            const msg = deleteUserError.message.toLowerCase();
+            if (msg.includes('not found') || msg.includes('does not exist')) {
+                return NextResponse.json({ ok: true });
+            }
+            if (profileRemoved) {
+                const { error: hardDelError } = await admin.rpc('delete_worker_auth_user', {
+                    p_user_id: userId,
+                });
+                if (hardDelError) {
+                    if (hardDelError.code === 'PGRST202') {
+                        console.error(
+                            '[team-workers DELETE] Missing RPC delete_worker_auth_user; Auth row may remain for',
+                            userId
+                        );
+                    } else {
+                        console.error(
+                            '[team-workers DELETE] delete_worker_auth_user:',
+                            hardDelError.message,
+                            userId
+                        );
+                    }
+                }
+                return NextResponse.json({ ok: true });
+            }
+            return NextResponse.json({ error: deleteUserError.message }, { status: 400 });
+        }
+
+        return NextResponse.json({ ok: true });
     } catch (error) {
-        const message = error instanceof Error ? error.message : 'Supabase secret key is not configured.';
+        console.error('team-workers DELETE', error);
+        const message = error instanceof Error ? error.message : 'Worker delete failed.';
         return NextResponse.json({ error: message }, { status: 500 });
     }
-
-    const { error: deleteUserError } = await admin.auth.admin.deleteUser(userId);
-
-    if (deleteUserError) {
-        return NextResponse.json({ error: deleteUserError.message }, { status: 400 });
-    }
-
-    await admin.from('team_members').delete().eq('user_id', userId);
-    await admin.from('profiles').delete().eq('id', userId);
-
-    return NextResponse.json({ ok: true });
 }

@@ -218,7 +218,8 @@ export async function getTeamMembers(supabase: SupabaseDb, teamId: string) {
         .order('joined_at', { ascending: true });
 
     if (error) throw error;
-    return data as (TeamMember & { profile: Profile })[];
+    const rows = (data ?? []) as (TeamMember & { profile: Profile | null })[];
+    return rows.filter((m): m is TeamMember & { profile: Profile } => m.profile != null && m.profile.id === m.user_id);
 }
 
 export async function addTeamMember(

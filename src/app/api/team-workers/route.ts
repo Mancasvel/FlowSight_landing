@@ -92,7 +92,8 @@ export async function POST(request: Request) {
     try {
         admin = createAdminClient();
     } catch (error) {
-        const message = error instanceof Error ? error.message : 'Supabase secret key is not configured.';
+        const message =
+            error instanceof Error ? error.message : 'Supabase secret key is not configured.';
         return NextResponse.json({ error: message }, { status: 500 });
     }
 

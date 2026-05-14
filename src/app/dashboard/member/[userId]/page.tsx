@@ -55,6 +55,7 @@ export default function MemberTimelinePage() {
 
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+    const [loadError, setLoadError] = useState<string | null>(null);
     const [exportingPdf, setExportingPdf] = useState(false);
     const [profile, setProfile] = useState<Profile | null>(null);
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
@@ -71,6 +72,7 @@ export default function MemberTimelinePage() {
         if (showRefresh) setRefreshing(true);
 
         try {
+            setLoadError(null);
             const weekAgo = new Date();
             weekAgo.setDate(weekAgo.getDate() - 7);
             const weekAgoStr = weekAgo.toISOString().split('T')[0];
@@ -136,6 +138,10 @@ export default function MemberTimelinePage() {
 
         } catch (err) {
             console.error('Error fetching member data:', err);
+            const message =
+                err instanceof Error ? err.message : 'Could not load this member from the database.';
+            setLoadError(message);
+            setProfile(null);
         } finally {
             setLoading(false);
             setRefreshing(false);
@@ -227,6 +233,35 @@ export default function MemberTimelinePage() {
                 <div className="flex flex-col items-center gap-3">
                     <div className="w-8 h-8 border-2 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
                     <span className="text-sm text-zinc-400">Loading member...</span>
+                </div>
+            </div>
+        );
+    }
+
+    if (loadError) {
+        return (
+            <div className="bg-white rounded-2xl shadow-card p-8 text-center max-w-lg mx-auto mt-12">
+                <h2 className="text-lg font-semibold text-zinc-900 mb-2">Could not load member</h2>
+                <p className="text-sm text-zinc-600 mb-4 break-words">{loadError}</p>
+                <div className="flex flex-wrap justify-center gap-2">
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setLoadError(null);
+                            void fetchMemberData(true);
+                        }}
+                        className="px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-700 transition-colors inline-flex items-center gap-2"
+                    >
+                        <RefreshCw size={16} />
+                        Retry
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => router.push('/dashboard/team')}
+                        className="px-5 py-2.5 border border-zinc-200 text-zinc-800 rounded-xl text-sm font-medium hover:bg-zinc-50 transition-colors"
+                    >
+                        Back to Team
+                    </button>
                 </div>
             </div>
         );
