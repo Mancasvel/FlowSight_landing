@@ -78,7 +78,6 @@ export interface Invitation {
     created_at: string;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SupabaseDb = SupabaseClient<any, any, any>;
 
 // ============ PROFILE QUERIES ============

@@ -344,8 +344,9 @@ export default function ReportsPage() {
                                 />
                                 <Tooltip
                                     contentStyle={CHART_TOOLTIP_STYLE}
-                                    formatter={(value: number | undefined) => [
-                                        value != null ? `${value}h` : 'n/a', undefined,
+                                    formatter={(value) => [
+                                        value != null ? `${typeof value === 'number' ? value : Number(value)}h` : 'n/a',
+                                        undefined,
                                     ]}
                                 />
                                 <Legend
@@ -404,8 +405,9 @@ export default function ReportsPage() {
                                 />
                                 <Tooltip
                                     contentStyle={CHART_TOOLTIP_STYLE}
-                                    formatter={(value: number | undefined) => [
-                                        value != null ? `${value}%` : 'n/a', undefined,
+                                    formatter={(value) => [
+                                        value != null ? `${typeof value === 'number' ? value : Number(value)}%` : 'n/a',
+                                        undefined,
                                     ]}
                                 />
                                 {activeMetas.map(mc => (

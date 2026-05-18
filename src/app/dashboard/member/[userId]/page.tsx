@@ -522,7 +522,7 @@ export default function MemberTimelinePage() {
                                     <YAxis type="category" dataKey="name" stroke={CHART_AXIS_COLOR} fontSize={11} tickLine={false} axisLine={false} width={90} />
                                     <Tooltip
                                         contentStyle={CHART_TOOLTIP_STYLE}
-                                        formatter={(value: number | undefined) => [`${value != null ? value : 0}h`, 'Hours']}
+                                        formatter={(value) => [`${typeof value === 'number' ? value : Number(value)}h`, 'Hours']}
                                     />
                                     <Bar
                                         dataKey="hours"
