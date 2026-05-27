@@ -7,6 +7,7 @@ import { DownloadSection } from '@/components/DownloadSection'
 import { ComparisonTable } from '@/components/ComparisonTable'
 import { Pricing } from '@/components/Pricing'
 import { FinalCTA } from '@/components/FinalCTA'
+import { SponsorsSection } from '@/components/SponsorsSection'
 import { absoluteUrl, siteConfig } from '@/lib/site'
 
 export const metadata: Metadata = {
@@ -48,6 +49,7 @@ export default function Home() {
       <ComparisonTable />
       <Pricing />
       <FinalCTA />
+      <SponsorsSection />
     </main>
   );
 }
