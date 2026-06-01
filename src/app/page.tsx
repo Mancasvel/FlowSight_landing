@@ -7,6 +7,7 @@ import { ClosingCTA } from '@/components/redesign/ClosingCTA'
 import { DownloadSection } from '@/components/DownloadSection'
 import { Pricing } from '@/components/Pricing'
 import { Lock, Menu } from 'lucide-react'
+
 import { absoluteUrl, siteConfig } from '@/lib/site'
 
 export const metadata: Metadata = {
@@ -52,6 +53,7 @@ export default function Home() {
       <AudiencePlatforms />
       <Pricing />
       <ClosingCTA />
+
     </main>
   );
 }
