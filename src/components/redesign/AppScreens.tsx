@@ -110,8 +110,8 @@ export function SummaryScreen() {
         { d: "S", done: false },
     ];
     const tasks = [
-        { pct: "38%", label: "FS-138", time: "120m", tone: "bg-violet-500", w: "70%" },
-        { pct: "29%", label: "FS-142", time: "90m", tone: "bg-pink-500", w: "52%" },
+        { pct: "38%", label: "Coding", time: "120m", tone: "bg-violet-500", w: "70%" },
+        { pct: "29%", label: "Design", time: "90m", tone: "bg-pink-500", w: "52%" },
         { pct: "5%", label: "Browsing", time: "15m", tone: "bg-blue-500", w: "12%" },
     ];
     return (
@@ -151,10 +151,17 @@ export function SummaryScreen() {
                     {tasks.map((t) => (
                         <div key={t.label} className="flex items-center gap-2 text-xs">
                             <span className="w-8 shrink-0 font-semibold text-slate-500">{t.pct}</span>
-                            <div className="relative h-5 flex-1 overflow-hidden rounded-full bg-slate-100">
-                                <div className={`flex h-full items-center rounded-full px-2.5 text-[10px] font-semibold text-white ${t.tone}`} style={{ width: t.w }}>
+                            <div className="relative h-5 min-w-0 flex-1 rounded-full bg-slate-100">
+                                <div
+                                    className={`absolute left-0 top-0 h-full rounded-full ${t.tone}`}
+                                    style={{ width: t.w }}
+                                />
+                                <span
+                                    className="absolute top-1/2 -translate-y-1/2 whitespace-nowrap text-[10px] font-semibold text-secondary-navy"
+                                    style={{ left: `calc(${t.w} + 6px)` }}
+                                >
                                     {t.label}
-                                </div>
+                                </span>
                             </div>
                             <span className="w-8 shrink-0 text-right text-[10px] text-slate-400">{t.time}</span>
                         </div>

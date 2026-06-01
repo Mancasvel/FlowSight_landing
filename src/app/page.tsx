@@ -8,7 +8,8 @@ import { DownloadSection } from '@/components/DownloadSection'
 import { Pricing } from '@/components/Pricing'
 import { DownloadActionsProvider } from '@/context/DownloadActionsContext'
 import { getLatestAgentRelease } from '@/lib/downloads.server'
-import { Lock, Menu } from 'lucide-react'
+import Link from 'next/link'
+import { Lock } from 'lucide-react'
 
 import { absoluteUrl, siteConfig } from '@/lib/site'
 
@@ -40,13 +41,12 @@ export default async function Home() {
               <span>privacy-first, local, yours forever</span>
             </div>
 
-            <button
-              type="button"
-              aria-label="Menu"
-              className="flex h-9 w-9 items-center justify-center rounded-lg text-secondary-navy transition-colors hover:bg-slate-100"
+            <Link
+              href="/login"
+              className="rounded-full bg-gradient-to-r from-primary-cyan to-primary-teal px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:-translate-y-0.5 hover:from-primary-teal hover:to-primary-cyan hover:shadow-lg"
             >
-              <Menu className="h-5 w-5" />
-            </button>
+              Sign in
+            </Link>
           </div>
         </header>
 
