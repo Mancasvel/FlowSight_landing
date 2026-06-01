@@ -1,5 +1,18 @@
 import type { Metadata, Viewport } from 'next'
+import { Playfair_Display, Plus_Jakarta_Sans } from 'next/font/google'
 import './globals.css'
+
+const sans = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-sans',
+})
+
+const serif = Playfair_Display({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-serif',
+})
 import Footer from '@/components/Footer'
 import { ClickAnalytics } from '@/components/ClickAnalytics'
 import { CookieConsent } from '@/components/CookieConsent'
@@ -80,7 +93,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={`${sans.variable} ${serif.variable}`} suppressHydrationWarning>
       <body className="font-sans antialiased" suppressHydrationWarning>
         <ConsentProvider>
           <MicrosoftClarity />

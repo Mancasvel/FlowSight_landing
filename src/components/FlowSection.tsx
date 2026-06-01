@@ -268,9 +268,9 @@ const flowSteps = [
         icon: <Download className="w-6 h-6" />,
         title: "Install the local agent",
         description:
-            "Lightweight agent on your machine: reads the screen locally, no cloud screenshot vault.",
+            "A lightweight agent runs on your machine and reads your screen locally. Nothing is uploaded.",
         glowColor: "blue",
-        details: ["< 50MB memory", "Runs quietly", "Core analysis offline-capable"],
+        details: ["< 50MB memory", "Runs quietly", "Works offline"],
         mockup: <AgentMockup />,
     },
     {
@@ -278,34 +278,35 @@ const flowSteps = [
         icon: <Cpu className="w-6 h-6" />,
         title: "Local AI runs on your device",
         description:
-            "VL inference on your hardware only. Readable source so behavior matches what you reviewed.",
+            "The AI analyzes your screen on your own hardware. Open source, so you can verify exactly what it does.",
         glowColor: "purple",
-        badge: "🔒 No screen exfiltration",
-        details: ["Local AI on device", "Screenshots never uploaded", "Open codebase to audit"],
+        badge: "🔒 Local processing, responsible tracking",
+        details: ["Local AI on device", "Sensitive data stays on device", "Open codebase to audit"],
         mockup: <AIProcessingMockup />,
     },
     {
         id: 3,
         icon: <BarChart3 className="w-6 h-6" />,
-        title: "Cognitive signal + client reports",
+        title: "Cognitive insights & reports",
         description:
-            "Spot overload and context switches, then export proof of work clients can skim in minutes.",
+            "See overload and context switches as they happen, then share clear reports in a couple of clicks.",
         glowColor: "teal",
-        details: ["Flow & fatigue cues", "Auto weekly digest", "Share on your terms"],
+        details: ["Focus & fatigue signals", "Automatic weekly digest", "Share on your terms"],
         mockup: <DashboardMockup />,
     },
     {
         id: 4,
         icon: <Shield className="w-6 h-6" />,
-        title: "Worker-owned by default",
+        title: "Yours by default",
         description:
-            "No keystroke logging, no mouse surveillance, no hidden live feed. Screenshots never leave the device unless you explicitly export or connect optional sync you control.",
+            "No keystroke logging, no mouse surveillance, no hidden live feed. Your data stays on your device, and reports leave only when you decide.",
         glowColor: "green",
         isPrivacy: true,
         privacyBadges: [
             { icon: <XCircle className="w-4 h-4 text-red-400" />, text: "No keystroke or mouse tracking", type: "negative" },
             { icon: <XCircle className="w-4 h-4 text-red-400" />, text: "No bossware live review", type: "negative" },
             { icon: <CheckCircle2 className="w-4 h-4 text-green-500" />, text: "You choose what clients see", type: "positive" },
+            { icon: <CheckCircle2 className="w-4 h-4 text-green-500" />, text: "AI suggests, you decide", type: "positive" },
             { icon: <CheckCircle2 className="w-4 h-4 text-green-500" />, text: "GDPR-minded architecture", type: "positive" },
         ],
         mockup: <PrivacyMockup />,
@@ -349,7 +350,7 @@ export function FlowSection() {
                         </span>
                     </h2>
                     <p className="text-slate-500 text-lg max-w-2xl mx-auto">
-                        Install to client ready proof in four steps. No surveillance stack.
+                        From install to clear insights in four steps. No surveillance, ever.
                     </p>
                 </motion.div>
             </div>

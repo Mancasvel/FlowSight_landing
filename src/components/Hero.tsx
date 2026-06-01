@@ -3,7 +3,7 @@
 import { motion, AnimatePresence, useMotionValue, useTransform, useSpring, animate } from "framer-motion";
 import { Button } from "./Button";
 import {
-    ChevronDown,
+    Download,
     Clock,
     Flame,
     Euro,
@@ -17,8 +17,8 @@ import {
 } from "lucide-react";
 import { useEffect, useState, useMemo } from "react";
 
-function scrollToNextSection() {
-    document.getElementById("about-flowsight")?.scrollIntoView({
+function scrollToDownload() {
+    document.getElementById("download")?.scrollIntoView({
         behavior: "smooth",
         block: "start",
     });
@@ -431,11 +431,20 @@ export function Hero() {
                     transition={{ duration: 0.8, delay: 0.08 }}
                     className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-4 md:mb-6 font-heading text-secondary-navy"
                 >
-                    AI that protects how you think,{" "}
+                    High performers lose 4 hours a day to distractions.{" "}
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-secondary-navy to-primary-teal">
-                        and proves how you work
+                        FlowSight gets them back.
                     </span>
                 </motion.h1>
+
+                <motion.p
+                    initial={{ opacity: 0, y: 24 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.7, delay: 0.12 }}
+                    className="text-lg md:text-xl text-slate-500 max-w-3xl leading-relaxed mb-2"
+                >
+                    Privacy-first AI that learns your focus patterns and protects your deep work, so you spend more time on what matters.
+                </motion.p>
 
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -483,14 +492,14 @@ export function Hero() {
                     <div className="flex flex-col sm:flex-row gap-4">
                         <Button
                             type="button"
-                            data-track="hero-more-about"
-                            variant="outline"
+                            data-track="hero-download"
+                            variant="primary"
                             size="lg"
-                            className="group bg-white"
-                            onClick={scrollToNextSection}
+                            className="group"
+                            onClick={scrollToDownload}
                         >
-                            Why FlowSight
-                            <ChevronDown className="w-4 h-4 ml-2 group-hover:translate-y-0.5 transition-transform" aria-hidden />
+                            Download Free
+                            <Download className="w-4 h-4 ml-2 group-hover:translate-y-0.5 transition-transform" aria-hidden />
                         </Button>
                     </div>
                 </motion.div>

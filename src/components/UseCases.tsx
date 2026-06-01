@@ -7,7 +7,7 @@ const workMockups = [
     {
         id: 1,
         title: "Freelancers & remote ICs",
-        description: "Protect deep work, see context switches and interruption load, and understand your own patterns, without self-surveillance.",
+        description: "Know exactly when you do your best work. Understand your focus patterns without turning surveillance on yourself.",
         icon: <PenTool className="w-5 h-5" />,
         color: "bg-primary-cyan",
         mockup: "figma",
@@ -15,7 +15,7 @@ const workMockups = [
     {
         id: 2,
         title: "Clients & hiring managers",
-        description: "Receive polished proof of work summaries from accumulated activity, with no chasing timesheets or status threads.",
+        description: "Receive cognitive health reports that show real work patterns. No chasing timesheets or status updates.",
         icon: <FileText className="w-5 h-5" />,
         color: "bg-primary-teal",
         mockup: "docs",
@@ -23,7 +23,7 @@ const workMockups = [
     {
         id: 3,
         title: "Outsourcing marketplaces",
-        description: "Differentiate with transparency and worker wellbeing: credible delivery signal without bossware optics.",
+        description: "Differentiate with worker wellbeing and transparency. Credible delivery signal without bossware.",
         icon: <Megaphone className="w-5 h-5" />,
         color: "bg-accent-orange",
         mockup: "marketing",
@@ -31,7 +31,7 @@ const workMockups = [
     {
         id: 4,
         title: "Consulting & services",
-        description: "Automatic narratives of what shipped this week: billable truth that reads professional, not invasive.",
+        description: "Automatic reports that show real work and protect your team's focus. Billable truth, no busywork.",
         icon: <DollarSign className="w-5 h-5" />,
         color: "bg-accent-green",
         mockup: "sales",
@@ -39,7 +39,7 @@ const workMockups = [
     {
         id: 5,
         title: "Product & delivery leads",
-        description: "Spot fragmentation and burnout signals early while workers keep control of what gets shared outward.",
+        description: "Spot burnout and fragmentation early. Understand how your team works without surveillance.",
         icon: <Layout className="w-5 h-5" />,
         color: "bg-blue-500",
         mockup: "kanban",
@@ -47,7 +47,7 @@ const workMockups = [
     {
         id: 6,
         title: "Engineering & maker roles",
-        description: "Local vision-language context from the screen you already use (IDE, browser, docs) stays on device until you export.",
+        description: "Local AI that understands your workflow. Deep focus detection for people who take their craft seriously.",
         icon: <Code className="w-5 h-5" />,
         color: "bg-secondary-navy",
         mockup: "code",
@@ -338,10 +338,10 @@ export function UseCases() {
             <div className="container px-4 md:px-6 mx-auto">
                 <div className="text-center mb-16">
                     <h2 className="text-3xl md:text-5xl font-bold mb-4 text-secondary-navy">
-                        Built to protect your well-being and attention
+                        Built for high performers who take their work seriously
                     </h2>
                     <p className="text-slate-500 max-w-2xl mx-auto">
-                        Individual-first: help workers stay healthy and legible, then let proof travel to clients and platforms.
+                        Freelancers, students, startup teams, agencies, distributed teams. Anyone doing focused knowledge work.
                     </p>
                 </div>
             </div>

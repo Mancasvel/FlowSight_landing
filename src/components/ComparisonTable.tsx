@@ -7,7 +7,7 @@ const features = [
     {
         name: "Screenshot handling",
         competitor: "Stored in vendor cloud",
-        flowsight: "Processed locally, never uploaded",
+        flowsight: "Processed locally. Reports shared only when you decide.",
         flowType: "good",
         compType: "bad",
         icon: <Eye className="w-4 h-4" />,
@@ -23,7 +23,7 @@ const features = [
     {
         name: "Timesheets & manual proof",
         competitor: "Required for visibility",
-        flowsight: "Eliminated: narrative from real work",
+        flowsight: "Gone. Reports build from real work",
         flowType: "good",
         compType: "bad",
         icon: <Zap className="w-4 h-4" />,
@@ -31,15 +31,15 @@ const features = [
     {
         name: "Vision-language AI",
         competitor: "Cloud-only or none",
-        flowsight: "Local AI on your device; FlowSight code open to inspect",
+        flowsight: "On-device (Free), cloud-powered (Pro). Open source.",
         flowType: "great",
         compType: "neutral",
         icon: <Brain className="w-4 h-4" />,
     },
     {
         name: "Worker trust & privacy",
-        competitor: "Surveillance posture",
-        flowsight: "Cognitive health + consent-first sharing",
+        competitor: "Surveillance by design",
+        flowsight: "Cognitive health first. AI suggests, you decide.",
         flowType: "great",
         compType: "neutral",
         icon: <Lock className="w-4 h-4" />,
@@ -47,7 +47,7 @@ const features = [
     {
         name: "Focus & burnout signals",
         competitor: "Rare / activity scores only",
-        flowsight: "Context switches & overload surfaced",
+        flowsight: "Context switches & overload, surfaced early",
         flowType: "great",
         compType: "neutral",
         icon: <ShieldCheck className="w-4 h-4" />,
@@ -73,7 +73,7 @@ export function ComparisonTable() {
                         Guard cognition, <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-cyan to-primary-teal">not employees</span>
                     </h2>
                     <p className="text-slate-500 text-lg max-w-2xl mx-auto">
-                        Anti-bossware: local AI, your pixels, proof of work on your terms.
+                        Anti-bossware: privacy-first AI that protects your focus, not surveils your screen.
                     </p>
                 </motion.div>
 

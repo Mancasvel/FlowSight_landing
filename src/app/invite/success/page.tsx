@@ -32,7 +32,7 @@ export default function InviteSuccessPage() {
                         className="flex items-center justify-center gap-2 w-full py-3 bg-dashboard-card border border-dashboard-border text-dashboard-text font-medium rounded-lg hover:bg-dashboard-border/50"
                     >
                         <Download size={20} />
-                        Download for macOS
+                        Get notified for macOS
                     </Link>
                 </div>
 

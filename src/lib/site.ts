@@ -6,9 +6,13 @@ export const siteConfig = {
   /** Used when NEXT_PUBLIC_SITE_URL is not set (e.g. local dev). */
   defaultOgImage: '/flowsight_sinfondo.png',
   description:
-    'FlowSight: local AI on your device for cognitive health and proof of work. No surveillance, no timesheet theater. Code you can read; exports only when you choose.',
+    'FlowSight: privacy-first AI that tracks cognitive health for high performers. Local on your machine, open source, with cloud-powered Pro for teams. Protect your focus. Understand your patterns.',
   keywords: [
     'FlowSight',
+    'high performers',
+    'cognitive health tracker',
+    'focus patterns',
+    'deep work protection',
     'cognitive health at work',
     'local AI productivity',
     'proof of work reports',
@@ -22,7 +26,6 @@ export const siteConfig = {
     'deep work analytics',
     'context switching detection',
     'burnout signals',
-    'outsourcing platform transparency',
     'GDPR friendly productivity',
   ],
   twitterHandle: '@flowsight',

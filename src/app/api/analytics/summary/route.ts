@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import dbConnect from '@/lib/mongodb'
 import ClickCounter from '@/models/ClickCounter'
+import MacWaitlistSubscriber from '@/models/MacWaitlistSubscriber'
 
 export const dynamic = 'force-dynamic'
 
@@ -29,7 +30,10 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const docs = await ClickCounter.find({}).lean().exec()
+    const [docs, macWaitlistCount] = await Promise.all([
+      ClickCounter.find({}).lean().exec(),
+      MacWaitlistSubscriber.countDocuments(),
+    ])
     const byKey: Record<string, number> = {}
     for (const d of docs) {
       byKey[d.key] = d.count
@@ -37,6 +41,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       totalClicks: byKey.global ?? 0,
       byKey,
+      downloadClicks: {
+        windows: byKey['download-windows'] ?? 0,
+        macos: byKey['download-macos'] ?? 0,
+        linuxDeb: byKey['download-linux-deb'] ?? 0,
+        linuxAppImage: byKey['download-linux-appimage'] ?? 0,
+      },
+      macWaitlistCount,
       updatedAt: new Date().toISOString(),
     })
   } catch (e) {
