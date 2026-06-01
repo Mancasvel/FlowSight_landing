@@ -18,7 +18,7 @@ export default function Footer() {
               </span>
             </Link>
             <p className="text-sm leading-relaxed mb-6 max-w-xs">
-              Local AI for cognitive health and proof of work. No bossware.
+              Local AI for cognitive health and proof of work.
             </p>
             <div className="flex gap-4">
               <a href="#" className="text-zinc-400 hover:text-indigo-600 transition-colors" aria-label="Twitter">

@@ -151,18 +151,29 @@ export function SummaryScreen() {
                     {tasks.map((t) => (
                         <div key={t.label} className="flex items-center gap-2 text-xs">
                             <span className="w-8 shrink-0 font-semibold text-slate-500">{t.pct}</span>
-                            <div className="relative h-5 min-w-0 flex-1 rounded-full bg-slate-100">
-                                <div
-                                    className={`absolute left-0 top-0 h-full rounded-full ${t.tone}`}
-                                    style={{ width: t.w }}
-                                />
-                                <span
-                                    className="absolute top-1/2 -translate-y-1/2 whitespace-nowrap text-[10px] font-semibold text-secondary-navy"
-                                    style={{ left: `calc(${t.w} + 6px)` }}
-                                >
-                                    {t.label}
-                                </span>
-                            </div>
+                            {t.label === "Browsing" ? (
+                                <div className="relative h-5 min-w-0 flex-1 rounded-full bg-slate-100">
+                                    <div
+                                        className={`absolute left-0 top-0 h-full rounded-full ${t.tone}`}
+                                        style={{ width: t.w }}
+                                    />
+                                    <span
+                                        className="absolute top-1/2 -translate-y-1/2 whitespace-nowrap text-[10px] font-semibold text-secondary-navy"
+                                        style={{ left: `calc(${t.w} + 6px)` }}
+                                    >
+                                        {t.label}
+                                    </span>
+                                </div>
+                            ) : (
+                                <div className="relative h-5 flex-1 overflow-hidden rounded-full bg-slate-100">
+                                    <div
+                                        className={`flex h-full items-center rounded-full px-2.5 text-[10px] font-semibold text-white ${t.tone}`}
+                                        style={{ width: t.w }}
+                                    >
+                                        {t.label}
+                                    </div>
+                                </div>
+                            )}
                             <span className="w-8 shrink-0 text-right text-[10px] text-slate-400">{t.time}</span>
                         </div>
                     ))}
