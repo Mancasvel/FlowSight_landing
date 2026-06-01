@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import dbConnect from '@/lib/mongodb'
 import ClickCounter from '@/models/ClickCounter'
 import MacWaitlistSubscriber from '@/models/MacWaitlistSubscriber'
+import DownloadUpdateSubscriber from '@/models/DownloadUpdateSubscriber'
 
 export const dynamic = 'force-dynamic'
 
@@ -30,9 +31,10 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const [docs, macWaitlistCount] = await Promise.all([
+    const [docs, macWaitlistCount, downloadUpdatesCount] = await Promise.all([
       ClickCounter.find({}).lean().exec(),
       MacWaitlistSubscriber.countDocuments(),
+      DownloadUpdateSubscriber.countDocuments(),
     ])
     const byKey: Record<string, number> = {}
     for (const d of docs) {
@@ -48,6 +50,7 @@ export async function GET(request: NextRequest) {
         linuxAppImage: byKey['download-linux-appimage'] ?? 0,
       },
       macWaitlistCount,
+      downloadUpdatesCount,
       updatedAt: new Date().toISOString(),
     })
   } catch (e) {

@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "./Button";
 import { Check } from "lucide-react";
 import Link from 'next/link';
+import { siteConfig } from '@/lib/site';
 
 type Tier = {
     name: string;
@@ -17,6 +18,8 @@ type Tier = {
     featured?: boolean;
     cta: string;
     ctaType: "download" | "link";
+    /** Override default `/login?plan=…` destination. */
+    ctaHref?: string;
 };
 
 const individualTiers: Tier[] = [
@@ -51,6 +54,7 @@ const individualTiers: Tier[] = [
         featured: true,
         cta: "Start Pro Trial",
         ctaType: "link",
+        ctaHref: siteConfig.proTrialUrl,
     },
 ];
 
@@ -86,6 +90,7 @@ const teamTiers: Tier[] = [
         featured: true,
         cta: "Start Pro Trial",
         ctaType: "link",
+        ctaHref: siteConfig.proTrialUrl,
     },
     {
         name: "ENTERPRISE",
@@ -113,6 +118,9 @@ function scrollToDownload() {
 }
 
 function TierCard({ tier, idx }: { tier: Tier; idx: number }) {
+    const ctaHref = tier.ctaHref ?? `/login?plan=${tier.id}`;
+    const isExternal = ctaHref.startsWith('http');
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -144,8 +152,19 @@ function TierCard({ tier, idx }: { tier: Tier; idx: number }) {
                 >
                     {tier.cta}
                 </Button>
+            ) : isExternal ? (
+                <a
+                    href={ctaHref}
+                    className="w-full mb-8 block"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    <Button variant={tier.featured ? "primary" : "outline"} className="w-full">
+                        {tier.cta}
+                    </Button>
+                </a>
             ) : (
-                <Link href={`/login?plan=${tier.id}`} className="w-full mb-8 block">
+                <Link href={ctaHref} className="w-full mb-8 block">
                     <Button variant={tier.featured ? "primary" : "outline"} className="w-full">
                         {tier.cta}
                     </Button>

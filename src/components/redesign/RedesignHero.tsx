@@ -1,15 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Download } from "lucide-react";
 import { DesktopFrame } from "./AppScreens";
-
-function scrollToDownload() {
-    document.getElementById("download")?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-    });
-}
+import { SmartDownloadButton } from "@/components/SmartDownloadButton";
 
 export function RedesignHero() {
     return (
@@ -35,19 +28,10 @@ export function RedesignHero() {
                     transition={{ duration: 0.7, delay: 0.2 }}
                     className="mt-10"
                 >
-                    <button
-                        type="button"
-                        onClick={scrollToDownload}
-                        data-track="hero-download"
-                        className="group inline-flex items-center gap-2 rounded-full bg-secondary-navy px-7 py-3.5 text-base font-medium text-white transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-slate-900/15"
-                    >
-                        <Download className="h-4 w-4 transition-transform group-hover:translate-y-0.5" aria-hidden />
-                        Download
-                    </button>
+                    <SmartDownloadButton trackKey="hero-download" />
                 </motion.div>
             </div>
 
-            {/* Product mockup below the CTA (mirrors Anytype hero chat list) */}
             <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}

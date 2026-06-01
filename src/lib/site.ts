@@ -3,6 +3,8 @@ export const siteConfig = {
   name: 'FlowSight',
   legalName: 'FlowSight Inc.',
   url: 'https://flowsight.site',
+  /** Pro trial landing (1-month free offer). */
+  proTrialUrl: 'https://pro.flowsight.site',
   /** Used when NEXT_PUBLIC_SITE_URL is not set (e.g. local dev). */
   defaultOgImage: '/flowsight_sinfondo.png',
   description:

@@ -9,10 +9,9 @@
  * 1h via Next's Data Cache. New releases in either repo propagate to visitors
  * within the cache window without needing a redeploy.
  *
- * Transitional behavior: while the Linux repo has no releases yet, we fall
- * back to the main repo's last-known-good Linux binaries so the Linux buttons
- * never disappear. The fallback becomes dormant the moment `FlowSight_linux`
- * publishes its first release that ships a `.deb` or `.AppImage`.
+ * Transitional behavior removed: Linux binaries always come from
+ * `Mancasvel/FlowSight_linux`. If the live fetch fails, we fall back to
+ * last-known-good URLs on that repo only — never the desktop repo.
  *
  * Env knobs:
  * - `NEXT_PUBLIC_AGENT_RELEASE_TAG`      , pin Win/Mac to a specific tag.
@@ -26,6 +25,8 @@ import {
   FALLBACK_DESKTOP_RELEASE_TAG,
   FALLBACK_LINUX_RELEASE_TAG,
   FALLBACK_AGENT_VERSION,
+  FALLBACK_LINUX_VERSION,
+  linuxReleasesUrl,
   buildFallbackAgentRelease,
   type AgentDownloadUrls,
   type AgentRelease,
@@ -39,6 +40,7 @@ type GithubRelease = {
   draft: boolean
   prerelease: boolean
   published_at: string
+  body?: string
   assets?: GithubAsset[]
 }
 
@@ -94,6 +96,13 @@ function parseAgentVersion(assetName: string): string | undefined {
   // Tauri default naming: <product>_<semver>_<arch>.<ext>
   const match = assetName.match(/_(\d+\.\d+\.\d+)_/)
   return match?.[1]
+}
+
+function linuxAssetKind(name: string): '.deb' | '.AppImage' | null {
+  const lower = name.toLowerCase()
+  if (lower.endsWith('.deb')) return '.deb'
+  if (lower.endsWith('.appimage')) return '.AppImage'
+  return null
 }
 
 // ---------- desktop (Windows + macOS) ---------------------------------------
@@ -170,7 +179,7 @@ function pickLinuxAsset(
   assets: GithubAsset[],
   extension: '.deb' | '.AppImage'
 ): string | undefined {
-  const matches = assets.filter((a) => a.name.endsWith(extension))
+  const matches = assets.filter((a) => linuxAssetKind(a.name) === extension)
   if (matches.length === 0) return undefined
   return (
     matches.find((a) => /amd64|x86_64|x64/i.test(a.name))?.browser_download_url
@@ -178,42 +187,147 @@ function pickLinuxAsset(
   )
 }
 
-async function resolveLinuxSlice(): Promise<ReleaseSlice | null> {
+function sliceFromRelease(release: GithubRelease): ReleaseSlice | null {
+  const assets = release.assets ?? []
+  const linuxDeb = pickLinuxAsset(assets, '.deb')
+  const linuxAppImage = pickLinuxAsset(assets, '.AppImage')
+  if (!linuxDeb && !linuxAppImage) return null
+
+  const version =
+    assets
+      .map((a) => parseAgentVersion(a.name))
+      .find((v): v is string => Boolean(v))
+
+  return {
+    tag: release.tag_name,
+    version,
+    urls: { linuxDeb, linuxAppImage },
+  }
+}
+
+async function fetchLatestRelease(repo: string): Promise<GithubRelease | null> {
+  const response = await fetch(
+    `https://api.github.com/repos/${repo}/releases/latest`,
+    {
+      headers: githubHeaders(),
+      next: {
+        revalidate: AGENT_RELEASE_REVALIDATE_SECONDS,
+        tags: ['github-releases', `github-releases:${repo}`, 'github-releases:latest'],
+      },
+    }
+  )
+  if (response.status === 404) return null
+  if (!response.ok) {
+    throw new Error(`GitHub API ${response.status} for ${repo}/releases/latest`)
+  }
+  return (await response.json()) as GithubRelease
+}
+
+function emptyLinuxSlice(tag: string, version?: string): ReleaseSlice {
+  return {
+    tag,
+    version: version ?? FALLBACK_LINUX_VERSION,
+    urls: {},
+  }
+}
+
+async function resolveLinuxSlice(): Promise<ReleaseSlice> {
   const pinnedTag = process.env.NEXT_PUBLIC_AGENT_LINUX_RELEASE_TAG
   try {
+    if (pinnedTag) {
+      const releases = await fetchReleases(FLOWSIGHT_LINUX_REPO)
+      const release = sortedStableReleases(releases).find((r) => r.tag_name === pinnedTag)
+      if (!release) {
+        throw new Error(`pinned Linux tag ${pinnedTag} not found on ${FLOWSIGHT_LINUX_REPO}`)
+      }
+      const slice = sliceFromRelease(release)
+      if (slice) return slice
+      console.warn(
+        `[downloads.server] Linux tag ${pinnedTag} exists on ${FLOWSIGHT_LINUX_REPO} but has no .deb/.AppImage assets yet.`
+      )
+      return emptyLinuxSlice(release.tag_name)
+    }
+
+    const latest = await fetchLatestRelease(FLOWSIGHT_LINUX_REPO)
+    if (latest && !latest.draft) {
+      const slice = sliceFromRelease(latest)
+      if (slice) return slice
+      console.warn(
+        `[downloads.server] Latest Linux release ${latest.tag_name} on ${FLOWSIGHT_LINUX_REPO} has no .deb/.AppImage assets yet.`
+      )
+      return emptyLinuxSlice(latest.tag_name)
+    }
+
     const releases = await fetchReleases(FLOWSIGHT_LINUX_REPO)
     const candidates = sortedStableReleases(releases)
+    for (const release of candidates) {
+      const slice = sliceFromRelease(release)
+      if (slice) return slice
+    }
 
+    throw new Error(`no Linux release ships .deb/.AppImage on ${FLOWSIGHT_LINUX_REPO}`)
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    console.warn(
+      `[downloads.server] Linux resolver could not load assets from ${FLOWSIGHT_LINUX_REPO} (${message}).`
+    )
+    return emptyLinuxSlice(FALLBACK_LINUX_RELEASE_TAG)
+  }
+}
+
+// ---------- updater (Tauri v2 manifest source) ------------------------------
+
+/**
+ * Raw view of the latest stable desktop release, used by the Tauri updater
+ * endpoint. Unlike `getLatestAgentRelease`, this keeps the full asset list so
+ * the updater route can locate both the update bundle (`*.nsis.zip`,
+ * `*.app.tar.gz`, `*.AppImage.tar.gz`) and its sibling `*.sig` file.
+ */
+export type DesktopReleaseAssets = {
+  tag: string
+  version: string
+  publishedAt: string
+  notes: string
+  assets: GithubAsset[]
+}
+
+/**
+ * Resolve the newest stable desktop release that ships updater artifacts.
+ * Returns `null` when none is available (no network, no signed bundles, etc.),
+ * so the caller can answer the updater with a 204 (= "no update").
+ */
+export async function getDesktopUpdaterRelease(): Promise<DesktopReleaseAssets | null> {
+  const pinnedTag = process.env.NEXT_PUBLIC_AGENT_RELEASE_TAG
+  try {
+    const releases = await fetchReleases(FLOWSIGHT_DESKTOP_REPO)
+    const candidates = sortedStableReleases(releases)
+
+    // The updater needs a release that contains at least one `.sig`; otherwise
+    // signature verification on the client would fail anyway.
     const release = pinnedTag
       ? candidates.find((r) => r.tag_name === pinnedTag)
       : candidates.find((r) =>
-          (r.assets ?? []).some(
-            (a) => a.name.endsWith('.deb') || a.name.endsWith('.AppImage')
-          )
+          (r.assets ?? []).some((a) => a.name.endsWith('.sig'))
         )
     if (!release) return null
 
     const assets = release.assets ?? []
-    const linuxDeb = pickLinuxAsset(assets, '.deb')
-    const linuxAppImage = pickLinuxAsset(assets, '.AppImage')
-
-    if (!linuxDeb && !linuxAppImage) return null
-
     const version =
       assets
         .map((a) => parseAgentVersion(a.name))
-        .find((v): v is string => Boolean(v))
+        .find((v): v is string => Boolean(v)) ??
+      release.tag_name.replace(/^v/, '')
 
     return {
       tag: release.tag_name,
       version,
-      urls: { linuxDeb, linuxAppImage },
+      publishedAt: release.published_at,
+      notes: release.body ?? '',
+      assets,
     }
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
-    console.warn(
-      `[downloads.server] Linux resolver unavailable, using main-repo fallback (${message}).`
-    )
+    console.warn(`[downloads.server] Updater resolver unavailable (${message}).`)
     return null
   }
 }
@@ -222,7 +336,7 @@ async function resolveLinuxSlice(): Promise<ReleaseSlice | null> {
 
 /**
  * Merge the per-platform slices into a single `AgentRelease`.
- * Linux slice missing → transparently backfill from main-repo fallback.
+ * Linux always resolves from `Mancasvel/FlowSight_linux`.
  */
 export async function getLatestAgentRelease(): Promise<AgentRelease> {
   const [desktop, linux] = await Promise.all([
@@ -230,35 +344,12 @@ export async function getLatestAgentRelease(): Promise<AgentRelease> {
     resolveLinuxSlice(),
   ])
 
-  const version =
-    desktop.version ?? linux?.version ?? FALLBACK_AGENT_VERSION
-
-  if (linux) {
-    return {
-      version,
-      desktopTag: desktop.tag,
-      linuxTag: linux.tag,
-      downloadUrls: { ...desktop.urls, ...linux.urls },
-    }
-  }
-
-  // Transitional path: FlowSight_linux hasn't cut a release yet (or all assets
-  // are non-Linux). Reuse the main-repo's last-known-good Linux binaries so
-  // the Linux buttons stay functional. Flip over automatically once the Linux
-  // repo publishes its first .deb/.AppImage release.
-  const fallback = buildFallbackAgentRelease(
-    desktop.tag,
-    FALLBACK_LINUX_RELEASE_TAG,
-    version
-  )
   return {
-    version,
+    version: desktop.version ?? linux.version ?? FALLBACK_AGENT_VERSION,
+    linuxVersion: linux.version ?? FALLBACK_LINUX_VERSION,
     desktopTag: desktop.tag,
-    linuxTag: FALLBACK_LINUX_RELEASE_TAG,
-    downloadUrls: {
-      ...desktop.urls,
-      linuxDeb: fallback.downloadUrls.linuxDeb,
-      linuxAppImage: fallback.downloadUrls.linuxAppImage,
-    },
+    linuxTag: linux.tag,
+    linuxReleaseUrl: `${linuxReleasesUrl}/tag/${linux.tag}`,
+    downloadUrls: { ...desktop.urls, ...linux.urls },
   }
 }
