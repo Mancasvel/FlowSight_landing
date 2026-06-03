@@ -174,8 +174,8 @@ brain/
 # Cursor IDE
 .cursor/
 
-# Supabase local migration scripts
-supabase/
+# Supabase local migration scripts (root folder only — not src/lib/supabase)
+/supabase/
 
 # Local seed outputs (generated licenses, etc.)
 seed-output/
