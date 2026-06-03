@@ -46,6 +46,7 @@ export interface Database {
                     id: string;
                     owner_id: string | null;
                     plan_type: 'starter' | 'professional' | 'enterprise';
+                    plan_id: string | null;
                     max_members: number;
                     starts_at: string;
                     expires_at: string;
@@ -60,6 +61,7 @@ export interface Database {
                     id?: string;
                     owner_id?: string | null;
                     plan_type?: 'starter' | 'professional' | 'enterprise';
+                    plan_id?: string | null;
                     max_members?: number;
                     starts_at?: string;
                     expires_at?: string;
@@ -74,6 +76,7 @@ export interface Database {
                     id?: string;
                     owner_id?: string | null;
                     plan_type?: 'starter' | 'professional' | 'enterprise';
+                    plan_id?: string | null;
                     max_members?: number;
                     starts_at?: string;
                     expires_at?: string;
@@ -83,6 +86,119 @@ export interface Database {
                     code?: string | null;
                     claimed_at?: string | null;
                     created_at?: string;
+                };
+            };
+            prompt_usage: {
+                Row: {
+                    id: string;
+                    user_id: string;
+                    team_id: string;
+                    period_start: string;
+                    user_prompt_count: number;
+                    created_at: string;
+                };
+                Insert: {
+                    id?: string;
+                    user_id: string;
+                    team_id: string;
+                    period_start: string;
+                    user_prompt_count?: number;
+                    created_at?: string;
+                };
+                Update: {
+                    id?: string;
+                    user_id?: string;
+                    team_id?: string;
+                    period_start?: string;
+                    user_prompt_count?: number;
+                    created_at?: string;
+                };
+            };
+            team_prompt_pool_usage: {
+                Row: {
+                    id: string;
+                    team_id: string;
+                    period_start: string;
+                    pool_count: number;
+                    created_at: string;
+                };
+                Insert: {
+                    id?: string;
+                    team_id: string;
+                    period_start: string;
+                    pool_count?: number;
+                    created_at?: string;
+                };
+                Update: {
+                    id?: string;
+                    team_id?: string;
+                    period_start?: string;
+                    pool_count?: number;
+                    created_at?: string;
+                };
+            };
+            team_notification_settings: {
+                Row: {
+                    team_id: string;
+                    daily_email: boolean;
+                    weekly_report: boolean;
+                    real_time_alerts: boolean;
+                    digest_day: string;
+                    digest_time: string;
+                    digest_timezone: string;
+                    digest_recipients_enc: string | null;
+                    updated_at: string;
+                };
+                Insert: {
+                    team_id: string;
+                    daily_email?: boolean;
+                    weekly_report?: boolean;
+                    real_time_alerts?: boolean;
+                    digest_day?: string;
+                    digest_time?: string;
+                    digest_timezone?: string;
+                    digest_recipients_enc?: string | null;
+                    updated_at?: string;
+                };
+                Update: {
+                    team_id?: string;
+                    daily_email?: boolean;
+                    weekly_report?: boolean;
+                    real_time_alerts?: boolean;
+                    digest_day?: string;
+                    digest_time?: string;
+                    digest_timezone?: string;
+                    digest_recipients_enc?: string | null;
+                    updated_at?: string;
+                };
+            };
+            weekly_report_logs: {
+                Row: {
+                    id: string;
+                    team_id: string;
+                    week_start: string;
+                    status: string;
+                    audit_enc: string | null;
+                    error_message: string | null;
+                    sent_at: string;
+                };
+                Insert: {
+                    id?: string;
+                    team_id: string;
+                    week_start: string;
+                    status: string;
+                    audit_enc?: string | null;
+                    error_message?: string | null;
+                    sent_at?: string;
+                };
+                Update: {
+                    id?: string;
+                    team_id?: string;
+                    week_start?: string;
+                    status?: string;
+                    audit_enc?: string | null;
+                    error_message?: string | null;
+                    sent_at?: string;
                 };
             };
             teams: {

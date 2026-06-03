@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
 import { stripe } from '@/lib/stripe';
+import { createServiceClient } from '@/lib/promptLimits';
+import { mapCheckoutPlan } from '@/lib/plansCheckout';
 
 export async function GET(req: NextRequest) {
     const searchParams = req.nextUrl.searchParams;
@@ -22,23 +23,18 @@ export async function GET(req: NextRequest) {
             return NextResponse.redirect(`${baseUrl}/dashboard/settings?error=payment_incomplete`);
         }
 
-        const supabase = await createClient();
+        const supabase = createServiceClient();
         const licenseId = session.metadata?.licenseId;
-        const planType = session.metadata?.planType;
-        const maxMembers = session.metadata?.maxMembers ? parseInt(session.metadata.maxMembers) : 50;
+        const planType = session.metadata?.planId ?? session.metadata?.planType;
+        const mapped = mapCheckoutPlan(planType || 'teams_pro');
+        const maxMembers = session.metadata?.maxMembers
+            ? parseInt(session.metadata.maxMembers)
+            : mapped.maxMembers;
 
         if (!licenseId) {
             console.error('No licenseId in session metadata');
             return NextResponse.redirect(`${baseUrl}/dashboard/settings?error=no_license`);
         }
-
-        // Map plan type
-        const planMapping: Record<string, 'starter' | 'professional' | 'enterprise'> = {
-            'basic': 'starter',
-            'pro': 'professional',
-            'enterprise': 'enterprise',
-        };
-        const dbPlanType = planMapping[planType || 'pro'] || 'professional';
 
         // Get subscription details for expiration date
         let expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(); // Default 30 days
@@ -58,8 +54,8 @@ export async function GET(req: NextRequest) {
                     ? session.subscription
                     : session.subscription?.id,
                 is_active: true,
-                plan_type: dbPlanType,
-                max_members: maxMembers,
+                plan_type: mapped.dbPlanType,
+                max_members: maxMembers === -1 ? 9999 : maxMembers,
                 expires_at: expiresAt,
             })
             .eq('id', licenseId);

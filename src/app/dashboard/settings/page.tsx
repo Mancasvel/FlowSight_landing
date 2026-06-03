@@ -97,7 +97,69 @@ export default function SettingsPage() {
     // Email digest
     const [digestDay, setDigestDay] = useState('monday');
     const [digestTime, setDigestTime] = useState('09:00');
+    const [digestTimezone, setDigestTimezone] = useState('Europe/Madrid');
     const [digestRecipients, setDigestRecipients] = useState('');
+    const [savingNotifications, setSavingNotifications] = useState(false);
+    const [notificationSaved, setNotificationSaved] = useState(false);
+
+    const saveNotificationSettings = async (overrides?: Partial<{
+        dailyEmail: boolean;
+        weeklyReport: boolean;
+        realTimeAlerts: boolean;
+        digestDay: string;
+        digestTime: string;
+        digestTimezone: string;
+        digestRecipients: string;
+    }>) => {
+        if (!selectedTeam) return;
+        setSavingNotifications(true);
+        setNotificationSaved(false);
+        try {
+            const recipients = (overrides?.digestRecipients ?? digestRecipients)
+                .split(',')
+                .map((e) => e.trim())
+                .filter(Boolean);
+
+            const res = await fetch('/api/settings/notifications', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    teamId: selectedTeam.id,
+                    dailyEmail: overrides?.dailyEmail ?? dailyEmail,
+                    weeklyReport: overrides?.weeklyReport ?? weeklyReport,
+                    realTimeAlerts: overrides?.realTimeAlerts ?? realTimeAlerts,
+                    digestDay: overrides?.digestDay ?? digestDay,
+                    digestTime: overrides?.digestTime ?? digestTime,
+                    digestTimezone: overrides?.digestTimezone ?? digestTimezone,
+                    digestRecipients: recipients,
+                }),
+            });
+            if (!res.ok) throw new Error('Failed to save');
+            setNotificationSaved(true);
+            setTimeout(() => setNotificationSaved(false), 2500);
+        } catch (err) {
+            console.error('Error saving notifications:', err);
+        } finally {
+            setSavingNotifications(false);
+        }
+    };
+
+    const loadNotificationSettings = async (teamId: string) => {
+        try {
+            const res = await fetch(`/api/settings/notifications?teamId=${encodeURIComponent(teamId)}`);
+            if (!res.ok) return;
+            const { settings } = await res.json();
+            setDailyEmail(settings.dailyEmail);
+            setWeeklyReport(settings.weeklyReport);
+            setRealTimeAlerts(settings.realTimeAlerts);
+            setDigestDay(settings.digestDay);
+            setDigestTime(settings.digestTime);
+            setDigestTimezone(settings.digestTimezone ?? 'Europe/Madrid');
+            setDigestRecipients((settings.digestRecipients ?? []).join(', '));
+        } catch (err) {
+            console.error('Error loading notifications:', err);
+        }
+    };
 
     const fetchData = async () => {
         try {
@@ -117,6 +179,7 @@ export default function SettingsPage() {
                 setSelectedTeam(userTeams[0]);
                 const members = await getTeamMembers(supabase, userTeams[0].id);
                 setTeamMembers(members);
+                await loadNotificationSettings(userTeams[0].id);
             }
 
             // Check if Jira is connected from database
@@ -451,7 +514,7 @@ export default function SettingsPage() {
     const daysUntilExpiry = license ? Math.ceil((new Date(license.expires_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : 0;
 
     return (
-        <div className="space-y-8 max-w-4xl">
+        <div className="mx-auto w-full max-w-4xl space-y-8">
             {/* Header */}
             <div>
                 <h1 className="text-2xl font-bold text-dashboard-text">Settings</h1>
@@ -1029,37 +1092,47 @@ export default function SettingsPage() {
                             <div className="font-medium text-dashboard-text">Daily Summary Email</div>
                             <div className="text-sm text-dashboard-muted">Receive a daily digest of team activity</div>
                         </div>
-                        <Toggle enabled={dailyEmail} onChange={setDailyEmail} />
+                        <Toggle enabled={dailyEmail} onChange={(v) => { setDailyEmail(v); saveNotificationSettings({ dailyEmail: v }); }} />
                     </div>
                     <div className="flex items-center justify-between p-4 bg-dashboard-bg rounded-lg">
                         <div>
                             <div className="font-medium text-dashboard-text">Weekly Report</div>
                             <div className="text-sm text-dashboard-muted">Comprehensive weekly productivity report</div>
                         </div>
-                        <Toggle enabled={weeklyReport} onChange={setWeeklyReport} />
+                        <Toggle enabled={weeklyReport} onChange={(v) => { setWeeklyReport(v); saveNotificationSettings({ weeklyReport: v }); }} />
                     </div>
                     <div className="flex items-center justify-between p-4 bg-dashboard-bg rounded-lg">
                         <div>
                             <div className="font-medium text-dashboard-text">Smart Alerts</div>
                             <div className="text-sm text-dashboard-muted">Get notified of burnout risk, low activity, and meeting overload</div>
                         </div>
-                        <Toggle enabled={realTimeAlerts} onChange={setRealTimeAlerts} />
+                        <Toggle enabled={realTimeAlerts} onChange={(v) => { setRealTimeAlerts(v); saveNotificationSettings({ realTimeAlerts: v }); }} />
                     </div>
                 </div>
 
                 {/* Email Digest Schedule */}
                 {weeklyReport && (
                     <div className="mt-4 p-4 bg-dashboard-bg rounded-lg space-y-3">
-                        <div className="flex items-center gap-2 mb-2">
-                            <Mail size={16} className="text-primary-blue" />
-                            <span className="font-medium text-dashboard-text text-sm">Weekly Digest Schedule</span>
+                        <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                                <Mail size={16} className="text-primary-blue" />
+                                <span className="font-medium text-dashboard-text text-sm">Weekly Digest Schedule</span>
+                            </div>
+                            {(savingNotifications || notificationSaved) && (
+                                <span className="text-xs text-dashboard-muted">
+                                    {savingNotifications ? 'Saving…' : 'Saved ✓'}
+                                </span>
+                            )}
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                             <div>
                                 <label className="block text-xs text-dashboard-muted mb-1">Day</label>
                                 <select
                                     value={digestDay}
-                                    onChange={(e) => setDigestDay(e.target.value)}
+                                    onChange={(e) => {
+                                        setDigestDay(e.target.value);
+                                        saveNotificationSettings({ digestDay: e.target.value });
+                                    }}
                                     className="w-full px-3 py-2 bg-dashboard-card border border-dashboard-border rounded-lg text-dashboard-text text-sm"
                                 >
                                     <option value="monday">Monday</option>
@@ -1074,20 +1147,35 @@ export default function SettingsPage() {
                                 <input
                                     type="time"
                                     value={digestTime}
-                                    onChange={(e) => setDigestTime(e.target.value)}
+                                    onChange={(e) => {
+                                        setDigestTime(e.target.value);
+                                        saveNotificationSettings({ digestTime: e.target.value });
+                                    }}
                                     className="w-full px-3 py-2 bg-dashboard-card border border-dashboard-border rounded-lg text-dashboard-text text-sm"
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs text-dashboard-muted mb-1">Additional recipients (emails)</label>
+                                <label className="block text-xs text-dashboard-muted mb-1">Timezone</label>
                                 <input
                                     type="text"
-                                    value={digestRecipients}
-                                    onChange={(e) => setDigestRecipients(e.target.value)}
-                                    placeholder="cto@company.com, hr@company.com"
+                                    value={digestTimezone}
+                                    onChange={(e) => setDigestTimezone(e.target.value)}
+                                    onBlur={() => saveNotificationSettings({ digestTimezone })}
+                                    placeholder="Europe/Madrid"
                                     className="w-full px-3 py-2 bg-dashboard-card border border-dashboard-border rounded-lg text-dashboard-text text-sm"
                                 />
                             </div>
+                        </div>
+                        <div>
+                            <label className="block text-xs text-dashboard-muted mb-1">Additional recipients (emails, encrypted at rest)</label>
+                            <input
+                                type="text"
+                                value={digestRecipients}
+                                onChange={(e) => setDigestRecipients(e.target.value)}
+                                onBlur={() => saveNotificationSettings()}
+                                placeholder="cto@company.com, hr@company.com"
+                                className="w-full px-3 py-2 bg-dashboard-card border border-dashboard-border rounded-lg text-dashboard-text text-sm"
+                            />
                         </div>
                     </div>
                 )}

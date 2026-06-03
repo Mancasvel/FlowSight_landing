@@ -1,14 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
-import {
-  LayoutDashboard, Activity, Layers, CalendarClock, Video,
-  Settings, Users, FileBarChart, Menu, X, ChevronsUpDown,
-} from 'lucide-react'
+import { FileBarChart, Settings, Menu, X, ChevronsUpDown } from 'lucide-react'
 import { useState, useEffect, useCallback } from 'react'
-import { Avatar, Badge } from '@/components/ui'
+import { Avatar } from '@/components/ui'
 
 type TeamOption = { id: string; name: string }
 
@@ -20,22 +16,12 @@ type SidebarProps = {
   activeTeamId: string | null
 }
 
-const analyticsItems = [
-  { href: '/dashboard', label: 'Overview', icon: LayoutDashboard, exact: true },
-  { href: '/dashboard/flow-state', label: 'Flow State', icon: Activity },
-  { href: '/dashboard/context-load', label: 'Context & Load', icon: Layers },
-  { href: '/dashboard/planning', label: 'Planning', icon: CalendarClock },
-  { href: '/dashboard/meetings', label: 'Meetings', icon: Video },
-]
-
-const managementItems = [
-  { href: '/dashboard/team', label: 'Team', icon: Users },
-  { href: '/dashboard/reports', label: 'Reports', icon: FileBarChart },
+const menuItems = [
+  { href: '/dashboard/reports', label: 'Team Report', icon: FileBarChart },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings },
-]
+] as const
 
-function isActive(pathname: string, href: string, exact?: boolean): boolean {
-  if (exact) return pathname === href
+function isActive(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(href + '/')
 }
 
@@ -51,34 +37,26 @@ function TeamSelector({
   const [open, setOpen] = useState(false)
   const activeTeam = teams.find((t) => t.id === activeTeamId) ?? teams[0]
 
-  if (teams.length <= 1) {
-    return (
-      <div className="px-4 pb-3">
-        <p className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider px-2">
-          {activeTeam?.name ?? 'Team'}
-        </p>
-      </div>
-    )
-  }
-
   return (
-    <div className="px-3 pb-3 relative">
+    <div className="relative">
+      <p className="mb-2 px-1 text-[11px] font-medium tracking-wide text-zinc-400">Team</p>
       <button
         type="button"
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-xl
-          bg-zinc-50 hover:bg-zinc-100 transition-colors text-left"
+        onClick={() => teams.length > 1 && setOpen(!open)}
+        className={`w-full flex items-center justify-between gap-2 rounded-lg border border-zinc-200
+          bg-white px-3 py-2.5 text-left transition-colors
+          ${teams.length > 1 ? 'hover:bg-zinc-50' : ''}`}
       >
-        <span className="text-[13px] font-semibold text-zinc-700 truncate">
+        <span className="truncate text-sm font-medium text-zinc-800">
           {activeTeam?.name ?? 'Select team'}
         </span>
-        <ChevronsUpDown size={14} className="text-zinc-400 flex-shrink-0" />
+        {teams.length > 1 && <ChevronsUpDown size={15} className="shrink-0 text-zinc-400" />}
       </button>
 
-      {open && (
+      {open && teams.length > 1 && (
         <>
-          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute left-3 right-3 top-full mt-1 z-50 bg-white rounded-xl shadow-lg border border-zinc-100 py-1">
+          <div className="fixed inset-0 z-[60]" onClick={() => setOpen(false)} />
+          <div className="absolute left-0 right-0 top-full z-[70] mt-1.5 overflow-hidden rounded-lg border border-zinc-200 bg-white py-1 shadow-lg">
             {teams.map((t) => (
               <button
                 key={t.id}
@@ -87,11 +65,11 @@ function TeamSelector({
                   onSwitch(t.id)
                   setOpen(false)
                 }}
-                className={`w-full text-left px-3 py-2 text-[13px] transition-colors
-                  ${t.id === activeTeamId
-                    ? 'bg-indigo-50 text-indigo-600 font-semibold'
+                className={`w-full px-3 py-2 text-left text-sm transition-colors ${
+                  t.id === activeTeamId
+                    ? 'bg-zinc-100 font-medium text-zinc-900'
                     : 'text-zinc-600 hover:bg-zinc-50'
-                  }`}
+                }`}
               >
                 {t.name}
               </button>
@@ -103,7 +81,7 @@ function TeamSelector({
   )
 }
 
-function SidebarContent({
+function DrawerContent({
   displayName,
   avatarUrl,
   role,
@@ -112,67 +90,30 @@ function SidebarContent({
   pathname,
   onNavigate,
   onSwitchTeam,
-}: SidebarProps & { pathname: string; onNavigate?: () => void; onSwitchTeam: (teamId: string) => void }) {
+}: SidebarProps & {
+  pathname: string
+  onNavigate?: () => void
+  onSwitchTeam: (teamId: string) => void
+}) {
   return (
-    <>
-      <div className="px-5 pt-5 pb-4">
+    <div className="flex h-full flex-col">
+      <div className="border-b border-zinc-100/80 px-5 py-5">
         <Link
           href="/dashboard"
-          className="flex items-center gap-2.5"
           onClick={onNavigate}
+          className="text-base font-semibold tracking-tight text-zinc-900 hover:text-zinc-600 transition-colors"
         >
-          <Image
-            src="/flowsight_sinfondo.png"
-            alt="FlowSight"
-            width={32}
-            height={32}
-            className="flex-shrink-0"
-          />
-          <span className="text-base font-semibold text-zinc-900 tracking-tight">
-            FlowSight
-          </span>
+          FlowSight
         </Link>
       </div>
 
-      <TeamSelector teams={teams} activeTeamId={activeTeamId} onSwitch={onSwitchTeam} />
+      <div className="flex-1 space-y-8 overflow-y-auto px-5 py-6">
+        <TeamSelector teams={teams} activeTeamId={activeTeamId} onSwitch={onSwitchTeam} />
 
-      <nav className="flex-1 px-3 space-y-6 overflow-y-auto">
-        <div>
-          <p className="px-3 pb-1.5 text-[10px] font-semibold text-zinc-300 uppercase tracking-widest">
-            Analytics
-          </p>
-          <ul className="space-y-0.5">
-            {analyticsItems.map((item) => {
-              const Icon = item.icon
-              const active = isActive(pathname, item.href, item.exact)
-              return (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    onClick={onNavigate}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150
-                      ${active
-                        ? 'bg-indigo-50 text-indigo-600'
-                        : 'text-zinc-500 hover:text-zinc-700 hover:bg-zinc-50'
-                      }`}
-                  >
-                    <Icon size={18} strokeWidth={active ? 2 : 1.5} className="flex-shrink-0" />
-                    <span className={`text-[13px] ${active ? 'font-semibold' : 'font-medium'}`}>
-                      {item.label}
-                    </span>
-                  </Link>
-                </li>
-              )
-            })}
-          </ul>
-        </div>
-
-        <div>
-          <p className="px-3 pb-1.5 text-[10px] font-semibold text-zinc-300 uppercase tracking-widest">
-            Manage
-          </p>
-          <ul className="space-y-0.5">
-            {managementItems.map((item) => {
+        <nav>
+          <p className="mb-3 px-1 text-[11px] font-medium tracking-wide text-zinc-400">Menu</p>
+          <ul className="space-y-1">
+            {menuItems.map((item) => {
               const Icon = item.icon
               const active = isActive(pathname, item.href)
               return (
@@ -180,112 +121,129 @@ function SidebarContent({
                   <Link
                     href={item.href}
                     onClick={onNavigate}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150
-                      ${active
-                        ? 'bg-indigo-50 text-indigo-600'
-                        : 'text-zinc-500 hover:text-zinc-700 hover:bg-zinc-50'
-                      }`}
+                    className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors ${
+                      active
+                        ? 'bg-zinc-100 font-medium text-zinc-900'
+                        : 'font-medium text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900'
+                    }`}
                   >
-                    <Icon size={18} strokeWidth={active ? 2 : 1.5} className="flex-shrink-0" />
-                    <span className={`text-[13px] ${active ? 'font-semibold' : 'font-medium'}`}>
-                      {item.label}
-                    </span>
+                    <Icon size={17} strokeWidth={1.75} className="shrink-0 text-zinc-400" />
+                    {item.label}
                   </Link>
                 </li>
               )
             })}
           </ul>
-        </div>
-      </nav>
+        </nav>
+      </div>
 
-      <div className="border-t border-zinc-100 px-4 py-4">
-        <div className="flex items-center gap-3">
-          <Badge color="primary">
-            <Avatar src={avatarUrl} name={displayName} size="sm" />
-          </Badge>
+      <div className="border-t border-zinc-100 px-5 py-4">
+        <div className="flex items-center gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-zinc-50">
+          <Avatar src={avatarUrl || undefined} name={displayName} size="sm" />
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium text-zinc-700 truncate">{displayName}</p>
+            <p className="truncate text-sm font-medium text-zinc-800">{displayName}</p>
             <p className="text-[11px] text-zinc-400">{role === 'pm' ? 'Project Manager' : 'Member'}</p>
           </div>
         </div>
       </div>
-    </>
+    </div>
   )
 }
 
-export default function DashboardSidebar({ displayName, avatarUrl, role, teams, activeTeamId }: SidebarProps) {
+export default function DashboardSidebar({
+  displayName,
+  avatarUrl,
+  role,
+  teams,
+  activeTeamId,
+}: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
-  const [mobileOpen, setMobileOpen] = useState(false)
-
-  useEffect(() => { setMobileOpen(false) }, [pathname])
+  const [open, setOpen] = useState(false)
 
   useEffect(() => {
-    const onResize = () => {
-      if (window.innerWidth >= 1024) setMobileOpen(false)
-    }
-    window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
-  }, [])
+    setOpen(false)
+  }, [pathname])
 
-  const handleSwitchTeam = useCallback((teamId: string) => {
-    document.cookie = `flowsight_active_team=${teamId};path=/;max-age=${60 * 60 * 24 * 365};samesite=lax`
-    router.refresh()
-  }, [router])
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [open])
+
+  const handleSwitchTeam = useCallback(
+    (teamId: string) => {
+      document.cookie = `flowsight_active_team=${teamId};path=/;max-age=${60 * 60 * 24 * 365};samesite=lax`
+      router.refresh()
+    },
+    [router]
+  )
 
   return (
     <>
-      <button
-        onClick={() => setMobileOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-40 p-2.5 bg-white rounded-xl shadow-md
-          text-zinc-500 hover:text-zinc-700 transition-colors"
-        aria-label="Open menu"
+      <header
+        className="fixed top-0 left-0 right-0 z-40 flex h-14 items-center gap-3 border-b border-zinc-200/60
+          bg-white/75 px-4 backdrop-blur-md sm:px-6"
       >
-        <Menu size={20} />
-      </button>
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="flex h-10 w-10 items-center justify-center rounded-xl text-zinc-700
+            transition-colors hover:bg-zinc-100"
+          aria-label="Open menu"
+        >
+          <Menu size={22} strokeWidth={1.75} />
+        </button>
+        <Link
+          href="/dashboard"
+          className="text-sm font-semibold tracking-tight text-zinc-900 hover:text-zinc-600 transition-colors"
+        >
+          FlowSight
+        </Link>
+      </header>
 
       <div
-        className={`lg:hidden fixed inset-0 bg-black/20 backdrop-blur-sm z-40
-          transition-opacity duration-300
-          ${mobileOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-        onClick={() => setMobileOpen(false)}
+        className={`fixed inset-0 z-50 bg-zinc-900/15 backdrop-blur-[2px] transition-opacity duration-300 ${
+          open ? 'opacity-100' : 'pointer-events-none opacity-0'
+        }`}
+        onClick={() => setOpen(false)}
+        aria-hidden={!open}
       />
 
       <aside
-        className={`lg:hidden fixed top-0 left-0 h-full w-[280px] bg-white z-50
-          flex flex-col shadow-xl transition-transform duration-300 ease-in-out
-          ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        className={`fixed top-0 left-0 z-50 flex h-full w-[min(300px,88vw)] flex-col bg-white font-sans shadow-2xl
+          transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]
+          ${open ? 'translate-x-0' : '-translate-x-full'}`}
+        aria-hidden={!open}
       >
         <div className="flex items-center justify-end px-4 pt-4">
           <button
-            onClick={() => setMobileOpen(false)}
-            className="p-1.5 text-zinc-400 hover:text-zinc-600 transition-colors"
+            type="button"
+            onClick={() => setOpen(false)}
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-zinc-400
+              transition-colors hover:bg-zinc-100 hover:text-zinc-700"
+            aria-label="Close menu"
           >
-            <X size={18} />
+            <X size={20} strokeWidth={1.75} />
           </button>
         </div>
-        <SidebarContent
-          displayName={displayName}
-          avatarUrl={avatarUrl}
-          role={role}
-          teams={teams}
-          activeTeamId={activeTeamId}
-          pathname={pathname}
-          onNavigate={() => setMobileOpen(false)}
-          onSwitchTeam={handleSwitchTeam}
-        />
-      </aside>
-
-      <aside className="hidden lg:flex fixed top-0 left-0 z-30 h-screen w-[240px] bg-white border-r border-zinc-100 flex-col">
-        <SidebarContent
-          displayName={displayName}
-          avatarUrl={avatarUrl}
-          role={role}
-          teams={teams}
-          activeTeamId={activeTeamId}
-          pathname={pathname}
-          onSwitchTeam={handleSwitchTeam}
-        />
+        <div className="-mt-2 flex flex-1 flex-col overflow-hidden pb-2">
+          <DrawerContent
+            displayName={displayName}
+            avatarUrl={avatarUrl}
+            role={role}
+            teams={teams}
+            activeTeamId={activeTeamId}
+            pathname={pathname}
+            onNavigate={() => setOpen(false)}
+            onSwitchTeam={handleSwitchTeam}
+          />
+        </div>
       </aside>
     </>
   )

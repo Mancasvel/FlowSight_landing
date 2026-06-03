@@ -16,6 +16,7 @@ export interface License {
     id: string;
     owner_id: string | null;
     plan_type: 'starter' | 'professional' | 'enterprise';
+    plan_id: string | null;
     max_members: number;
     starts_at: string;
     expires_at: string;

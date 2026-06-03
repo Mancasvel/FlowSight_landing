@@ -2,11 +2,12 @@
 
 import { motion } from "framer-motion";
 import { DesktopFrame } from "./AppScreens";
+import { PartnersBar } from "./PartnersBar";
 import { SmartDownloadButton } from "@/components/SmartDownloadButton";
 
 export function RedesignHero() {
     return (
-        <section className="relative overflow-hidden px-6 pt-24 pb-16 text-center md:pt-28">
+        <section className="relative overflow-hidden px-6 pt-24 pb-8 text-center md:pt-28 md:pb-10">
 
             <div className="relative z-10 mx-auto flex max-w-3xl flex-col items-center">
                 <motion.h1
@@ -40,6 +41,8 @@ export function RedesignHero() {
             >
                 <DesktopFrame />
             </motion.div>
+
+            <PartnersBar />
         </section>
     );
 }

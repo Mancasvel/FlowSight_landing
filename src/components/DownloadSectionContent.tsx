@@ -37,7 +37,7 @@ export function DownloadSectionContent({ release }: Props) {
                         className="text-slate-500 text-lg max-w-2xl mx-auto"
                     >
                         Lightweight desktop agent. Works on Windows, macOS, and Linux.
-                        <p>No account required for Free.</p>
+                        <span className="mt-1 block">No account required for Free.</span>
                     </motion.p>
                 </div>
 

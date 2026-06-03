@@ -1,13 +1,30 @@
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
 import { getActiveTeamId } from '@/lib/getActiveTeamId'
-import { getFlowStateData, getContextLoadData, getPlanningData, getMeetingsData, getWorkflowData } from '@/lib/dashboardData'
-import OverviewDashboard from '@/components/dashboard/OverviewDashboard'
+import {
+  getFlowStateData,
+  getContextLoadData,
+  getPlanningData,
+  getMeetingsData,
+  getWorkflowData,
+} from '@/lib/dashboardData'
+import ChatDashboard from '@/components/dashboard/ChatDashboard'
 
 export default async function DashboardPage() {
   const headerStore = await headers()
   const userId = headerStore.get('x-user-id')
   if (!userId) redirect('/login')
+
+  const supabase = await createClient()
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('display_name')
+    .eq('id', userId)
+    .single()
+
+  const displayName =
+    profile?.display_name ?? headerStore.get('x-user-name') ?? 'there'
 
   const teamId = await getActiveTeamId(userId)
 
@@ -35,7 +52,9 @@ export default async function DashboardPage() {
   ])
 
   return (
-    <OverviewDashboard
+    <ChatDashboard
+      displayName={displayName}
+      teamId={teamId}
       flow={flowData}
       context={contextData}
       planning={planningData}

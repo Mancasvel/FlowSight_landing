@@ -49,7 +49,10 @@ export default async function DashboardLayout({
   ])
 
   return (
-    <div id="dashboard-shell" className="min-h-screen bg-[#FAFAFA]">
+    <div
+      id="dashboard-shell"
+      className="min-h-screen bg-[#FAFAFA] font-sans antialiased"
+    >
       <DashboardSidebar
         displayName={profile?.display_name ?? 'User'}
         avatarUrl={profile?.avatar_url ?? null}
@@ -57,8 +60,8 @@ export default async function DashboardLayout({
         teams={teams}
         activeTeamId={activeTeamId}
       />
-      <main className="min-h-screen lg:pl-[240px] overflow-auto dark-scrollbar">
-        <div className="px-4 pt-16 pb-6 sm:px-6 lg:px-10 lg:pt-8 lg:pb-8 2xl:px-14 2xl:pb-10">
+      <main className="min-h-screen overflow-auto pt-14 dark-scrollbar">
+        <div className="px-4 pb-6 sm:px-6 lg:px-10 lg:pb-8 2xl:px-14 2xl:pb-10">
           {children}
         </div>
       </main>

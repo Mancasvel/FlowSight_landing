@@ -74,6 +74,23 @@
     background: linear-gradient(135deg, #FAFAFA 0%, #FFFFFF 100%);
   }
 
+  /** Subtle grid for dashboard chat (SnowUI / Notion-style) */
+  .bg-dashboard-grid {
+    background-color: #fafafa;
+    background-image:
+      linear-gradient(to right, rgb(228 228 231 / 0.55) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(228 228 231 / 0.55) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  .bg-grid-slate-100 {
+    background-color: #f8fafc;
+    background-image:
+      linear-gradient(to right, rgb(226 232 240 / 0.8) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(226 232 240 / 0.8) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
   .status-online {
     @apply w-2 h-2 rounded-full bg-emerald-400 animate-pulse;
   }
