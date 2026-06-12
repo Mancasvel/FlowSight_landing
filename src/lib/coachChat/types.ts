@@ -1,3 +1,5 @@
+import type { CoachCitationIndex } from '@/lib/coachChat/citations'
+
 export type CoachChatAttachment = {
   id: string
   fileName: string
@@ -10,6 +12,7 @@ export type CoachChatMessage = {
   content: string
   reasoning?: string | null
   attachments?: CoachChatAttachment[]
+  citations?: CoachCitationIndex
 }
 
 export type CoachConversation = {
@@ -22,12 +25,10 @@ export type CoachConversation = {
   messages: CoachChatMessage[]
 }
 
-export type CoachDocument = {
+export type CoachContextSource = {
   id: string
   conversationId: string
   fileName: string
-  mimeType: string
-  charCount: number
-  truncated: boolean
+  chunkCount: number
   createdAt: string
 }

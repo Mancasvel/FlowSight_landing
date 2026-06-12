@@ -2,16 +2,17 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
-import { FileText, Paperclip, SendHorizonal, Sparkles, X } from 'lucide-react'
-import { Avatar } from '@/components/ui'
+import { FileText, Paperclip, SendHorizonal, X } from 'lucide-react'
 import CoachMessageContent from '@/components/dashboard/CoachMessageContent'
+import CoachProseContent from '@/components/dashboard/CoachProseContent'
+import CoachSourcesList from '@/components/dashboard/CoachSourcesList'
 import CoachThinkingBlock from '@/components/dashboard/CoachThinkingBlock'
 import { useCoachChat } from '@/components/dashboard/CoachChatProvider'
 import type { ProactiveInsight } from '@/lib/buildProactiveInsights'
+import { MAX_COACH_FILE_BYTES, MAX_COACH_FILE_LABEL } from '@/lib/coachChat/limits'
 import type { CoachChatMessage } from '@/lib/coachChat/types'
 
 const MAX_CHARS = 500
-const MAX_FILE_BYTES = 2 * 1024 * 1024
 
 type PromptUsage = {
   used: number
@@ -23,8 +24,9 @@ type PromptUsage = {
 type PendingAttachment = {
   id: string
   fileName: string
-  documentId?: string
+  sourceId?: string
   inlineText?: string
+  sessionOnly?: boolean
 }
 
 type Props = {
@@ -129,8 +131,8 @@ export default function DashboardChat({ displayName, teamId, insights }: Props) 
     async (file: File) => {
       setUploadError(null)
 
-      if (file.size > MAX_FILE_BYTES) {
-        setUploadError('File must be 2 MB or smaller.')
+      if (file.size > MAX_COACH_FILE_BYTES) {
+        setUploadError(`File must be ${MAX_COACH_FILE_LABEL} or smaller.`)
         return
       }
 
@@ -144,36 +146,54 @@ export default function DashboardChat({ displayName, teamId, insights }: Props) 
         const res = await fetch('/api/chat/documents', { method: 'POST', body: form })
         const data = await res.json()
 
-        if (res.ok && data.document) {
+        if (res.ok && (data.source || data.sessionText)) {
           if (data.conversationId && !activeConversationId) {
             setActiveConversationId(data.conversationId)
           }
-          setPendingAttachments((prev) => [
-            ...prev,
-            {
-              id: data.document.id,
-              fileName: data.document.fileName,
-              documentId: data.document.id,
-            },
-          ])
-          return
+
+          if (data.indexed && data.source) {
+            setPendingAttachments((prev) => [
+              ...prev,
+              {
+                id: data.source.id,
+                fileName: data.source.fileName,
+                sourceId: data.source.id,
+              },
+            ])
+            return
+          }
+
+          if (data.sessionText) {
+            setPendingAttachments((prev) => [
+              ...prev,
+              {
+                id: `session-${Date.now()}`,
+                fileName: data.fileName ?? file.name,
+                inlineText: data.sessionText,
+                sessionOnly: true,
+              },
+            ])
+            return
+          }
         }
 
-        if (res.status === 503 && isTextLikeFile(file)) {
+        if (!res.ok && isTextLikeFile(file)) {
           const text = (await file.text()).trim().slice(0, 24_000)
-          if (!text) throw new Error('Document appears empty.')
-          setPendingAttachments((prev) => [
-            ...prev,
-            {
-              id: `inline-${Date.now()}`,
-              fileName: file.name,
-              inlineText: text,
-            },
-          ])
-          return
+          if (text) {
+            setPendingAttachments((prev) => [
+              ...prev,
+              {
+                id: `session-${Date.now()}`,
+                fileName: file.name,
+                inlineText: text,
+                sessionOnly: true,
+              },
+            ])
+            return
+          }
         }
 
-        setUploadError(data.error ?? 'Could not upload document.')
+        setUploadError(data.error ?? 'Could not process document.')
       } catch {
         setUploadError('Could not upload document.')
       } finally {
@@ -213,9 +233,6 @@ export default function DashboardChat({ displayName, teamId, insights }: Props) 
       setActiveMessages(withUser)
       scrollToBottom()
 
-      const documentIds = pendingAttachments
-        .map((a) => a.documentId)
-        .filter((id): id is string => Boolean(id))
       const inlineDocuments = pendingAttachments
         .filter((a) => a.inlineText)
         .map((a) => ({ fileName: a.fileName, text: a.inlineText! }))
@@ -230,7 +247,6 @@ export default function DashboardChat({ displayName, teamId, insights }: Props) 
             message: displayContent,
             teamId,
             conversationId: activeConversationId ?? undefined,
-            documentIds: documentIds.length > 0 ? documentIds : undefined,
             inlineDocuments: inlineDocuments.length > 0 ? inlineDocuments : undefined,
           }),
         })
@@ -248,11 +264,19 @@ export default function DashboardChat({ displayName, teamId, insights }: Props) 
             { id: `a-${Date.now()}`, role: 'assistant', content: errText },
           ])
           if (data.usage) setUsage(data.usage)
+          else void loadUsage()
           return
         }
 
         if (data.conversationId && Array.isArray(data.messages)) {
-          applyServerConversation(data.conversationId, data.messages)
+          const withCitations = data.citations
+            ? data.messages.map((m: CoachChatMessage) =>
+                m.role === 'assistant' && !m.citations
+                  ? { ...m, citations: data.citations }
+                  : m
+              )
+            : data.messages
+          applyServerConversation(data.conversationId, withCitations)
         } else {
           setActiveMessages([
             ...withUser,
@@ -261,6 +285,7 @@ export default function DashboardChat({ displayName, teamId, insights }: Props) 
               role: 'assistant',
               content: data.reply,
               reasoning: data.reasoning ?? null,
+              citations: data.citations,
             },
           ])
         }
@@ -274,6 +299,7 @@ export default function DashboardChat({ displayName, teamId, insights }: Props) 
             content: fallbackReply(displayContent, insights),
           },
         ])
+        void loadUsage()
       } finally {
         setSending(false)
         scrollToBottom()
@@ -283,6 +309,7 @@ export default function DashboardChat({ displayName, teamId, insights }: Props) 
       activeConversationId,
       applyServerConversation,
       insights,
+      loadUsage,
       messages,
       pendingAttachments,
       scrollToBottom,
@@ -297,10 +324,10 @@ export default function DashboardChat({ displayName, teamId, insights }: Props) 
     usage && usage.limit > 0 && usage.remaining <= Math.ceil(usage.limit * 0.2)
 
   return (
-    <div className="flex w-full flex-col font-sans">
+    <div className="flex h-full min-h-0 w-full flex-col font-sans">
       {usage && usage.limit > 0 && (
         <p
-          className={`mb-3 text-center text-[11px] tabular-nums ${
+          className={`mb-2 shrink-0 text-center text-[11px] tabular-nums ${
             usageWarning ? 'text-amber-600' : 'text-zinc-400'
           }`}
         >
@@ -310,69 +337,61 @@ export default function DashboardChat({ displayName, teamId, insights }: Props) 
       )}
 
       {hasConversation && (
-        <div ref={scrollRef} className="mb-6 max-h-[55vh] space-y-5 overflow-y-auto dark-scrollbar">
-          {messages.map((msg) => (
-            <div
-              key={msg.id}
-              className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
-            >
-              {msg.role === 'assistant' ? (
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-zinc-200 bg-white">
-                  <Image src="/flowsight_sinfondo.png" alt="FlowSight" width={16} height={16} />
+        <div
+          ref={scrollRef}
+          className="mb-4 min-h-0 flex-1 space-y-8 overflow-y-auto dark-scrollbar"
+        >
+          {messages.map((msg) =>
+            msg.role === 'user' ? (
+              <div key={msg.id} className="flex justify-end">
+                <div className="max-w-[88%] rounded-2xl bg-zinc-200/80 px-4 py-2.5 text-[14px] leading-relaxed text-zinc-900">
+                  {msg.attachments && msg.attachments.length > 0 && (
+                    <div className="mb-2 flex flex-wrap justify-end gap-1.5">
+                      {msg.attachments.map((a) => (
+                        <span
+                          key={a.id}
+                          className="inline-flex items-center gap-1 rounded-md bg-white/70 px-2 py-0.5 text-[11px] text-zinc-600"
+                        >
+                          <FileText className="h-3 w-3" strokeWidth={1.75} />
+                          {a.fileName}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  <CoachMessageContent content={msg.content} />
                 </div>
-              ) : (
-                <Avatar name={displayName} size="sm" className="shrink-0" />
-              )}
-              <div
-                className={`max-w-[85%] rounded-xl px-4 py-2.5 text-[13.5px] leading-relaxed ${
-                  msg.role === 'user' ? 'bg-zinc-900 text-white' : 'bg-zinc-50 text-zinc-700'
-                }`}
-              >
-                {msg.role === 'assistant' && msg.reasoning && (
-                  <CoachThinkingBlock reasoning={msg.reasoning} />
-                )}
-                {msg.attachments && msg.attachments.length > 0 && (
-                  <div className={`mb-2 flex flex-wrap gap-1.5 ${msg.role === 'user' ? '' : ''}`}>
-                    {msg.attachments.map((a) => (
-                      <span
-                        key={a.id}
-                        className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] ${
-                          msg.role === 'user'
-                            ? 'bg-zinc-800 text-zinc-200'
-                            : 'bg-white text-zinc-500 border border-zinc-200'
-                        }`}
-                      >
-                        <FileText className="h-3 w-3" strokeWidth={1.75} />
-                        {a.fileName}
-                      </span>
-                    ))}
-                  </div>
-                )}
-                <CoachMessageContent content={msg.content} />
               </div>
-            </div>
-          ))}
+            ) : (
+              <article key={msg.id} className="w-full">
+                <div className="rounded-xl border border-zinc-200/80 bg-zinc-50/50 px-6 py-5">
+                  {msg.reasoning && <CoachThinkingBlock reasoning={msg.reasoning} />}
+                  {msg.attachments && msg.attachments.length > 0 && (
+                    <div className="mb-3 flex flex-wrap gap-1.5">
+                      {msg.attachments.map((a) => (
+                        <span
+                          key={a.id}
+                          className="inline-flex items-center gap-1 rounded-md border border-zinc-200 bg-white px-2 py-0.5 text-[11px] text-zinc-500"
+                        >
+                          <FileText className="h-3 w-3" strokeWidth={1.75} />
+                          {a.fileName}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  <CoachProseContent content={msg.content} citations={msg.citations} />
+                  <CoachSourcesList content={msg.content} citations={msg.citations} />
+                </div>
+              </article>
+            )
+          )}
           {sending && (
-            <div className="flex gap-3">
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-zinc-200 bg-white">
-                <Image
-                  src="/flowsight_sinfondo.png"
-                  alt="FlowSight"
-                  width={16}
-                  height={16}
-                  className="animate-pulse"
-                />
-              </div>
-              <div className="rounded-xl bg-zinc-50 px-4 py-2.5 text-[13.5px] text-zinc-400">
-                Thinking…
-              </div>
-            </div>
+            <p className="text-[14px] text-zinc-400 animate-pulse">Thinking…</p>
           )}
         </div>
       )}
 
       {!hasConversation && (
-        <div className="mb-8 flex flex-col items-center text-center">
+        <div className="mb-8 flex min-h-0 flex-1 flex-col items-center justify-center text-center">
           <Image
             src="/flowsight_sinfondo.png"
             alt="FlowSight"
@@ -389,12 +408,13 @@ export default function DashboardChat({ displayName, teamId, insights }: Props) 
         </div>
       )}
 
+      <div className="mt-auto shrink-0 pb-5">
       <form
         onSubmit={(e) => {
           e.preventDefault()
           sendMessage(input)
         }}
-        className="flex flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition-colors focus-within:border-zinc-300"
+        className="flex flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-[0_4px_24px_rgba(0,0,0,0.06),0_1px_3px_rgba(0,0,0,0.04)] transition-colors focus-within:border-zinc-300"
       >
         <input
           ref={fileInputRef}
@@ -416,6 +436,9 @@ export default function DashboardChat({ displayName, teamId, insights }: Props) 
               >
                 <FileText className="h-3 w-3 text-zinc-400" strokeWidth={1.75} />
                 {a.fileName}
+                {a.sessionOnly && (
+                  <span className="text-[10px] text-zinc-400">session</span>
+                )}
                 <button
                   type="button"
                   onClick={() => removeAttachment(a.id)}
@@ -456,24 +479,15 @@ export default function DashboardChat({ displayName, teamId, insights }: Props) 
         </div>
 
         <div className="flex shrink-0 items-center justify-between gap-3 border-t border-zinc-100 bg-zinc-50/60 px-3 py-2">
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              className="flex h-8 w-8 items-center justify-center rounded-md text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 transition-colors"
-              aria-label="AI suggestions"
-            >
-              <Sparkles className="h-4 w-4" strokeWidth={1.75} />
-            </button>
-            <button
-              type="button"
-              disabled={uploading || sending}
-              onClick={() => fileInputRef.current?.click()}
-              className="flex h-8 w-8 items-center justify-center rounded-md text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 transition-colors disabled:opacity-40"
-              aria-label="Upload document"
-            >
-              <Paperclip className={`h-4 w-4 ${uploading ? 'animate-pulse' : ''}`} strokeWidth={1.75} />
-            </button>
-          </div>
+          <button
+            type="button"
+            disabled={uploading || sending}
+            onClick={() => fileInputRef.current?.click()}
+            className="flex h-8 w-8 items-center justify-center rounded-md text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 transition-colors disabled:opacity-40"
+            aria-label="Upload document"
+          >
+            <Paperclip className={`h-4 w-4 ${uploading ? 'animate-pulse' : ''}`} strokeWidth={1.75} />
+          </button>
 
           <div className="flex items-center gap-3">
             <span
@@ -510,6 +524,7 @@ export default function DashboardChat({ displayName, teamId, insights }: Props) 
           ))}
         </div>
       )}
+      </div>
     </div>
   )
 }

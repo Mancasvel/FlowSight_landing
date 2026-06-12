@@ -516,41 +516,41 @@ export interface Database {
                     created_at?: string;
                 };
             };
-            coach_documents: {
+            coach_context_chunks: {
                 Row: {
                     id: string;
+                    source_id: string;
                     conversation_id: string;
                     user_id: string;
                     team_id: string;
-                    file_name: string;
-                    mime_type: string;
-                    content_text: string;
-                    char_count: number;
-                    truncated: boolean;
+                    source_name: string;
+                    chunk_index: number;
+                    excerpt: string;
+                    embedding: string;
                     created_at: string;
                 };
                 Insert: {
                     id?: string;
+                    source_id: string;
                     conversation_id: string;
                     user_id: string;
                     team_id: string;
-                    file_name: string;
-                    mime_type?: string;
-                    content_text: string;
-                    char_count?: number;
-                    truncated?: boolean;
+                    source_name: string;
+                    chunk_index: number;
+                    excerpt: string;
+                    embedding: string;
                     created_at?: string;
                 };
                 Update: {
                     id?: string;
+                    source_id?: string;
                     conversation_id?: string;
                     user_id?: string;
                     team_id?: string;
-                    file_name?: string;
-                    mime_type?: string;
-                    content_text?: string;
-                    char_count?: number;
-                    truncated?: boolean;
+                    source_name?: string;
+                    chunk_index?: number;
+                    excerpt?: string;
+                    embedding?: string;
                     created_at?: string;
                 };
             };
@@ -571,18 +571,19 @@ export interface Database {
                     rank: number;
                 }[];
             };
-            match_coach_documents_fts: {
+            match_coach_context_chunks: {
                 Args: {
-                    search_query: string;
+                    query_embedding: string;
                     match_user_id: string;
                     match_team_id: string;
-                    match_conversation_id?: string | null;
+                    match_conversation_id: string;
                     match_count?: number;
+                    match_threshold?: number;
                 };
                 Returns: {
-                    file_name: string;
-                    content: string;
-                    rank: number;
+                    source_name: string;
+                    excerpt: string;
+                    similarity: number;
                 }[];
             };
             get_license_member_count: {

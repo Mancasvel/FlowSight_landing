@@ -22,7 +22,6 @@ export default async function DashboardLayout({
 
   const isOnboarding = pathname.startsWith(ONBOARDING_PATH)
   const isPricing = pathname.startsWith(PRICING_PATH)
-
   if (shell.teams.length === 0 && !isOnboarding && !isPricing) {
     const supabase = await createClient()
     const { data: license } = await supabase

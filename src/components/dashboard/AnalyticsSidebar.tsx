@@ -14,9 +14,12 @@ import {
   Minus,
   Plus,
 } from 'lucide-react'
+import CoachChatDeleteModal from '@/components/dashboard/CoachChatDeleteModal'
+import CoachChatListItem from '@/components/dashboard/CoachChatListItem'
+import CoachChatRenameModal from '@/components/dashboard/CoachChatRenameModal'
 import { useCoachChat } from '@/components/dashboard/CoachChatProvider'
-import { formatCoachChatRelativeTime } from '@/lib/coachChat/formatRelativeTime'
-import { useState, useEffect, useCallback } from 'react'
+import type { CoachConversation } from '@/lib/coachChat/types'
+import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import { Avatar } from '@/components/ui'
 
 type TeamOption = { id: string; name: string }
@@ -29,6 +32,14 @@ type SidebarProps = {
   activeTeamId: string | null
   personalizedDashboardTitle?: string | null
   hasPersonalizedDashboard?: boolean
+  hideHeader?: boolean
+}
+
+const SidebarMenuContext = createContext<{ openMenu: () => void } | null>(null)
+
+export function useSidebarMenu() {
+  const ctx = useContext(SidebarMenuContext)
+  return { openMenu: ctx?.openMenu ?? (() => {}) }
 }
 
 const staticMenuItems = [
@@ -99,9 +110,13 @@ function TeamSelector({
 function AiCoachNavItem({
   pathname,
   onNavigate,
+  onRenameChat,
+  onDeleteChat,
 }: {
   pathname: string
   onNavigate?: () => void
+  onRenameChat: (chat: CoachConversation) => void
+  onDeleteChat: (chat: CoachConversation) => void
 }) {
   const router = useRouter()
   const [expanded, setExpanded] = useState(false)
@@ -113,7 +128,7 @@ function AiCoachNavItem({
   } = useCoachChat()
 
   const isActive = pathname === '/dashboard'
-  const pastChats = conversations.filter((c) => c.messages.length > 0)
+  const pastChats = conversations.filter((c) => c.messages.length > 0).slice(0, 10)
   const hasChats = pastChats.length > 0
 
   async function openChat(conversationId?: string) {
@@ -172,20 +187,13 @@ function AiCoachNavItem({
               const selected = isActive && activeConversationId === chat.id
               return (
                 <li key={chat.id}>
-                  <button
-                    type="button"
-                    onClick={() => openChat(chat.id)}
-                    className={`w-full rounded-md px-2.5 py-2 text-left transition-colors ${
-                      selected
-                        ? 'bg-zinc-100 text-zinc-900'
-                        : 'text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900'
-                    }`}
-                  >
-                    <p className="truncate text-[13px] font-medium">{chat.title}</p>
-                    <p className="mt-0.5 text-[11px] text-zinc-400">
-                      {formatCoachChatRelativeTime(chat.updatedAt)}
-                    </p>
-                  </button>
+                  <CoachChatListItem
+                    chat={chat}
+                    selected={selected}
+                    onOpen={() => openChat(chat.id)}
+                    onRequestRename={() => onRenameChat(chat)}
+                    onRequestDelete={() => onDeleteChat(chat)}
+                  />
                 </li>
               )
             })
@@ -209,10 +217,14 @@ function DrawerContent({
   pathname,
   onNavigate,
   onSwitchTeam,
+  onRenameChat,
+  onDeleteChat,
 }: SidebarProps & {
   pathname: string
   onNavigate?: () => void
   onSwitchTeam: (teamId: string) => void
+  onRenameChat: (chat: CoachConversation) => void
+  onDeleteChat: (chat: CoachConversation) => void
 }) {
   const dashboardItems = hasPersonalizedDashboard
     ? [
@@ -243,7 +255,12 @@ function DrawerContent({
           <div>
             <p className="mb-3 px-1 text-[11px] font-medium tracking-wide text-zinc-400">Main</p>
             <ul className="space-y-1">
-              <AiCoachNavItem pathname={pathname} onNavigate={onNavigate} />
+              <AiCoachNavItem
+                pathname={pathname}
+                onNavigate={onNavigate}
+                onRenameChat={onRenameChat}
+                onDeleteChat={onDeleteChat}
+              />
               {dashboardItems.map((item) => {
                 const Icon = item.icon
                 const active = isActive(pathname, item.href)
@@ -316,10 +333,44 @@ export default function DashboardSidebar({
   activeTeamId,
   personalizedDashboardTitle,
   hasPersonalizedDashboard,
+  hideHeader = false,
 }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const [open, setOpen] = useState(false)
+  const [renameChat, setRenameChat] = useState<CoachConversation | null>(null)
+  const [deleteChat, setDeleteChat] = useState<CoachConversation | null>(null)
+  const [deleting, setDeleting] = useState(false)
+  const { renameConversation, deleteConversation } = useCoachChat()
+
+  function handleRenameChat(chat: CoachConversation) {
+    setDeleteChat(null)
+    setRenameChat(chat)
+  }
+
+  function handleDeleteChat(chat: CoachConversation) {
+    setRenameChat(null)
+    setDeleteChat(chat)
+  }
+
+  function closeRename() {
+    setRenameChat(null)
+  }
+
+  async function handleConfirmDelete() {
+    if (!deleteChat || deleting) return
+    setDeleting(true)
+    const ok = await deleteConversation(deleteChat.id)
+    setDeleting(false)
+    if (ok) setDeleteChat(null)
+  }
+
+  async function handleConfirmRename(title: string) {
+    if (!renameChat) return
+    const chatId = renameChat.id
+    closeRename()
+    await renameConversation(chatId, title)
+  }
 
   useEffect(() => {
     setOpen(false)
@@ -345,27 +396,46 @@ export default function DashboardSidebar({
   )
 
   return (
-    <>
-      <header
-        className="fixed top-0 left-0 right-0 z-40 flex h-14 items-center gap-3 border-b border-zinc-200/60
-          bg-white/75 px-4 backdrop-blur-md sm:px-6"
-      >
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className="flex h-10 w-10 items-center justify-center rounded-xl text-zinc-700
-            transition-colors hover:bg-zinc-100"
-          aria-label="Open menu"
+    <SidebarMenuContext.Provider value={{ openMenu: () => setOpen(true) }}>
+      <CoachChatRenameModal
+        open={renameChat !== null}
+        title={renameChat?.title ?? ''}
+        onClose={closeRename}
+        onConfirm={(title) => void handleConfirmRename(title)}
+      />
+
+      <CoachChatDeleteModal
+        open={deleteChat !== null}
+        title={deleteChat?.title ?? ''}
+        deleting={deleting}
+        onClose={() => {
+          if (!deleting) setDeleteChat(null)
+        }}
+        onConfirm={() => void handleConfirmDelete()}
+      />
+
+      {!hideHeader && (
+        <header
+          className="fixed top-0 left-0 right-0 z-40 flex h-14 items-center gap-3 border-b border-zinc-200/60
+            bg-white/75 px-4 backdrop-blur-md sm:px-6"
         >
-          <Menu size={22} strokeWidth={1.75} />
-        </button>
-        <Link
-          href="/dashboard"
-          className="text-sm font-semibold tracking-tight text-zinc-900 hover:text-zinc-600 transition-colors"
-        >
-          FlowSight
-        </Link>
-      </header>
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className="flex h-10 w-10 items-center justify-center rounded-xl text-zinc-700
+              transition-colors hover:bg-zinc-100"
+            aria-label="Open menu"
+          >
+            <Menu size={22} strokeWidth={1.75} />
+          </button>
+          <Link
+            href="/dashboard"
+            className="text-sm font-semibold tracking-tight text-zinc-900 hover:text-zinc-600 transition-colors"
+          >
+            FlowSight
+          </Link>
+        </header>
+      )}
 
       <div
         className={`fixed inset-0 z-50 bg-zinc-900/15 backdrop-blur-[2px] transition-opacity duration-300 ${
@@ -404,9 +474,11 @@ export default function DashboardSidebar({
             pathname={pathname}
             onNavigate={() => setOpen(false)}
             onSwitchTeam={handleSwitchTeam}
+            onRenameChat={handleRenameChat}
+            onDeleteChat={handleDeleteChat}
           />
         </div>
       </aside>
-    </>
+    </SidebarMenuContext.Provider>
   )
 }

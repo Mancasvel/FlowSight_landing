@@ -11,8 +11,10 @@ import {
 } from 'react'
 import {
   createCoachConversationApi,
+  deleteCoachConversation,
   fetchCoachConversation,
   fetchCoachConversations,
+  renameCoachConversation,
 } from '@/lib/coachChat/apiClient'
 import { migrateLocalCoachChatsToServer } from '@/lib/coachChat/migrateLocalStorage'
 import type { CoachChatMessage, CoachConversation } from '@/lib/coachChat/types'
@@ -28,6 +30,8 @@ type CoachChatContextValue = {
   setActiveMessages: (messages: CoachChatMessage[]) => void
   applyServerConversation: (conversationId: string, messages: CoachChatMessage[]) => void
   refreshConversations: () => Promise<void>
+  renameConversation: (id: string, title: string) => Promise<void>
+  deleteConversation: (id: string) => Promise<boolean>
 }
 
 const CoachChatContext = createContext<CoachChatContextValue | null>(null)
@@ -139,6 +143,42 @@ export default function CoachChatProvider({ userId, teamId, children }: Props) {
     [refreshConversations]
   )
 
+  const renameConversation = useCallback(
+    async (id: string, title: string) => {
+      if (!teamId) return
+      const trimmed = title.trim()
+      if (!trimmed) return
+      try {
+        await renameCoachConversation(id, teamId, trimmed)
+        await refreshConversations()
+      } catch (err) {
+        console.error('Failed to rename conversation:', err)
+      }
+    },
+    [refreshConversations, teamId]
+  )
+
+  const deleteConversation = useCallback(
+    async (id: string) => {
+      if (!teamId) return false
+      setConversations((prev) => prev.filter((c) => c.id !== id))
+      if (activeConversationId === id) {
+        setActiveConversationId(null)
+        setActiveMessagesState([])
+      }
+      try {
+        await deleteCoachConversation(id, teamId)
+        await refreshConversations()
+        return true
+      } catch (err) {
+        console.error('Failed to delete conversation:', err)
+        await refreshConversations()
+        return false
+      }
+    },
+    [activeConversationId, refreshConversations, teamId]
+  )
+
   const value = useMemo(
     () => ({
       conversations,
@@ -151,6 +191,8 @@ export default function CoachChatProvider({ userId, teamId, children }: Props) {
       setActiveMessages,
       applyServerConversation,
       refreshConversations,
+      renameConversation,
+      deleteConversation,
     }),
     [
       conversations,
@@ -163,6 +205,8 @@ export default function CoachChatProvider({ userId, teamId, children }: Props) {
       setActiveMessages,
       applyServerConversation,
       refreshConversations,
+      renameConversation,
+      deleteConversation,
     ]
   )
 

@@ -1,16 +1,30 @@
 import type { RagMatch } from './server'
 import type { CoachChatMessage } from './types'
 
-export function buildDocumentsContextBlock(
+import type { ContextChunkMatch } from './contextVectorServer'
+
+export function buildVectorContextBlock(matches: ContextChunkMatch[]): string {
+  if (matches.length === 0) return ''
+
+  const lines = matches.map(
+    (m, i) =>
+      `${i + 1}. [${m.sourceName}] ${m.excerpt.replace(/\s+/g, ' ').trim()}`
+  )
+
+  return `Relevant excerpts from uploaded documents (vector retrieval, not full files):\n${lines.join('\n')}`
+}
+
+/** Session-only fallback when vector index is unavailable for this upload. */
+export function buildSessionDocumentsBlock(
   docs: { fileName: string; text: string }[]
 ): string {
   if (docs.length === 0) return ''
 
   const sections = docs.map(
-    (d) => `### ${d.fileName}\n${d.text.replace(/\s+/g, ' ').trim().slice(0, 8000)}`
+    (d) => `### ${d.fileName}\n${d.text.replace(/\s+/g, ' ').trim().slice(0, 4000)}`
   )
 
-  return `Uploaded documents for this chat (use as reference, do not quote filenames unless helpful):\n\n${sections.join('\n\n')}`
+  return `Session document excerpts (not persisted):\n\n${sections.join('\n\n')}`
 }
 
 export function buildRagContextBlock(matches: RagMatch[]): string {

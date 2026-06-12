@@ -1,19 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import {
-  getFlowStateData,
-  getContextLoadData,
-  getPlanningData,
-  getMeetingsData,
-  getWorkflowData,
-} from '@/lib/dashboardData'
 import { buildCoachContext } from '@/lib/buildCoachContext'
+import { loadCoachDashboardData } from '@/lib/coachChat/loadCoachDashboardData'
 import { COACH_SYSTEM_PROMPT, kimiChat } from '@/lib/kimi/client'
 import {
   checkPromptAllowance,
+  formatPromptUsagePayload,
   incrementPromptUsage,
   isTeamAdmin,
   createServiceClient,
+  type PromptUsageResult,
 } from '@/lib/promptLimits'
 import { assertTeamAccess } from '@/lib/coachChat/access'
 import {
@@ -22,17 +18,39 @@ import {
   getCoachConversationFromDb,
   searchCoachMessageRag,
 } from '@/lib/coachChat/server'
-import { getCoachDocumentTexts } from '@/lib/coachChat/documentServer'
+import { searchCoachContextVectors } from '@/lib/coachChat/contextVectorServer'
 import {
   buildConversationHistoryBlock,
-  buildDocumentsContextBlock,
   buildRagContextBlock,
+  buildSessionDocumentsBlock,
+  buildVectorContextBlock,
 } from '@/lib/coachChat/ragContext'
+import {
+  buildCoachCitationIndex,
+  buildCitationPromptBlock,
+} from '@/lib/coachChat/citations'
 import { isSchemaMismatchError } from '@/lib/supabase/schemaCompat'
 
 export const dynamic = 'force-dynamic'
 
+function errorResponse(
+  message: string,
+  status: number,
+  allowance: PromptUsageResult | null
+) {
+  return NextResponse.json(
+    {
+      error: message,
+      ...(allowance ? { usage: formatPromptUsagePayload(allowance) } : {}),
+    },
+    { status }
+  )
+}
+
 export async function POST(req: NextRequest) {
+  let allowance: PromptUsageResult | null = null
+  let admin = false
+
   try {
     const supabase = await createClient()
     const {
@@ -47,7 +65,6 @@ export async function POST(req: NextRequest) {
       message?: string
       teamId?: string
       conversationId?: string
-      documentIds?: string[]
       inlineDocuments?: { fileName: string; text: string }[]
     }
     const message = body.message?.trim()
@@ -65,19 +82,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const admin = await isTeamAdmin(supabase, user.id, teamId)
-    const allowance = await checkPromptAllowance(supabase, user.id, teamId, admin)
+    admin = await isTeamAdmin(supabase, user.id, teamId)
+    allowance = await checkPromptAllowance(supabase, user.id, teamId, admin)
 
     if (!allowance.allowed) {
       return NextResponse.json(
         {
           error: allowance.reason ?? 'Prompt limit reached',
-          usage: {
-            used: allowance.used,
-            limit: allowance.limit,
-            remaining: allowance.remaining,
-            planId: allowance.planId,
-          },
+          usage: formatPromptUsagePayload(allowance),
         },
         { status: 429 }
       )
@@ -117,55 +129,68 @@ export async function POST(req: NextRequest) {
     weekStart.setDate(now.getDate() + mondayOffset)
     weekStart.setHours(0, 0, 0, 0)
 
-    const [flow, context, planning, meetings, workflow] = await Promise.all([
-      getFlowStateData(teamId, now),
-      getContextLoadData(teamId, weekStart, now),
-      getPlanningData(teamId, 4),
-      getMeetingsData(teamId, weekStart, now),
-      getWorkflowData(teamId, now),
-    ])
+    const dashboard = await loadCoachDashboardData(teamId, weekStart, now)
 
     const contextJson = buildCoachContext({
-      flow,
-      context,
-      planning,
-      meetings,
-      workflow,
+      flow: dashboard.flow,
+      context: dashboard.context,
+      planning: dashboard.planning,
+      meetings: dashboard.meetings,
+      workflow: dashboard.workflow,
       displayName,
     })
 
     const ragBlock = buildRagContextBlock(ragMatches)
     const historyBlock = buildConversationHistoryBlock(priorMessages)
 
-    let documentTexts: { fileName: string; text: string }[] = []
+    let vectorMatches: Awaited<ReturnType<typeof searchCoachContextVectors>> = []
+    let vectorBlock = ''
     try {
-      const stored = await getCoachDocumentTexts(
+      vectorMatches = await searchCoachContextVectors(
         supabase,
         user.id,
         teamId,
         conversationId!,
-        body.documentIds
+        message,
+        6
       )
-      documentTexts = stored.map((d) => ({ fileName: d.fileName, text: d.text }))
-    } catch (docErr) {
-      if (!isSchemaMismatchError(docErr)) {
-        console.error('Coach document context error:', docErr)
+      vectorBlock = buildVectorContextBlock(vectorMatches)
+    } catch (vectorErr) {
+      if (isSchemaMismatchError(vectorErr)) {
+        // coach_context_chunks table not migrated yet
+      } else if (
+        vectorErr instanceof Error &&
+        (vectorErr.name === 'EmbeddingConfigError' ||
+          vectorErr.message.includes('unavailable_model'))
+      ) {
+        console.warn('Coach vector context skipped (embeddings not configured):', vectorErr.message)
+      } else {
+        console.error('Coach vector context error:', vectorErr)
       }
     }
 
-    if (Array.isArray(body.inlineDocuments)) {
-      for (const doc of body.inlineDocuments) {
-        if (doc?.fileName && doc?.text) {
-          documentTexts.push({ fileName: doc.fileName, text: doc.text })
-        }
-      }
-    }
+    const sessionDocs = Array.isArray(body.inlineDocuments)
+      ? body.inlineDocuments.filter((d) => d?.fileName && d?.text)
+      : []
+    const sessionBlock = buildSessionDocumentsBlock(sessionDocs)
 
-    const documentsBlock = buildDocumentsContextBlock(documentTexts)
+    const citationIndex = buildCoachCitationIndex({
+      flow: dashboard.flow,
+      context: dashboard.context,
+      planning: dashboard.planning,
+      meetings: dashboard.meetings,
+      workflow: dashboard.workflow,
+      vectorMatches,
+      sessionDocuments: sessionDocs.map((d) => ({ fileName: d.fileName })),
+      ragMatches,
+    })
+    const citationBlock = buildCitationPromptBlock(citationIndex)
 
     const promptParts = [
       `Team data:\n${contextJson}`,
-      documentsBlock,
+      citationBlock,
+      vectorBlock,
+      sessionBlock,
       ragBlock,
       historyBlock,
       `Question: ${message}`,
@@ -184,10 +209,15 @@ export async function POST(req: NextRequest) {
       reasoning = result.reasoning
     } catch (err) {
       console.error('Azure OpenAI chat error:', err)
-      return NextResponse.json(
-        { error: 'AI coach temporarily unavailable. Try again shortly.' },
-        { status: 503 }
+      return errorResponse(
+        'AI coach temporarily unavailable. Try again shortly.',
+        503,
+        allowance
       )
+    }
+
+    if (!reply.trim()) {
+      return errorResponse('AI coach returned an empty response.', 503, allowance)
     }
 
     const userMsg = { id: `u-${Date.now()}`, role: 'user' as const, content: message }
@@ -196,6 +226,7 @@ export async function POST(req: NextRequest) {
       role: 'assistant' as const,
       content: reply,
       reasoning,
+      citations: citationIndex,
     }
 
     let savedConversation = conversation
@@ -211,31 +242,30 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    await incrementPromptUsage(createServiceClient(), user.id, teamId, allowance.planId)
+    try {
+      await incrementPromptUsage(createServiceClient(), user.id, teamId, allowance.planId)
+    } catch (usageErr) {
+      console.error('Prompt usage increment failed:', usageErr)
+      return errorResponse(
+        'Could not confirm coach usage. Your prompt was not charged — try again.',
+        503,
+        allowance
+      )
+    }
 
-    const newUsed = allowance.remaining > 0 ? allowance.used + 1 : allowance.used
-    const remaining =
-      allowance.remaining > 0
-        ? allowance.remaining - 1
-        : Math.max(0, (allowance.poolLimit ?? 0) - (allowance.poolUsed ?? 0) - 1)
+    const updatedAllowance = await checkPromptAllowance(supabase, user.id, teamId, admin)
 
     return NextResponse.json({
       reply,
       reasoning,
+      citations: citationIndex,
       conversationId,
       messages: savedConversation.messages,
-      usage: {
-        used: newUsed,
-        limit: allowance.limit,
-        remaining,
-        planId: allowance.planId,
-        poolUsed: allowance.poolUsed,
-        poolLimit: allowance.poolLimit,
-      },
+      usage: formatPromptUsagePayload(updatedAllowance),
     })
   } catch (err) {
     console.error('Chat API error:', err)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return errorResponse('Internal server error', 500, allowance)
   }
 }
 
@@ -260,12 +290,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       usage: {
-        used: allowance.used,
-        limit: allowance.limit,
-        remaining: allowance.remaining,
-        planId: allowance.planId,
-        poolUsed: allowance.poolUsed,
-        poolLimit: allowance.poolLimit,
+        ...formatPromptUsagePayload(allowance),
         allowed: allowance.allowed,
       },
     })

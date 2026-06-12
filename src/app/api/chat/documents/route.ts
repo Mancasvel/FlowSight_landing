@@ -6,16 +6,16 @@ import {
   getCoachConversationFromDb,
 } from '@/lib/coachChat/server'
 import {
-  deleteCoachDocument,
-  insertCoachDocument,
-  listCoachDocuments,
-} from '@/lib/coachChat/documentServer'
+  deleteCoachContextSource,
+  indexCoachDocumentVectors,
+  listCoachContextSources,
+} from '@/lib/coachChat/contextVectorServer'
 import { extractDocumentText, isSupportedCoachDocument } from '@/lib/coachChat/extractDocumentText'
+import { MAX_COACH_FILE_BYTES, MAX_COACH_FILE_LABEL } from '@/lib/coachChat/limits'
 import { isSchemaMismatchError } from '@/lib/supabase/schemaCompat'
 
 export const dynamic = 'force-dynamic'
-
-const MAX_FILE_BYTES = 2 * 1024 * 1024
+const SESSION_TEXT_MAX = 24_000
 
 export async function GET(req: NextRequest) {
   try {
@@ -36,13 +36,13 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const documents = await listCoachDocuments(supabase, user.id, teamId, conversationId)
-    return NextResponse.json({ documents })
+    const sources = await listCoachContextSources(supabase, user.id, teamId, conversationId)
+    return NextResponse.json({ sources, vectorIndexReady: true })
   } catch (err) {
     if (isSchemaMismatchError(err)) {
-      return NextResponse.json({ documents: [], storageReady: false })
+      return NextResponse.json({ sources: [], vectorIndexReady: false })
     }
-    console.error('Coach documents list error:', err)
+    console.error('Coach context sources list error:', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -70,8 +70,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    if (file.size > MAX_FILE_BYTES) {
-      return NextResponse.json({ error: 'File must be 2 MB or smaller.' }, { status: 400 })
+    if (file.size > MAX_COACH_FILE_BYTES) {
+      return NextResponse.json(
+        { error: `File must be ${MAX_COACH_FILE_LABEL} or smaller.` },
+        { status: 400 }
+      )
     }
 
     if (!isSupportedCoachDocument(file.name, file.type)) {
@@ -93,35 +96,52 @@ export async function POST(req: NextRequest) {
 
     const buffer = Buffer.from(await file.arrayBuffer())
     const extracted = await extractDocumentText(file.name, file.type, buffer)
+    const sessionText = extracted.text.slice(0, SESSION_TEXT_MAX)
 
-    const document = await insertCoachDocument(
-      supabase,
-      user.id,
-      teamId,
-      conversationId,
-      extracted.fileName,
-      extracted.mimeType,
-      extracted.text,
-      extracted.truncated
-    )
-
-    return NextResponse.json({
-      document,
-      conversationId,
-      preview: extracted.text.slice(0, 280),
-      storageReady: true,
-    })
-  } catch (err) {
-    if (isSchemaMismatchError(err)) {
-      return NextResponse.json(
-        {
-          error: 'Document storage is not available yet. Run the latest database migration.',
-          storageReady: false,
-        },
-        { status: 503 }
+    try {
+      const source = await indexCoachDocumentVectors(
+        supabase,
+        user.id,
+        teamId,
+        conversationId,
+        extracted.fileName,
+        extracted.text
       )
-    }
 
+      return NextResponse.json({
+        source,
+        conversationId,
+        indexed: true,
+        vectorIndexReady: true,
+        preview: sessionText.slice(0, 200),
+      })
+    } catch (indexErr) {
+      const schemaMissing = isSchemaMismatchError(indexErr)
+      const embeddingIssue =
+        indexErr instanceof Error &&
+        (indexErr.message.includes('embeddings') ||
+          indexErr.message.includes('EMBEDDING') ||
+          indexErr.message.includes('deployment'))
+
+      if (schemaMissing || embeddingIssue) {
+        return NextResponse.json({
+          conversationId,
+          indexed: false,
+          vectorIndexReady: false,
+          fileName: extracted.fileName,
+          sessionText,
+          preview: sessionText.slice(0, 200),
+          notice: schemaMissing
+            ? 'Vector index not ready — using this document for the current session only.'
+            : 'Embeddings unavailable — using this document for the current session only.',
+        })
+      }
+
+      const message = indexErr instanceof Error ? indexErr.message : 'Upload failed'
+      console.error('Coach vector index error:', indexErr)
+      return NextResponse.json({ error: message }, { status: 400 })
+    }
+  } catch (err) {
     const message = err instanceof Error ? err.message : 'Upload failed'
     console.error('Coach document upload error:', err)
     return NextResponse.json({ error: message }, { status: 400 })
@@ -137,9 +157,9 @@ export async function DELETE(req: NextRequest) {
 
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const documentId = req.nextUrl.searchParams.get('id')
+    const sourceId = req.nextUrl.searchParams.get('id')
     const teamId = req.nextUrl.searchParams.get('teamId')
-    if (!documentId || !teamId) {
+    if (!sourceId || !teamId) {
       return NextResponse.json({ error: 'id and teamId are required' }, { status: 400 })
     }
 
@@ -147,13 +167,13 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    await deleteCoachDocument(supabase, user.id, teamId, documentId)
+    await deleteCoachContextSource(supabase, user.id, teamId, sourceId)
     return NextResponse.json({ ok: true })
   } catch (err) {
     if (isSchemaMismatchError(err)) {
-      return NextResponse.json({ error: 'Document storage not available.' }, { status: 503 })
+      return NextResponse.json({ ok: true })
     }
-    console.error('Coach document delete error:', err)
+    console.error('Coach context delete error:', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

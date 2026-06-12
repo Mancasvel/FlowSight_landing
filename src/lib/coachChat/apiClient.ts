@@ -48,3 +48,28 @@ export async function syncCoachConversationMessages(
   const data = await parseJson<{ conversation: CoachConversation }>(res)
   return data.conversation
 }
+
+export async function renameCoachConversation(
+  conversationId: string,
+  teamId: string,
+  title: string
+): Promise<CoachConversation> {
+  const res = await fetch(`/api/chat/conversations/${conversationId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ teamId, title }),
+  })
+  const data = await parseJson<{ conversation: CoachConversation }>(res)
+  return data.conversation
+}
+
+export async function deleteCoachConversation(
+  conversationId: string,
+  teamId: string
+): Promise<void> {
+  const res = await fetch(
+    `/api/chat/conversations/${conversationId}?teamId=${encodeURIComponent(teamId)}`,
+    { method: 'DELETE' }
+  )
+  await parseJson<{ ok: boolean }>(res)
+}

@@ -79,6 +79,13 @@ const config: Config = {
           "Times New Roman",
           "serif",
         ],
+        coach: [
+          "var(--font-coach-prose)",
+          "Georgia",
+          "Cambria",
+          "Times New Roman",
+          "serif",
+        ],
       },
       animation: {
         "fade-in": "fadeIn 0.8s ease-out forwards",

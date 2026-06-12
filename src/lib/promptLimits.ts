@@ -14,6 +14,26 @@ export type PromptUsageResult = {
   reason?: string
 }
 
+export type PromptUsagePayload = {
+  used: number
+  limit: number
+  remaining: number
+  planId: PlanId
+  poolUsed?: number
+  poolLimit?: number
+}
+
+export function formatPromptUsagePayload(allowance: PromptUsageResult): PromptUsagePayload {
+  return {
+    used: allowance.used,
+    limit: allowance.limit,
+    remaining: allowance.remaining,
+    planId: allowance.planId,
+    poolUsed: allowance.poolUsed,
+    poolLimit: allowance.poolLimit,
+  }
+}
+
 function periodStart(): string {
   const now = new Date()
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`

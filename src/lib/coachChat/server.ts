@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { isSchemaMismatchError } from '@/lib/supabase/schemaCompat'
 import type { CoachChatMessage, CoachConversation } from './types'
 
 function titleFromMessage(content: string): string {
@@ -34,6 +35,71 @@ function mapMessage(row: DbMessage): CoachChatMessage {
   }
 }
 
+async function fetchCoachMessages(
+  supabase: SupabaseClient,
+  conversationIds: string[]
+): Promise<DbMessage[]> {
+  if (conversationIds.length === 0) return []
+
+  const withReasoning = await supabase
+    .from('coach_messages')
+    .select('id, conversation_id, role, content, reasoning, created_at')
+    .in('conversation_id', conversationIds)
+    .order('created_at', { ascending: true })
+
+  if (!withReasoning.error) {
+    return (withReasoning.data ?? []) as DbMessage[]
+  }
+
+  if (!isSchemaMismatchError(withReasoning.error)) {
+    throw withReasoning.error
+  }
+
+  const basic = await supabase
+    .from('coach_messages')
+    .select('id, conversation_id, role, content, created_at')
+    .in('conversation_id', conversationIds)
+    .order('created_at', { ascending: true })
+
+  if (basic.error) throw basic.error
+
+  return ((basic.data ?? []) as Omit<DbMessage, 'reasoning'>[]).map((row) => ({
+    ...row,
+    reasoning: null,
+  }))
+}
+
+async function insertCoachMessages(
+  supabase: SupabaseClient,
+  conversationId: string,
+  messages: CoachChatMessage[]
+): Promise<void> {
+  if (messages.length === 0) return
+
+  const withReasoning = messages.map((m) => ({
+    conversation_id: conversationId,
+    role: m.role,
+    content: m.content,
+    ...(m.reasoning ? { reasoning: m.reasoning } : {}),
+  }))
+
+  const { error } = await supabase.from('coach_messages').insert(withReasoning)
+  if (!error) return
+
+  if (!isSchemaMismatchError(error)) {
+    throw error
+  }
+
+  const basic = messages.map((m) => ({
+    conversation_id: conversationId,
+    role: m.role,
+    content: m.content,
+  }))
+
+  const { error: basicError } = await supabase.from('coach_messages').insert(basic)
+  if (basicError) throw basicError
+}
+
 function mapConversation(row: DbConversation, messages: CoachChatMessage[]): CoachConversation {
   return {
     id: row.id,
@@ -57,6 +123,7 @@ export async function listCoachConversationsFromDb(
     .eq('user_id', userId)
     .eq('team_id', teamId)
     .order('updated_at', { ascending: false })
+    .limit(10)
 
   if (error) throw error
 
@@ -64,16 +131,10 @@ export async function listCoachConversationsFromDb(
   if (conversations.length === 0) return []
 
   const ids = conversations.map((c) => c.id)
-  const { data: messageRows, error: msgError } = await supabase
-    .from('coach_messages')
-    .select('id, conversation_id, role, content, reasoning, created_at')
-    .in('conversation_id', ids)
-    .order('created_at', { ascending: true })
-
-  if (msgError) throw msgError
+  const messageRows = await fetchCoachMessages(supabase, ids)
 
   const byConversation = new Map<string, CoachChatMessage[]>()
-  for (const row of (messageRows ?? []) as DbMessage[]) {
+  for (const row of messageRows) {
     const list = byConversation.get(row.conversation_id) ?? []
     list.push(mapMessage(row))
     byConversation.set(row.conversation_id, list)
@@ -99,18 +160,9 @@ export async function getCoachConversationFromDb(
   if (error) throw error
   if (!row) return null
 
-  const { data: messageRows, error: msgError } = await supabase
-    .from('coach_messages')
-    .select('id, conversation_id, role, content, reasoning, created_at')
-    .eq('conversation_id', conversationId)
-    .order('created_at', { ascending: true })
+  const messageRows = await fetchCoachMessages(supabase, [conversationId])
 
-  if (msgError) throw msgError
-
-  return mapConversation(
-    row as DbConversation,
-    ((messageRows ?? []) as DbMessage[]).map(mapMessage)
-  )
+  return mapConversation(row as DbConversation, messageRows.map(mapMessage))
 }
 
 export async function createCoachConversationInDb(
@@ -146,15 +198,7 @@ export async function replaceCoachConversationMessages(
   if (deleteError) throw deleteError
 
   if (messages.length > 0) {
-    const { error: insertError } = await supabase.from('coach_messages').insert(
-      messages.map((m) => ({
-        conversation_id: conversationId,
-        role: m.role,
-        content: m.content,
-        ...(m.reasoning ? { reasoning: m.reasoning } : {}),
-      }))
-    )
-    if (insertError) throw insertError
+    await insertCoachMessages(supabase, conversationId, messages)
   }
 
   const firstUser = messages.find((m) => m.role === 'user')
@@ -199,6 +243,63 @@ export async function searchCoachMessageRag(
   }
 
   return ((data ?? []) as RagMatch[]).filter((row) => row.rank > 0)
+}
+
+export async function updateCoachConversationTitleInDb(
+  supabase: SupabaseClient,
+  userId: string,
+  teamId: string,
+  conversationId: string,
+  title: string
+): Promise<CoachConversation | null> {
+  const trimmed = title.trim().slice(0, 80)
+  if (!trimmed) return null
+
+  const { error } = await supabase
+    .from('coach_conversations')
+    .update({ title: trimmed, updated_at: new Date().toISOString() })
+    .eq('id', conversationId)
+    .eq('user_id', userId)
+    .eq('team_id', teamId)
+
+  if (error) throw error
+  return getCoachConversationFromDb(supabase, userId, teamId, conversationId)
+}
+
+export async function deleteCoachConversationFromDb(
+  supabase: SupabaseClient,
+  userId: string,
+  teamId: string,
+  conversationId: string
+): Promise<boolean> {
+  const existing = await getCoachConversationFromDb(supabase, userId, teamId, conversationId)
+  if (!existing) return false
+
+  const chunks = await supabase
+    .from('coach_context_chunks')
+    .delete()
+    .eq('conversation_id', conversationId)
+    .eq('user_id', userId)
+    .eq('team_id', teamId)
+  if (chunks.error && !isSchemaMismatchError(chunks.error)) {
+    throw chunks.error
+  }
+
+  const { error: messagesError } = await supabase
+    .from('coach_messages')
+    .delete()
+    .eq('conversation_id', conversationId)
+  if (messagesError) throw messagesError
+
+  const { error } = await supabase
+    .from('coach_conversations')
+    .delete()
+    .eq('id', conversationId)
+    .eq('user_id', userId)
+    .eq('team_id', teamId)
+
+  if (error) throw error
+  return true
 }
 
 export async function appendCoachMessages(

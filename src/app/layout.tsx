@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Playfair_Display, Plus_Jakarta_Sans } from 'next/font/google'
+import { Newsreader, Playfair_Display, Plus_Jakarta_Sans } from 'next/font/google'
 import './globals.css'
 
 const sans = Plus_Jakarta_Sans({
@@ -12,6 +12,13 @@ const serif = Playfair_Display({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-serif',
+})
+
+const coachProse = Newsreader({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-coach-prose',
+  weight: ['400', '500', '600'],
 })
 import Footer from '@/components/Footer'
 import { ClickAnalytics } from '@/components/ClickAnalytics'
@@ -93,7 +100,11 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${sans.variable} ${serif.variable}`} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${sans.variable} ${serif.variable} ${coachProse.variable}`}
+      suppressHydrationWarning
+    >
       <body className="font-sans antialiased" suppressHydrationWarning>
         <ConsentProvider>
           <MicrosoftClarity />
