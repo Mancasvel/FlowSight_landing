@@ -30,7 +30,7 @@ type CoachChatContextValue = {
   setActiveMessages: (messages: CoachChatMessage[]) => void
   applyServerConversation: (conversationId: string, messages: CoachChatMessage[]) => void
   refreshConversations: () => Promise<void>
-  renameConversation: (id: string, title: string) => Promise<void>
+  renameConversation: (id: string, title: string) => Promise<boolean>
   deleteConversation: (id: string) => Promise<boolean>
 }
 
@@ -145,17 +145,34 @@ export default function CoachChatProvider({ userId, teamId, children }: Props) {
 
   const renameConversation = useCallback(
     async (id: string, title: string) => {
-      if (!teamId) return
+      if (!teamId) return false
       const trimmed = title.trim()
-      if (!trimmed) return
+      if (!trimmed) return false
+
+      let previous: CoachConversation[] = []
+      const renamedAt = new Date().toISOString()
+      setConversations((prev) => {
+        previous = prev
+        return [...prev]
+          .map((c) => (c.id === id ? { ...c, title: trimmed, updatedAt: renamedAt } : c))
+          .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+      })
+
       try {
-        await renameCoachConversation(id, teamId, trimmed)
-        await refreshConversations()
+        const updated = await renameCoachConversation(id, teamId, trimmed)
+        setConversations((prev) =>
+          [...prev]
+            .map((c) => (c.id === id ? { ...c, ...updated } : c))
+            .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+        )
+        return true
       } catch (err) {
         console.error('Failed to rename conversation:', err)
+        setConversations(previous)
+        return false
       }
     },
-    [refreshConversations, teamId]
+    [teamId]
   )
 
   const deleteConversation = useCallback(

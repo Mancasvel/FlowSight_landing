@@ -8,14 +8,20 @@ async function parseJson<T>(res: Response): Promise<T> {
   return data
 }
 
+const fetchOpts: RequestInit = { cache: 'no-store' }
+
 export async function fetchCoachConversations(teamId: string): Promise<CoachConversation[]> {
-  const res = await fetch(`/api/chat/conversations?teamId=${encodeURIComponent(teamId)}`)
+  const res = await fetch(
+    `/api/chat/conversations?teamId=${encodeURIComponent(teamId)}`,
+    fetchOpts
+  )
   const data = await parseJson<{ conversations: CoachConversation[] }>(res)
   return data.conversations
 }
 
 export async function createCoachConversationApi(teamId: string): Promise<CoachConversation> {
   const res = await fetch('/api/chat/conversations', {
+    ...fetchOpts,
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ teamId }),
@@ -29,7 +35,8 @@ export async function fetchCoachConversation(
   teamId: string
 ): Promise<CoachConversation> {
   const res = await fetch(
-    `/api/chat/conversations/${conversationId}?teamId=${encodeURIComponent(teamId)}`
+    `/api/chat/conversations/${conversationId}?teamId=${encodeURIComponent(teamId)}`,
+    fetchOpts
   )
   const data = await parseJson<{ conversation: CoachConversation }>(res)
   return data.conversation
@@ -41,6 +48,7 @@ export async function syncCoachConversationMessages(
   messages: CoachChatMessage[]
 ): Promise<CoachConversation> {
   const res = await fetch(`/api/chat/conversations/${conversationId}`, {
+    ...fetchOpts,
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ teamId, messages }),
@@ -55,6 +63,7 @@ export async function renameCoachConversation(
   title: string
 ): Promise<CoachConversation> {
   const res = await fetch(`/api/chat/conversations/${conversationId}`, {
+    ...fetchOpts,
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ teamId, title }),
@@ -69,7 +78,7 @@ export async function deleteCoachConversation(
 ): Promise<void> {
   const res = await fetch(
     `/api/chat/conversations/${conversationId}?teamId=${encodeURIComponent(teamId)}`,
-    { method: 'DELETE' }
+    { ...fetchOpts, method: 'DELETE' }
   )
   await parseJson<{ ok: boolean }>(res)
 }
