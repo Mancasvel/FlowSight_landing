@@ -1,0 +1,50 @@
+import type { CoachChatMessage, CoachConversation } from './types'
+
+async function parseJson<T>(res: Response): Promise<T> {
+  const data = (await res.json()) as T & { error?: string }
+  if (!res.ok) {
+    throw new Error((data as { error?: string }).error ?? 'Request failed')
+  }
+  return data
+}
+
+export async function fetchCoachConversations(teamId: string): Promise<CoachConversation[]> {
+  const res = await fetch(`/api/chat/conversations?teamId=${encodeURIComponent(teamId)}`)
+  const data = await parseJson<{ conversations: CoachConversation[] }>(res)
+  return data.conversations
+}
+
+export async function createCoachConversationApi(teamId: string): Promise<CoachConversation> {
+  const res = await fetch('/api/chat/conversations', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ teamId }),
+  })
+  const data = await parseJson<{ conversation: CoachConversation }>(res)
+  return data.conversation
+}
+
+export async function fetchCoachConversation(
+  conversationId: string,
+  teamId: string
+): Promise<CoachConversation> {
+  const res = await fetch(
+    `/api/chat/conversations/${conversationId}?teamId=${encodeURIComponent(teamId)}`
+  )
+  const data = await parseJson<{ conversation: CoachConversation }>(res)
+  return data.conversation
+}
+
+export async function syncCoachConversationMessages(
+  conversationId: string,
+  teamId: string,
+  messages: CoachChatMessage[]
+): Promise<CoachConversation> {
+  const res = await fetch(`/api/chat/conversations/${conversationId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ teamId, messages }),
+  })
+  const data = await parseJson<{ conversation: CoachConversation }>(res)
+  return data.conversation
+}

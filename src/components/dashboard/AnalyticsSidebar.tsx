@@ -116,9 +116,9 @@ function AiCoachNavItem({
   const pastChats = conversations.filter((c) => c.messages.length > 0)
   const hasChats = pastChats.length > 0
 
-  function openChat(conversationId?: string) {
-    if (conversationId) selectConversation(conversationId)
-    else startNewConversation()
+  async function openChat(conversationId?: string) {
+    if (conversationId) await selectConversation(conversationId)
+    else await startNewConversation()
     router.push('/dashboard')
     onNavigate?.()
   }

@@ -464,9 +464,72 @@ export interface Database {
                     created_at?: string;
                 };
             };
+            coach_conversations: {
+                Row: {
+                    id: string;
+                    user_id: string;
+                    team_id: string;
+                    title: string;
+                    created_at: string;
+                    updated_at: string;
+                };
+                Insert: {
+                    id?: string;
+                    user_id: string;
+                    team_id: string;
+                    title?: string;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+                Update: {
+                    id?: string;
+                    user_id?: string;
+                    team_id?: string;
+                    title?: string;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+            };
+            coach_messages: {
+                Row: {
+                    id: string;
+                    conversation_id: string;
+                    role: 'user' | 'assistant';
+                    content: string;
+                    created_at: string;
+                };
+                Insert: {
+                    id?: string;
+                    conversation_id: string;
+                    role: 'user' | 'assistant';
+                    content: string;
+                    created_at?: string;
+                };
+                Update: {
+                    id?: string;
+                    conversation_id?: string;
+                    role?: 'user' | 'assistant';
+                    content?: string;
+                    created_at?: string;
+                };
+            };
         };
         Views: {};
         Functions: {
+            match_coach_messages_fts: {
+                Args: {
+                    search_query: string;
+                    match_user_id: string;
+                    match_team_id: string;
+                    match_count?: number;
+                    exclude_conversation_id?: string | null;
+                };
+                Returns: {
+                    content: string;
+                    role: string;
+                    rank: number;
+                }[];
+            };
             get_license_member_count: {
                 Args: { license_id: string };
                 Returns: number;

@@ -40,7 +40,12 @@ function fallbackReply(prompt: string, insights: ProactiveInsight[]): string {
 }
 
 export default function DashboardChat({ displayName, teamId, insights }: Props) {
-  const { activeMessages, saveMessages } = useCoachChat()
+  const {
+    activeMessages,
+    activeConversationId,
+    setActiveMessages,
+    applyServerConversation,
+  } = useCoachChat()
   const messages = activeMessages
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
@@ -87,14 +92,18 @@ export default function DashboardChat({ displayName, teamId, insights }: Props) 
       setInput('')
       const userMsg: CoachChatMessage = { id: `u-${Date.now()}`, role: 'user', content: trimmed }
       const withUser = [...messages, userMsg]
-      const conversationId = saveMessages(withUser)
+      setActiveMessages(withUser)
       scrollToBottom()
 
       try {
         const res = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: trimmed, teamId }),
+          body: JSON.stringify({
+            message: trimmed,
+            teamId,
+            conversationId: activeConversationId ?? undefined,
+          }),
         })
 
         const data = await res.json()
@@ -105,37 +114,47 @@ export default function DashboardChat({ displayName, teamId, insights }: Props) 
             (res.status === 429
               ? 'Monthly coach limit reached. Resets on the 1st.'
               : 'Could not reach the AI coach.')
-          saveMessages(
-            [...withUser, { id: `a-${Date.now()}`, role: 'assistant', content: errText }],
-            conversationId
-          )
+          setActiveMessages([
+            ...withUser,
+            { id: `a-${Date.now()}`, role: 'assistant', content: errText },
+          ])
           if (data.usage) setUsage(data.usage)
           return
         }
 
-        saveMessages(
-          [...withUser, { id: `a-${Date.now()}`, role: 'assistant', content: data.reply }],
-          conversationId
-        )
+        if (data.conversationId && Array.isArray(data.messages)) {
+          applyServerConversation(data.conversationId, data.messages)
+        } else {
+          setActiveMessages([
+            ...withUser,
+            { id: `a-${Date.now()}`, role: 'assistant', content: data.reply },
+          ])
+        }
         if (data.usage) setUsage(data.usage)
       } catch {
-        saveMessages(
-          [
-            ...withUser,
-            {
-              id: `a-${Date.now()}`,
-              role: 'assistant',
-              content: fallbackReply(trimmed, insights),
-            },
-          ],
-          conversationId
-        )
+        setActiveMessages([
+          ...withUser,
+          {
+            id: `a-${Date.now()}`,
+            role: 'assistant',
+            content: fallbackReply(trimmed, insights),
+          },
+        ])
       } finally {
         setSending(false)
         scrollToBottom()
       }
     },
-    [insights, messages, saveMessages, scrollToBottom, sending, teamId]
+    [
+      activeConversationId,
+      applyServerConversation,
+      insights,
+      messages,
+      scrollToBottom,
+      sending,
+      setActiveMessages,
+      teamId,
+    ]
   )
 
   const hasConversation = messages.length > 0

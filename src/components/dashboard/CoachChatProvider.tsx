@@ -10,21 +10,23 @@ import {
   type ReactNode,
 } from 'react'
 import {
-  createCoachConversation,
-  listCoachConversations,
-  updateCoachConversationMessages,
-  upsertCoachConversation,
-} from '@/lib/coachChat/storage'
+  createCoachConversationApi,
+  fetchCoachConversation,
+  fetchCoachConversations,
+} from '@/lib/coachChat/apiClient'
+import { migrateLocalCoachChatsToServer } from '@/lib/coachChat/migrateLocalStorage'
 import type { CoachChatMessage, CoachConversation } from '@/lib/coachChat/types'
 
 type CoachChatContextValue = {
   conversations: CoachConversation[]
   activeConversationId: string | null
   activeMessages: CoachChatMessage[]
-  selectConversation: (id: string) => void
-  startNewConversation: () => void
-  saveMessages: (messages: CoachChatMessage[], conversationId?: string) => string
-  refreshConversations: () => void
+  loading: boolean
+  selectConversation: (id: string) => Promise<void>
+  startNewConversation: () => Promise<void>
+  setActiveMessages: (messages: CoachChatMessage[]) => void
+  applyServerConversation: (conversationId: string, messages: CoachChatMessage[]) => void
+  refreshConversations: () => Promise<void>
 }
 
 const CoachChatContext = createContext<CoachChatContextValue | null>(null)
@@ -51,65 +53,89 @@ export default function CoachChatProvider({ userId, teamId, children }: Props) {
   const [conversations, setConversations] = useState<CoachConversation[]>([])
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null)
   const [activeMessages, setActiveMessagesState] = useState<CoachChatMessage[]>([])
+  const [loading, setLoading] = useState(false)
 
-  const refreshConversations = useCallback(() => {
+  const refreshConversations = useCallback(async () => {
     if (!teamId) {
       setConversations([])
       return
     }
-    setConversations(listCoachConversations(userId, teamId))
-  }, [teamId, userId])
+    try {
+      const list = await fetchCoachConversations(teamId)
+      setConversations(list)
+    } catch (err) {
+      console.error('Failed to load coach conversations:', err)
+      setConversations([])
+    }
+  }, [teamId])
 
   useEffect(() => {
-    refreshConversations()
+    if (!teamId) return
+
+    let cancelled = false
+
+    async function bootstrap() {
+      setLoading(true)
+      try {
+        await migrateLocalCoachChatsToServer(userId, teamId!)
+        if (!cancelled) await refreshConversations()
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+
     setActiveConversationId(null)
     setActiveMessagesState([])
+    void bootstrap()
+
+    return () => {
+      cancelled = true
+    }
   }, [teamId, userId, refreshConversations])
 
   const selectConversation = useCallback(
-    (id: string) => {
+    async (id: string) => {
       if (!teamId) return
-      const conv = conversations.find((c) => c.id === id)
-      if (!conv) return
-      setActiveConversationId(id)
-      setActiveMessagesState(conv.messages)
+      setLoading(true)
+      try {
+        const conv = await fetchCoachConversation(id, teamId)
+        setActiveConversationId(conv.id)
+        setActiveMessagesState(conv.messages)
+      } catch (err) {
+        console.error('Failed to load conversation:', err)
+      } finally {
+        setLoading(false)
+      }
     },
-    [conversations, teamId]
+    [teamId]
   )
 
-  const startNewConversation = useCallback(() => {
+  const startNewConversation = useCallback(async () => {
     if (!teamId) return
-    const existingEmpty = conversations.find((c) => c.messages.length === 0)
-    if (existingEmpty) {
-      setActiveConversationId(existingEmpty.id)
+    setLoading(true)
+    try {
+      const conv = await createCoachConversationApi(teamId)
+      setActiveConversationId(conv.id)
       setActiveMessagesState([])
-      return
+      await refreshConversations()
+    } catch (err) {
+      console.error('Failed to create conversation:', err)
+    } finally {
+      setLoading(false)
     }
-    const conv = createCoachConversation(userId, teamId)
-    upsertCoachConversation(userId, teamId, conv)
-    setActiveConversationId(conv.id)
-    setActiveMessagesState([])
-    refreshConversations()
-  }, [conversations, refreshConversations, teamId, userId])
+  }, [refreshConversations, teamId])
 
-  const saveMessages = useCallback(
-    (messages: CoachChatMessage[], conversationId?: string): string => {
-      if (!teamId) return ''
+  const setActiveMessages = useCallback((messages: CoachChatMessage[]) => {
+    setActiveMessagesState(messages)
+  }, [])
 
-      let id = conversationId ?? activeConversationId
-      if (!id) {
-        const conv = createCoachConversation(userId, teamId)
-        upsertCoachConversation(userId, teamId, conv)
-        id = conv.id
-      }
-
-      setActiveConversationId(id)
+  const applyServerConversation = useCallback(
+    (conversationId: string, messages: CoachChatMessage[]) => {
+      setActiveConversationId(conversationId)
       setActiveMessagesState(messages)
-      updateCoachConversationMessages(userId, teamId, id, messages)
-      refreshConversations()
-      return id
+      void refreshConversations()
     },
-    [activeConversationId, refreshConversations, teamId, userId]
+    [refreshConversations]
   )
 
   const value = useMemo(
@@ -117,18 +143,22 @@ export default function CoachChatProvider({ userId, teamId, children }: Props) {
       conversations,
       activeConversationId,
       activeMessages,
+      loading,
       selectConversation,
       startNewConversation,
-      saveMessages,
+      setActiveMessages,
+      applyServerConversation,
       refreshConversations,
     }),
     [
       conversations,
       activeConversationId,
       activeMessages,
+      loading,
       selectConversation,
       startNewConversation,
-      saveMessages,
+      setActiveMessages,
+      applyServerConversation,
       refreshConversations,
     ]
   )

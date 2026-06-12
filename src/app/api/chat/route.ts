@@ -15,6 +15,15 @@ import {
   isTeamAdmin,
   createServiceClient,
 } from '@/lib/promptLimits'
+import { assertTeamAccess } from '@/lib/coachChat/access'
+import {
+  appendCoachMessages,
+  createCoachConversationInDb,
+  getCoachConversationFromDb,
+  searchCoachMessageRag,
+} from '@/lib/coachChat/server'
+import { buildConversationHistoryBlock, buildRagContextBlock } from '@/lib/coachChat/ragContext'
+import { isSchemaMismatchError } from '@/lib/supabase/schemaCompat'
 
 export const dynamic = 'force-dynamic'
 
@@ -29,9 +38,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = (await req.json()) as { message?: string; teamId?: string }
+    const body = (await req.json()) as {
+      message?: string
+      teamId?: string
+      conversationId?: string
+    }
     const message = body.message?.trim()
     const teamId = body.teamId
+    let conversationId = body.conversationId
 
     if (!message || message.length > 500) {
       return NextResponse.json({ error: 'Invalid message' }, { status: 400 })
@@ -40,21 +54,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'teamId is required' }, { status: 400 })
     }
 
-    const { data: membership } = await supabase
-      .from('team_members')
-      .select('role')
-      .eq('team_id', teamId)
-      .eq('user_id', user.id)
-      .maybeSingle()
-
-    const { data: ownedTeam } = await supabase
-      .from('teams')
-      .select('id')
-      .eq('id', teamId)
-      .eq('owner_id', user.id)
-      .maybeSingle()
-
-    if (!membership && !ownedTeam) {
+    if (!(await assertTeamAccess(supabase, user.id, teamId))) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
@@ -75,6 +75,26 @@ export async function POST(req: NextRequest) {
         { status: 429 }
       )
     }
+
+    let conversation =
+      conversationId
+        ? await getCoachConversationFromDb(supabase, user.id, teamId, conversationId)
+        : null
+
+    if (!conversation) {
+      conversation = await createCoachConversationInDb(supabase, user.id, teamId)
+      conversationId = conversation.id
+    }
+
+    const priorMessages = conversation.messages
+    const ragMatches = await searchCoachMessageRag(
+      supabase,
+      user.id,
+      teamId,
+      message,
+      conversationId,
+      5
+    )
 
     const { data: profile } = await supabase
       .from('profiles')
@@ -107,13 +127,21 @@ export async function POST(req: NextRequest) {
       displayName,
     })
 
+    const ragBlock = buildRagContextBlock(ragMatches)
+    const historyBlock = buildConversationHistoryBlock(priorMessages)
+
+    const promptParts = [
+      `Team data:\n${contextJson}`,
+      ragBlock,
+      historyBlock,
+      `Question: ${message}`,
+    ].filter(Boolean)
+
     let reply: string
     try {
       reply = await kimiChat({
         system: COACH_SYSTEM_PROMPT,
-        messages: [
-          { role: 'user', content: `Team data:\n${contextJson}\n\nQuestion: ${message}` },
-        ],
+        messages: [{ role: 'user', content: promptParts.join('\n\n') }],
       })
     } catch (err) {
       console.error('Kimi chat error:', err)
@@ -123,14 +151,38 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    const userMsg = { id: `u-${Date.now()}`, role: 'user' as const, content: message }
+    const assistantMsg = {
+      id: `a-${Date.now()}`,
+      role: 'assistant' as const,
+      content: reply,
+    }
+
+    let savedConversation = conversation
+    try {
+      savedConversation =
+        (await appendCoachMessages(supabase, user.id, teamId, conversationId!, [
+          userMsg,
+          assistantMsg,
+        ])) ?? conversation
+    } catch (persistErr) {
+      if (!isSchemaMismatchError(persistErr)) {
+        console.error('Coach message persist error:', persistErr)
+      }
+    }
+
     await incrementPromptUsage(createServiceClient(), user.id, teamId, allowance.planId)
 
     const newUsed = allowance.remaining > 0 ? allowance.used + 1 : allowance.used
     const remaining =
-      allowance.remaining > 0 ? allowance.remaining - 1 : Math.max(0, (allowance.poolLimit ?? 0) - (allowance.poolUsed ?? 0) - 1)
+      allowance.remaining > 0
+        ? allowance.remaining - 1
+        : Math.max(0, (allowance.poolLimit ?? 0) - (allowance.poolUsed ?? 0) - 1)
 
     return NextResponse.json({
       reply,
+      conversationId,
+      messages: savedConversation.messages,
       usage: {
         used: newUsed,
         limit: allowance.limit,
