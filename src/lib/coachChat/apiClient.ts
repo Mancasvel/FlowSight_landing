@@ -1,4 +1,5 @@
 import type { CoachChatMessage, CoachConversation } from './types'
+import { coachApiHeaders, coachJsonHeaders } from './coachApiClient'
 
 async function parseJson<T>(res: Response): Promise<T> {
   const data = (await res.json()) as T & { error?: string }
@@ -13,7 +14,7 @@ const fetchOpts: RequestInit = { cache: 'no-store' }
 export async function fetchCoachConversations(teamId: string): Promise<CoachConversation[]> {
   const res = await fetch(
     `/api/chat/conversations?teamId=${encodeURIComponent(teamId)}`,
-    fetchOpts
+    { ...fetchOpts, headers: coachApiHeaders() }
   )
   const data = await parseJson<{ conversations: CoachConversation[] }>(res)
   return data.conversations
@@ -23,7 +24,7 @@ export async function createCoachConversationApi(teamId: string): Promise<CoachC
   const res = await fetch('/api/chat/conversations', {
     ...fetchOpts,
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: coachJsonHeaders(),
     body: JSON.stringify({ teamId }),
   })
   const data = await parseJson<{ conversation: CoachConversation }>(res)
@@ -36,7 +37,7 @@ export async function fetchCoachConversation(
 ): Promise<CoachConversation> {
   const res = await fetch(
     `/api/chat/conversations/${conversationId}?teamId=${encodeURIComponent(teamId)}`,
-    fetchOpts
+    { ...fetchOpts, headers: coachApiHeaders() }
   )
   const data = await parseJson<{ conversation: CoachConversation }>(res)
   return data.conversation
@@ -50,7 +51,7 @@ export async function syncCoachConversationMessages(
   const res = await fetch(`/api/chat/conversations/${conversationId}`, {
     ...fetchOpts,
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
+    headers: coachJsonHeaders(),
     body: JSON.stringify({ teamId, messages }),
   })
   const data = await parseJson<{ conversation: CoachConversation }>(res)
@@ -65,7 +66,7 @@ export async function renameCoachConversation(
   const res = await fetch(`/api/chat/conversations/${conversationId}`, {
     ...fetchOpts,
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
+    headers: coachJsonHeaders(),
     body: JSON.stringify({ teamId, title }),
   })
   const data = await parseJson<{ conversation: CoachConversation }>(res)
@@ -78,7 +79,7 @@ export async function deleteCoachConversation(
 ): Promise<void> {
   const res = await fetch(
     `/api/chat/conversations/${conversationId}?teamId=${encodeURIComponent(teamId)}`,
-    { ...fetchOpts, method: 'DELETE' }
+    { ...fetchOpts, method: 'DELETE', headers: coachApiHeaders() }
   )
   await parseJson<{ ok: boolean }>(res)
 }

@@ -20,6 +20,17 @@
   }
 }
 
+@layer components {
+  /* Coach answer: serif body everywhere; sans only on h1 main title */
+  .coach-prose {
+    font-family: var(--font-coach-prose), Georgia, 'Times New Roman', serif;
+  }
+
+  .coach-prose h1 {
+    font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  }
+}
+
 @layer utilities {
   .text-gradient {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-secondary-navy to-primary-teal;

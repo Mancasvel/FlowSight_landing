@@ -27,7 +27,7 @@ export default function CoachCitation({ citeKey, display, citations }: Props) {
 
   return (
     <Tooltip content={tooltip} wide>
-      <span className="cursor-help rounded-sm bg-zinc-200/70 px-1 py-px font-sans text-[13px] font-medium text-zinc-800 transition-colors hover:bg-zinc-200">
+      <span className="cursor-help rounded-sm bg-zinc-200/70 px-1 py-px text-[15px] font-medium text-zinc-800 transition-colors hover:bg-zinc-200">
         {display}
       </span>
     </Tooltip>

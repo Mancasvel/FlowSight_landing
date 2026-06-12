@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import { buildCoachContext } from '@/lib/buildCoachContext'
 import { loadCoachDashboardData } from '@/lib/coachChat/loadCoachDashboardData'
 import { COACH_SYSTEM_PROMPT, kimiChat } from '@/lib/kimi/client'
@@ -7,11 +6,10 @@ import {
   checkPromptAllowance,
   formatPromptUsagePayload,
   incrementPromptUsage,
-  isTeamAdmin,
   createServiceClient,
   type PromptUsageResult,
 } from '@/lib/promptLimits'
-import { assertTeamAccess } from '@/lib/coachChat/access'
+import { guardCoachApi, coachSecurityErrorResponse } from '@/lib/api/guardCoachApi'
 import {
   appendCoachMessages,
   createCoachConversationInDb,
@@ -52,48 +50,30 @@ export async function POST(req: NextRequest) {
   let admin = false
 
   try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     const body = (await req.json()) as {
       message?: string
       teamId?: string
       conversationId?: string
+      turnstileToken?: string
       inlineDocuments?: { fileName: string; text: string }[]
     }
     const message = body.message?.trim()
-    const teamId = body.teamId
+    const teamId = body.teamId ?? ''
     let conversationId = body.conversationId
 
     if (!message || message.length > 500) {
       return NextResponse.json({ error: 'Invalid message' }, { status: 400 })
     }
-    if (!teamId) {
-      return NextResponse.json({ error: 'teamId is required' }, { status: 400 })
-    }
 
-    if (!(await assertTeamAccess(supabase, user.id, teamId))) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
-
-    admin = await isTeamAdmin(supabase, user.id, teamId)
-    allowance = await checkPromptAllowance(supabase, user.id, teamId, admin)
-
-    if (!allowance.allowed) {
-      return NextResponse.json(
-        {
-          error: allowance.reason ?? 'Prompt limit reached',
-          usage: formatPromptUsagePayload(allowance),
-        },
-        { status: 429 }
-      )
-    }
+    const guarded = await guardCoachApi(req, {
+      teamId,
+      mode: 'ai',
+      rateScope: 'chat',
+      turnstileToken: body.turnstileToken,
+    })
+    const { supabase, user, admin: isAdmin, allowance: initialAllowance } = guarded
+    admin = isAdmin
+    allowance = initialAllowance!
 
     let conversation =
       conversationId
@@ -264,6 +244,8 @@ export async function POST(req: NextRequest) {
       usage: formatPromptUsagePayload(updatedAllowance),
     })
   } catch (err) {
+    const security = coachSecurityErrorResponse(err)
+    if (security) return security
     console.error('Chat API error:', err)
     return errorResponse('Internal server error', 500, allowance)
   }
@@ -271,21 +253,8 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const teamId = req.nextUrl.searchParams.get('teamId')
-    if (!teamId) {
-      return NextResponse.json({ error: 'teamId is required' }, { status: 400 })
-    }
-
-    const admin = await isTeamAdmin(supabase, user.id, teamId)
+    const teamId = req.nextUrl.searchParams.get('teamId') ?? ''
+    const { supabase, user, admin } = await guardCoachApi(req, { teamId, rateScope: 'api' })
     const allowance = await checkPromptAllowance(supabase, user.id, teamId, admin)
 
     return NextResponse.json({
@@ -295,6 +264,8 @@ export async function GET(req: NextRequest) {
       },
     })
   } catch (err) {
+    const security = coachSecurityErrorResponse(err)
+    if (security) return security
     console.error('Chat usage error:', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }

@@ -1,5 +1,6 @@
 import DashboardSidebar from '@/components/dashboard/AnalyticsSidebar'
 import CoachChatProvider from '@/components/dashboard/CoachChatProvider'
+import { CoachTurnstileProvider } from '@/components/dashboard/CoachTurnstile'
 
 type Props = {
   userId: string
@@ -32,6 +33,7 @@ export default function DashboardShell({
 
   return (
     <CoachChatProvider userId={userId} teamId={activeTeamId}>
+      <CoachTurnstileProvider>
       <div id="dashboard-shell" className="min-h-screen bg-[#FAFAFA] font-sans antialiased">
         <DashboardSidebar
           displayName={displayName}
@@ -48,6 +50,7 @@ export default function DashboardShell({
           </div>
         </main>
       </div>
+      </CoachTurnstileProvider>
     </CoachChatProvider>
   )
 }

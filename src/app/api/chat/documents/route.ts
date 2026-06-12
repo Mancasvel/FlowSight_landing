@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { assertTeamAccess } from '@/lib/coachChat/access'
+import {
+  guardCoachApi,
+  coachSecurityErrorResponse,
+  CoachApiSecurityErrorWithUsage,
+} from '@/lib/api/guardCoachApi'
+import { checkPromptAllowance } from '@/lib/promptLimits'
 import {
   createCoachConversationInDb,
   getCoachConversationFromDb,
@@ -19,26 +23,18 @@ const SESSION_TEXT_MAX = 24_000
 
 export async function GET(req: NextRequest) {
   try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-    const teamId = req.nextUrl.searchParams.get('teamId')
+    const teamId = req.nextUrl.searchParams.get('teamId') ?? ''
     const conversationId = req.nextUrl.searchParams.get('conversationId')
-    if (!teamId || !conversationId) {
+    if (!conversationId) {
       return NextResponse.json({ error: 'teamId and conversationId are required' }, { status: 400 })
     }
 
-    if (!(await assertTeamAccess(supabase, user.id, teamId))) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
-
+    const { supabase, user } = await guardCoachApi(req, { teamId, rateScope: 'api' })
     const sources = await listCoachContextSources(supabase, user.id, teamId, conversationId)
     return NextResponse.json({ sources, vectorIndexReady: true })
   } catch (err) {
+    const security = coachSecurityErrorResponse(err)
+    if (security) return security
     if (isSchemaMismatchError(err)) {
       return NextResponse.json({ sources: [], vectorIndexReady: false })
     }
@@ -49,25 +45,23 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
     const form = await req.formData()
     const teamId = String(form.get('teamId') ?? '')
     let conversationId = String(form.get('conversationId') ?? '')
     const file = form.get('file')
 
-    if (!teamId) return NextResponse.json({ error: 'teamId is required' }, { status: 400 })
     if (!(file instanceof File)) {
       return NextResponse.json({ error: 'file is required' }, { status: 400 })
     }
 
-    if (!(await assertTeamAccess(supabase, user.id, teamId))) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    const { supabase, user, admin } = await guardCoachApi(req, { teamId, rateScope: 'upload' })
+    const allowance = await checkPromptAllowance(supabase, user.id, teamId, admin)
+    if (!allowance.allowed) {
+      throw new CoachApiSecurityErrorWithUsage(
+        allowance.reason ?? 'Coach uploads require an active Pro plan with available credits.',
+        429,
+        allowance
+      )
     }
 
     if (file.size > MAX_COACH_FILE_BYTES) {
@@ -142,6 +136,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: message }, { status: 400 })
     }
   } catch (err) {
+    const security = coachSecurityErrorResponse(err)
+    if (security) return security
     const message = err instanceof Error ? err.message : 'Upload failed'
     console.error('Coach document upload error:', err)
     return NextResponse.json({ error: message }, { status: 400 })
@@ -150,26 +146,18 @@ export async function POST(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
     const sourceId = req.nextUrl.searchParams.get('id')
-    const teamId = req.nextUrl.searchParams.get('teamId')
-    if (!sourceId || !teamId) {
+    const teamId = req.nextUrl.searchParams.get('teamId') ?? ''
+    if (!sourceId) {
       return NextResponse.json({ error: 'id and teamId are required' }, { status: 400 })
     }
 
-    if (!(await assertTeamAccess(supabase, user.id, teamId))) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
-
+    const { supabase, user } = await guardCoachApi(req, { teamId, rateScope: 'api' })
     await deleteCoachContextSource(supabase, user.id, teamId, sourceId)
     return NextResponse.json({ ok: true })
   } catch (err) {
+    const security = coachSecurityErrorResponse(err)
+    if (security) return security
     if (isSchemaMismatchError(err)) {
       return NextResponse.json({ ok: true })
     }

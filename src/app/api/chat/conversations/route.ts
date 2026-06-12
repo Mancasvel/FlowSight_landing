@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { assertTeamAccess } from '@/lib/coachChat/access'
+import { guardCoachApi, coachSecurityErrorResponse } from '@/lib/api/guardCoachApi'
 import {
   createCoachConversationInDb,
   listCoachConversationsFromDb,
@@ -11,27 +10,13 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(req: NextRequest) {
   try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const teamId = req.nextUrl.searchParams.get('teamId')
-    if (!teamId) {
-      return NextResponse.json({ error: 'teamId is required' }, { status: 400 })
-    }
-
-    if (!(await assertTeamAccess(supabase, user.id, teamId))) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
-
+    const teamId = req.nextUrl.searchParams.get('teamId') ?? ''
+    const { supabase, user } = await guardCoachApi(req, { teamId, rateScope: 'api' })
     const conversations = await listCoachConversationsFromDb(supabase, user.id, teamId)
     return NextResponse.json({ conversations })
   } catch (err) {
+    const security = coachSecurityErrorResponse(err)
+    if (security) return security
     if (isSchemaMismatchError(err)) {
       return NextResponse.json({ conversations: [] })
     }
@@ -42,28 +27,14 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     const body = (await req.json()) as { teamId?: string }
-    const teamId = body.teamId
-    if (!teamId) {
-      return NextResponse.json({ error: 'teamId is required' }, { status: 400 })
-    }
-
-    if (!(await assertTeamAccess(supabase, user.id, teamId))) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
-
+    const teamId = body.teamId ?? ''
+    const { supabase, user } = await guardCoachApi(req, { teamId, rateScope: 'api' })
     const conversation = await createCoachConversationInDb(supabase, user.id, teamId)
     return NextResponse.json({ conversation })
   } catch (err) {
+    const security = coachSecurityErrorResponse(err)
+    if (security) return security
     if (isSchemaMismatchError(err)) {
       return NextResponse.json(
         { error: 'Coach chat storage is not available yet. Run the latest database migration.' },

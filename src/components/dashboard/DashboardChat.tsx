@@ -10,7 +10,9 @@ import CoachThinkingBlock from '@/components/dashboard/CoachThinkingBlock'
 import { useCoachChat } from '@/components/dashboard/CoachChatProvider'
 import type { ProactiveInsight } from '@/lib/buildProactiveInsights'
 import { MAX_COACH_FILE_BYTES, MAX_COACH_FILE_LABEL } from '@/lib/coachChat/limits'
+import { coachApiHeaders, coachJsonHeaders } from '@/lib/coachChat/coachApiClient'
 import type { CoachChatMessage } from '@/lib/coachChat/types'
+import { useCoachTurnstile } from '@/components/dashboard/CoachTurnstile'
 
 const MAX_CHARS = 500
 
@@ -80,6 +82,7 @@ export default function DashboardChat({ displayName, teamId, insights }: Props) 
   const scrollRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const { getToken: getTurnstileToken } = useCoachTurnstile()
 
   const resizeTextarea = useCallback(() => {
     const el = textareaRef.current
@@ -99,7 +102,9 @@ export default function DashboardChat({ displayName, teamId, insights }: Props) 
 
   const loadUsage = useCallback(async () => {
     try {
-      const res = await fetch(`/api/chat?teamId=${encodeURIComponent(teamId)}`)
+      const res = await fetch(`/api/chat?teamId=${encodeURIComponent(teamId)}`, {
+        headers: coachApiHeaders(),
+      })
       if (res.ok) {
         const data = await res.json()
         setUsage(data.usage)
@@ -143,7 +148,11 @@ export default function DashboardChat({ displayName, teamId, insights }: Props) 
         form.append('teamId', teamId)
         if (activeConversationId) form.append('conversationId', activeConversationId)
 
-        const res = await fetch('/api/chat/documents', { method: 'POST', body: form })
+        const res = await fetch('/api/chat/documents', {
+          method: 'POST',
+          headers: coachApiHeaders(),
+          body: form,
+        })
         const data = await res.json()
 
         if (res.ok && (data.source || data.sessionText)) {
@@ -240,14 +249,16 @@ export default function DashboardChat({ displayName, teamId, insights }: Props) 
       setPendingAttachments([])
 
       try {
+        const turnstileToken = await getTurnstileToken()
         const res = await fetch('/api/chat', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: coachJsonHeaders(),
           body: JSON.stringify({
             message: displayContent,
             teamId,
             conversationId: activeConversationId ?? undefined,
             inlineDocuments: inlineDocuments.length > 0 ? inlineDocuments : undefined,
+            turnstileToken,
           }),
         })
 
@@ -316,6 +327,7 @@ export default function DashboardChat({ displayName, teamId, insights }: Props) 
       sending,
       setActiveMessages,
       teamId,
+      getTurnstileToken,
     ]
   )
 
@@ -344,7 +356,7 @@ export default function DashboardChat({ displayName, teamId, insights }: Props) 
           {messages.map((msg) =>
             msg.role === 'user' ? (
               <div key={msg.id} className="flex justify-end">
-                <div className="max-w-[88%] rounded-2xl bg-zinc-200/80 px-4 py-2.5 text-[14px] leading-relaxed text-zinc-900">
+                <div className="max-w-[88%] rounded-2xl bg-zinc-200/80 px-4 py-2.5 font-sans text-[14px] leading-relaxed text-zinc-900">
                   {msg.attachments && msg.attachments.length > 0 && (
                     <div className="mb-2 flex flex-wrap justify-end gap-1.5">
                       {msg.attachments.map((a) => (
@@ -362,7 +374,7 @@ export default function DashboardChat({ displayName, teamId, insights }: Props) 
                 </div>
               </div>
             ) : (
-              <article key={msg.id} className="w-full">
+              <article key={msg.id} className="coach-prose w-full">
                 <div className="rounded-xl border border-zinc-200/80 bg-zinc-50/50 px-6 py-5">
                   {msg.reasoning && <CoachThinkingBlock reasoning={msg.reasoning} />}
                   {msg.attachments && msg.attachments.length > 0 && (

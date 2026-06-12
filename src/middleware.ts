@@ -33,9 +33,14 @@ export async function middleware(request: NextRequest) {
         data: { user },
     } = await supabase.auth.getUser();
 
+    const isCoachApi = request.nextUrl.pathname.startsWith('/api/chat');
     const isProtectedApp =
         request.nextUrl.pathname.startsWith('/dashboard') ||
         request.nextUrl.pathname.startsWith('/account');
+
+    if (isCoachApi && !user) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
     if (isProtectedApp) {
         if (!user) {
@@ -68,5 +73,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-    matcher: ['/dashboard/:path*', '/account/:path*', '/login'],
+    matcher: ['/dashboard/:path*', '/account/:path*', '/login', '/api/chat/:path*'],
 };

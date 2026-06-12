@@ -37,7 +37,7 @@ export default function CoachSourcesList({ content, citations }: Props) {
 
   return (
     <div className="mt-6 border-t border-zinc-200 pt-4">
-      <p className="mb-2.5 font-sans text-[11px] font-medium uppercase tracking-[0.06em] text-zinc-400">
+      <p className="mb-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-zinc-400">
         Sources
       </p>
       <ul className="flex flex-wrap gap-1.5">
@@ -55,7 +55,7 @@ export default function CoachSourcesList({ content, citations }: Props) {
                 </div>
               }
             >
-              <span className="inline-flex max-w-[280px] cursor-help truncate rounded-md bg-zinc-200/60 px-2 py-0.5 font-sans text-[11px] text-zinc-600 transition-colors hover:bg-zinc-200/90">
+              <span className="inline-flex max-w-[280px] cursor-help truncate rounded-md bg-zinc-200/60 px-2 py-0.5 text-[11px] text-zinc-600 transition-colors hover:bg-zinc-200/90">
                 {citation.source}
               </span>
             </Tooltip>

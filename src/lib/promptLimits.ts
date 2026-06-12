@@ -153,6 +153,16 @@ export async function checkPromptAllowance(
 
   const userUsedRaw = await getUserPromptCount(supabase, userId, teamId, period)
   if (userUsedRaw === null) {
+    if (process.env.NODE_ENV === 'production') {
+      return {
+        allowed: false,
+        used: 0,
+        limit: plan.promptsPerUserMonth,
+        remaining: 0,
+        planId,
+        reason: 'Coach usage metering is unavailable. Contact support.',
+      }
+    }
     return allowanceWithoutMetering(planId)
   }
 
@@ -172,6 +182,16 @@ export async function checkPromptAllowance(
   if (plan.teamPromptPoolMonth > 0) {
     const poolUsedRaw = await getTeamPoolCount(supabase, teamId, period)
     if (poolUsedRaw === null) {
+      if (process.env.NODE_ENV === 'production') {
+        return {
+          allowed: false,
+          used: userUsed,
+          limit: userLimit,
+          remaining: 0,
+          planId,
+          reason: 'Coach usage metering is unavailable. Contact support.',
+        }
+      }
       return allowanceWithoutMetering(planId)
     }
     const poolUsed = poolUsedRaw
