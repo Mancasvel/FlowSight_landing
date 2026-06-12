@@ -10,12 +10,28 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import type { TrendPoint } from '@/lib/types/dashboard'
+import type { FlowStateData, TrendPoint } from '@/lib/types/dashboard'
+import DashboardWidgetEmpty from '@/components/dashboard/DashboardWidgetEmpty'
+import { hasFlowTrendData } from '@/lib/dashboard/widgetDataAvailability'
 
 type Props = { trend: TrendPoint[] }
 
 export default function FlowTrend({ trend }: Props) {
   const lastIndex = Math.max(0, trend.length - 1)
+  const flow: FlowStateData = { teamFlowScore: 0, trend30d: trend, members: [] }
+
+  if (!hasFlowTrendData(flow)) {
+    return (
+      <Card className="h-full">
+        <CardHeader>
+          <h3 className="text-sm font-medium text-zinc-800">30-Day Trend</h3>
+        </CardHeader>
+        <CardBody>
+          <DashboardWidgetEmpty message="No trend data yet. The chart fills in as sessions accumulate over time." />
+        </CardBody>
+      </Card>
+    )
+  }
 
   return (
     <Card className="h-full">

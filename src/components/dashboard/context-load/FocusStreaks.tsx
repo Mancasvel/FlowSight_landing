@@ -2,7 +2,9 @@
 
 import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis } from 'recharts'
 import { Card, CardHeader, CardBody, Avatar, Tooltip } from '@/components/ui'
-import type { MemberContextLoad } from '@/lib/types/dashboard'
+import type { ContextLoadData, MemberContextLoad } from '@/lib/types/dashboard'
+import DashboardWidgetEmpty from '@/components/dashboard/DashboardWidgetEmpty'
+import { hasFocusStreakData } from '@/lib/dashboard/widgetDataAvailability'
 
 type Props = { members: MemberContextLoad[] }
 
@@ -13,6 +15,8 @@ function avgStreak(values: number[]): number {
 }
 
 export default function FocusStreaks({ members }: Props) {
+  const context: ContextLoadData = { members }
+
   return (
     <Card>
       <CardHeader>
@@ -21,8 +25,12 @@ export default function FocusStreaks({ members }: Props) {
       <CardBody className="space-y-4">
         {members.length === 0 ? (
           <p className="text-sm text-zinc-500">No team members to show.</p>
+        ) : !hasFocusStreakData(context) ? (
+          <DashboardWidgetEmpty message="No focus streaks yet. Streak history builds from deep-work sessions." />
         ) : (
-          members.map((m) => <FocusStreakRow key={m.userId} member={m} />)
+          members
+            .filter((m) => m.focusStreakHistory.some((v) => v > 0))
+            .map((m) => <FocusStreakRow key={m.userId} member={m} />)
         )}
       </CardBody>
     </Card>

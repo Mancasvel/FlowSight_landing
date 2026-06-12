@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 import { createServiceClient } from '@/lib/promptLimits';
-import { mapCheckoutPlan } from '@/lib/plansCheckout';
+import { buildLicenseActivation } from '@/lib/licenseActivation';
 
 export async function GET(req: NextRequest) {
     const searchParams = req.nextUrl.searchParams;
@@ -26,10 +26,10 @@ export async function GET(req: NextRequest) {
         const supabase = createServiceClient();
         const licenseId = session.metadata?.licenseId;
         const planType = session.metadata?.planId ?? session.metadata?.planType;
-        const mapped = mapCheckoutPlan(planType || 'teams_pro');
         const maxMembers = session.metadata?.maxMembers
             ? parseInt(session.metadata.maxMembers)
-            : mapped.maxMembers;
+            : undefined;
+        const activation = buildLicenseActivation(planType, maxMembers);
 
         if (!licenseId) {
             console.error('No licenseId in session metadata');
@@ -53,9 +53,10 @@ export async function GET(req: NextRequest) {
                 stripe_subscription_id: typeof session.subscription === 'string'
                     ? session.subscription
                     : session.subscription?.id,
-                is_active: true,
-                plan_type: mapped.dbPlanType,
-                max_members: maxMembers === -1 ? 9999 : maxMembers,
+                plan_id: activation.plan_id,
+                plan_type: activation.plan_type,
+                max_members: activation.max_members,
+                is_active: activation.is_active,
                 expires_at: expiresAt,
             })
             .eq('id', licenseId);

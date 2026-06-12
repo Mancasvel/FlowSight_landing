@@ -3,6 +3,7 @@
 import { Fragment, useMemo, type CSSProperties } from 'react'
 import type { FlaggedWindow, FocusCell } from '@/lib/types/dashboard'
 import { Card, CardBody, CardHeader, Tooltip } from '@/components/ui'
+import DashboardWidgetEmpty from '@/components/dashboard/DashboardWidgetEmpty'
 
 const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'] as const
 const HOURS = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17] as const
@@ -17,6 +18,8 @@ function cellKey(day: number, hour: number) {
 }
 
 export default function FocusHeatmap({ heatmap, flaggedWindows }: Props) {
+  const hasData = heatmap.some((c) => c.intensity > 0)
+
   const cellMap = useMemo(() => {
     const m = new Map<string, FocusCell>()
     for (const c of heatmap) {
@@ -44,6 +47,9 @@ export default function FocusHeatmap({ heatmap, flaggedWindows }: Props) {
         </h2>
       </CardHeader>
       <CardBody className="overflow-x-auto">
+        {!hasData ? (
+          <DashboardWidgetEmpty message="No focus heatmap data yet. Patterns emerge as deep work and meetings are logged." />
+        ) : (
         <div
           className="grid gap-1.5 min-w-[600px]"
           style={{
@@ -119,6 +125,7 @@ export default function FocusHeatmap({ heatmap, flaggedWindows }: Props) {
             </Fragment>
           ))}
         </div>
+        )}
       </CardBody>
     </Card>
   )

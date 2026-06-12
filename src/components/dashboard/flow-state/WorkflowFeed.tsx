@@ -2,13 +2,17 @@
 
 import { Card, CardHeader, CardBody } from '@/components/ui'
 import MemberActivityFeed from '@/components/dashboard/MemberActivityFeed'
-import type { MemberWorkflow } from '@/lib/types/dashboard'
+import DashboardWidgetEmpty from '@/components/dashboard/DashboardWidgetEmpty'
+import { hasWorkflowFeedData } from '@/lib/dashboard/widgetDataAvailability'
+import type { WorkflowData } from '@/lib/types/dashboard'
 
 type Props = {
-  members: MemberWorkflow[]
+  members: WorkflowData['members']
 }
 
 export default function WorkflowFeed({ members }: Props) {
+  const workflow = { members }
+
   return (
     <Card>
       <CardHeader>
@@ -20,8 +24,12 @@ export default function WorkflowFeed({ members }: Props) {
       <CardBody className="space-y-3">
         {members.length === 0 ? (
           <p className="text-sm text-zinc-500 text-center py-4">No team members found.</p>
+        ) : !hasWorkflowFeedData(workflow) ? (
+          <DashboardWidgetEmpty message="No activity recorded today. Live entries will show up as your team works." />
         ) : (
-          members.map((m) => <MemberActivityFeed key={m.userId} member={m} />)
+          members
+            .filter((m) => m.entries.length > 0 || m.currentActivity != null)
+            .map((m) => <MemberActivityFeed key={m.userId} member={m} />)
         )}
       </CardBody>
     </Card>

@@ -2,6 +2,7 @@ import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { getActiveTeamId } from '@/lib/getActiveTeamId'
 import { getPlanningData } from '@/lib/dashboardData'
+import { hasVerifiedSprintPlanning } from '@/lib/dashboard/widgetDataAvailability'
 import { Alert } from '@/components/ui'
 import EstimationChart from '@/components/dashboard/planning/EstimationChart'
 import CapacityForecast from '@/components/dashboard/planning/CapacityForecast'
@@ -25,7 +26,7 @@ export default async function PlanningPage() {
 
   const data = await getPlanningData(teamId, 4)
   const latestSprint = data.sprints[data.sprints.length - 1] ?? null
-  const hasSprintData = data.sprints.length > 0
+  const hasSprintData = hasVerifiedSprintPlanning(data)
 
   return (
     <div className="space-y-5">
@@ -45,12 +46,16 @@ export default async function PlanningPage() {
         </Alert>
       )}
 
-      <EstimationChart sprints={data.sprints} />
+      <EstimationChart sprints={data.sprints} estimations={data.estimations} />
 
       {hasSprintData && (
         <>
           <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
-            <CapacityForecast sprint={latestSprint} />
+            <CapacityForecast
+              sprint={latestSprint}
+              estimations={data.estimations}
+              allSprints={data.sprints}
+            />
             <CostBreakdown
               costBreakdown={data.costBreakdown}
               perPersonGap={data.perPersonGap}

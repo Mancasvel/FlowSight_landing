@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/promptLimits';
-import { mapCheckoutPlan } from '@/lib/plansCheckout';
+import { buildLicenseActivation } from '@/lib/licenseActivation';
 import Stripe from 'stripe';
 
 async function activateLicense(params: {
@@ -13,16 +13,17 @@ async function activateLicense(params: {
   maxMembers?: number;
 }) {
   const supabase = createServiceClient();
-  const mapped = mapCheckoutPlan(params.planType ?? 'teams_pro');
+  const activation = buildLicenseActivation(params.planType, params.maxMembers);
   const subscription = await stripe.subscriptions.retrieve(params.subscriptionId);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const expirationDate = new Date((subscription as any).current_period_end * 1000).toISOString();
 
   await supabase.from('licenses').update({
     stripe_subscription_id: params.subscriptionId,
-    is_active: true,
-    plan_type: mapped.dbPlanType,
-    max_members: params.maxMembers ?? mapped.maxMembers,
+    plan_id: activation.plan_id,
+    plan_type: activation.plan_type,
+    max_members: activation.max_members,
+    is_active: activation.is_active,
     expires_at: expirationDate,
   }).eq('id', params.licenseId);
 }

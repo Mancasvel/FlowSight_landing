@@ -208,6 +208,8 @@ export interface Database {
                     owner_id: string;
                     license_id: string;
                     jira_project_key: string | null;
+                    dashboard_preferences: Json | null;
+                    is_personal: boolean;
                     is_active: boolean;
                     created_at: string;
                 };
@@ -217,6 +219,8 @@ export interface Database {
                     owner_id: string;
                     license_id: string;
                     jira_project_key?: string | null;
+                    dashboard_preferences?: Json | null;
+                    is_personal?: boolean;
                     is_active?: boolean;
                     created_at?: string;
                 };
@@ -226,6 +230,8 @@ export interface Database {
                     owner_id?: string;
                     license_id?: string;
                     jira_project_key?: string | null;
+                    dashboard_preferences?: Json | null;
+                    is_personal?: boolean;
                     is_active?: boolean;
                     created_at?: string;
                 };

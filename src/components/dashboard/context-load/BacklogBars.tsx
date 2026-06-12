@@ -9,7 +9,9 @@ import {
   Chip,
   Tooltip,
 } from '@/components/ui'
-import type { MemberContextLoad } from '@/lib/types/dashboard'
+import type { ContextLoadData, MemberContextLoad } from '@/lib/types/dashboard'
+import DashboardWidgetEmpty from '@/components/dashboard/DashboardWidgetEmpty'
+import { hasBacklogData } from '@/lib/dashboard/widgetDataAvailability'
 
 type Props = { members: MemberContextLoad[] }
 
@@ -26,6 +28,8 @@ function backlogChipLabel(n: number): { label: string; color: 'success' | 'warni
 }
 
 export default function BacklogBars({ members }: Props) {
+  const context: ContextLoadData = { members }
+
   return (
     <Card>
       <CardHeader>
@@ -35,8 +39,10 @@ export default function BacklogBars({ members }: Props) {
       <CardBody className="space-y-4">
         {members.length === 0 ? (
           <p className="text-sm text-zinc-500">No team members to show.</p>
+        ) : !hasBacklogData(context) ? (
+          <DashboardWidgetEmpty message="No backlog activity yet. Bars appear when Jira work is tracked this week." />
         ) : (
-          members.map((m) => {
+          members.filter((m) => m.activeBacklogs > 0).map((m) => {
             const chip = backlogChipLabel(m.activeBacklogs)
             const color = backlogProgressColor(m.activeBacklogs)
             return (

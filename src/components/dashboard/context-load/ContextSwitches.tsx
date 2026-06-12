@@ -1,7 +1,9 @@
 'use client'
 
 import { Card, CardHeader, CardBody, Avatar, Progress, Tooltip } from '@/components/ui'
-import type { MemberContextLoad } from '@/lib/types/dashboard'
+import type { ContextLoadData, MemberContextLoad } from '@/lib/types/dashboard'
+import DashboardWidgetEmpty from '@/components/dashboard/DashboardWidgetEmpty'
+import { hasContextSwitchData } from '@/lib/dashboard/widgetDataAvailability'
 
 type Props = { members: MemberContextLoad[] }
 
@@ -12,6 +14,8 @@ function switchColor(n: number): 'success' | 'warning' | 'danger' {
 }
 
 export default function ContextSwitches({ members }: Props) {
+  const context: ContextLoadData = { members }
+
   return (
     <Card>
       <CardHeader>
@@ -20,8 +24,10 @@ export default function ContextSwitches({ members }: Props) {
       <CardBody className="space-y-4">
         {members.length === 0 ? (
           <p className="text-sm text-zinc-500">No team members to show.</p>
+        ) : !hasContextSwitchData(context) ? (
+          <DashboardWidgetEmpty message="No context-switch data yet. Tracking starts with categorized activity reports." />
         ) : (
-          members.map((m) => {
+          members.filter((m) => m.contextSwitchesPerDay > 0).map((m) => {
             const color = switchColor(m.contextSwitchesPerDay)
             const label = `${m.contextSwitchesPerDay} switches/day`
             return (

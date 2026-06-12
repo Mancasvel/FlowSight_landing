@@ -2,6 +2,8 @@
 
 import type { StandupHealthData } from '@/lib/types/dashboard'
 import { Alert, Card, CardBody, CardHeader, Divider, Progress } from '@/components/ui'
+import DashboardWidgetEmpty from '@/components/dashboard/DashboardWidgetEmpty'
+import { hasStandupHealthData } from '@/lib/dashboard/widgetDataAvailability'
 
 type Props = {
   health: StandupHealthData
@@ -9,6 +11,20 @@ type Props = {
 
 export default function StandupHealth({ health }: Props) {
   const { avgDurationMin, blockersRaised, blockersResolved } = health
+
+  if (!hasStandupHealthData(health)) {
+    return (
+      <Card>
+        <CardHeader>
+          <h2 className="text-lg font-semibold text-zinc-800">Daily Standup Health</h2>
+        </CardHeader>
+        <CardBody>
+          <DashboardWidgetEmpty message="No standup data yet. Health metrics appear once standups are recorded." />
+        </CardBody>
+      </Card>
+    )
+  }
+
   const ratio = blockersRaised > 0 ? blockersResolved / blockersRaised : 1
 
   let progressColor: 'success' | 'warning' | 'danger' = 'danger'
@@ -52,14 +68,10 @@ export default function StandupHealth({ health }: Props) {
           />
         </div>
 
-        {ratio < 0.5 ? (
+        {ratio < 0.5 && (
           <Alert color="warning" dismissible={false}>
             Standups are surfacing blockers but not resolving them fast enough. Consider async blocker
             tracking.
-          </Alert>
-        ) : (
-          <Alert color="success" dismissible={false}>
-            Standups are effectively resolving blockers this week.
           </Alert>
         )}
       </CardBody>

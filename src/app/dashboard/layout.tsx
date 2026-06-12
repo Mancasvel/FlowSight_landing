@@ -1,10 +1,15 @@
 import { createClient } from '@/lib/supabase/server'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { getActiveTeamId, getUserTeams } from '@/lib/getActiveTeamId'
-import DashboardSidebar from '@/components/dashboard/AnalyticsSidebar'
+import DashboardShell from '@/components/dashboard/DashboardShell'
+import { loadDashboardShellProps } from '@/lib/dashboard/loadShellProps'
+import { userNeedsDashboardOnboarding } from '@/lib/onboarding/hasDashboardPreferences'
 
 export const dynamic = 'force-dynamic'
+
+const ONBOARDING_PATH = '/dashboard/onboarding'
+const PRICING_PATH = '/dashboard/pricing'
+const ACCOUNT_ONBOARDING_PATH = '/account/onboarding'
 
 export default async function DashboardLayout({
   children,
@@ -12,59 +17,52 @@ export default async function DashboardLayout({
   children: React.ReactNode
 }) {
   const headerStore = await headers()
-  const userId = headerStore.get('x-user-id')
+  const pathname = headerStore.get('x-pathname') ?? ''
+  const shell = await loadDashboardShellProps()
 
-  if (!userId) {
-    redirect('/login')
-  }
+  const isOnboarding = pathname.startsWith(ONBOARDING_PATH)
+  const isPricing = pathname.startsWith(PRICING_PATH)
 
-  const supabase = await createClient()
+  if (shell.teams.length === 0 && !isOnboarding && !isPricing) {
+    const supabase = await createClient()
+    const { data: license } = await supabase
+      .from('licenses')
+      .select('id')
+      .eq('owner_id', shell.userId)
+      .eq('is_active', true)
+      .maybeSingle()
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('display_name, avatar_url, role')
-    .eq('id', userId)
-    .single()
-
-  if (!profile) {
-    const userName = headerStore.get('x-user-name') || ''
-    const userAvatar = headerStore.get('x-user-avatar') || null
-
-    const { error: insertError } = await supabase.from('profiles').insert({
-      id: userId,
-      display_name: userName,
-      avatar_url: userAvatar,
-      role: 'pm',
-    })
-
-    if (insertError) {
-      console.error('Failed to create profile:', insertError)
-      redirect('/login?error=profile_creation_failed')
+    if (license) {
+      redirect(ONBOARDING_PATH)
     }
   }
 
-  const [teams, activeTeamId] = await Promise.all([
-    getUserTeams(userId),
-    getActiveTeamId(userId),
-  ])
+  const needsPreferences =
+    shell.activeTeamId &&
+    !isOnboarding &&
+    !isPricing &&
+    !pathname.startsWith('/account') &&
+    (await userNeedsDashboardOnboarding(shell.userId, shell.activeTeamId))
+
+  if (needsPreferences && pathname === '/dashboard') {
+    redirect(ACCOUNT_ONBOARDING_PATH)
+  }
+
+  if (isOnboarding) {
+    return <div className="min-h-screen font-sans antialiased">{children}</div>
+  }
 
   return (
-    <div
-      id="dashboard-shell"
-      className="min-h-screen bg-[#FAFAFA] font-sans antialiased"
+    <DashboardShell
+      displayName={shell.displayName}
+      avatarUrl={shell.avatarUrl}
+      role={shell.role}
+      teams={shell.teams}
+      activeTeamId={shell.activeTeamId}
+      personalizedDashboardTitle={shell.personalizedDashboardTitle}
+      hasPersonalizedDashboard={shell.hasPersonalizedDashboard}
     >
-      <DashboardSidebar
-        displayName={profile?.display_name ?? 'User'}
-        avatarUrl={profile?.avatar_url ?? null}
-        role={profile?.role ?? 'pm'}
-        teams={teams}
-        activeTeamId={activeTeamId}
-      />
-      <main className="min-h-screen overflow-auto pt-14 dark-scrollbar">
-        <div className="px-4 pb-6 sm:px-6 lg:px-10 lg:pb-8 2xl:px-14 2xl:pb-10">
-          {children}
-        </div>
-      </main>
-    </div>
+      {children}
+    </DashboardShell>
   )
 }

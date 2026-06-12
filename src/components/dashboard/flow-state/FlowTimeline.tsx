@@ -1,7 +1,9 @@
 'use client'
 
 import { Card, CardHeader, CardBody, Avatar } from '@/components/ui'
-import type { MemberFlowState, FlowState } from '@/lib/types/dashboard'
+import type { FlowStateData, MemberFlowState, FlowState } from '@/lib/types/dashboard'
+import DashboardWidgetEmpty from '@/components/dashboard/DashboardWidgetEmpty'
+import { hasFlowTimelineData } from '@/lib/dashboard/widgetDataAvailability'
 
 type Props = {
   members: MemberFlowState[]
@@ -25,12 +27,17 @@ const legend: { state: FlowState; label: string; color: string }[] = [
 const hours = Array.from({ length: 10 }, (_, i) => i + 8)
 
 export default function FlowTimeline({ members, onMemberClick }: Props) {
+  const flow: FlowStateData = { teamFlowScore: 0, trend30d: [], members }
+
   return (
     <Card>
       <CardHeader>
         <h3 className="text-sm font-medium text-zinc-800">Flow Timeline · Today</h3>
       </CardHeader>
       <CardBody className="overflow-x-auto">
+        {!hasFlowTimelineData(flow) ? (
+          <DashboardWidgetEmpty message="No timeline data yet. Hourly flow states appear after today’s sessions are tracked." />
+        ) : (
         <div className="min-w-[700px]">
           <div
             className="grid gap-1 mb-2"
@@ -79,6 +86,7 @@ export default function FlowTimeline({ members, onMemberClick }: Props) {
             ))}
           </div>
         </div>
+        )}
       </CardBody>
     </Card>
   )

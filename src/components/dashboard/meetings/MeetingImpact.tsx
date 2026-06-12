@@ -2,6 +2,8 @@
 
 import type { MeetingImpactSummary } from '@/lib/types/dashboard'
 import { Card, CardBody, CardHeader, Chip, Tooltip } from '@/components/ui'
+import DashboardWidgetEmpty from '@/components/dashboard/DashboardWidgetEmpty'
+import { hasMeetingImpactSummary } from '@/lib/dashboard/widgetDataAvailability'
 
 type Props = {
   impact: MeetingImpactSummary
@@ -21,6 +23,16 @@ function recoveryChipColor(min: number): 'success' | 'warning' | 'danger' {
 
 export default function MeetingImpact({ impact }: Props) {
   const { totalMeetingHours, meetingPct, avgRecoveryMin, wastedFragmentsHours } = impact
+
+  if (!hasMeetingImpactSummary(impact)) {
+    return (
+      <Card>
+        <CardBody>
+          <DashboardWidgetEmpty message="No meeting data yet. Impact metrics appear once meetings are tracked this week." />
+        </CardBody>
+      </Card>
+    )
+  }
 
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">

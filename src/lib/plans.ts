@@ -104,6 +104,7 @@ const LEGACY_PLAN_TYPE_MAP: Record<string, PlanId> = {
 export function resolvePlanId(license: {
   plan_id?: string | null
   plan_type?: string | null
+  max_members?: number | null
   is_active?: boolean
 } | null): PlanId {
   if (!license?.is_active) return 'free'
@@ -111,6 +112,9 @@ export function resolvePlanId(license: {
     return license.plan_id as PlanId
   }
   if (license.plan_type && LEGACY_PLAN_TYPE_MAP[license.plan_type]) {
+    const seats = license.max_members ?? 1
+    if (license.plan_type === 'starter' && seats <= 1) return 'individual_pro'
+    if (license.plan_type === 'professional' && seats <= 1) return 'individual_pro'
     return LEGACY_PLAN_TYPE_MAP[license.plan_type]
   }
   return 'free'

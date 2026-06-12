@@ -15,7 +15,9 @@ import {
   TableColumn,
   TableCell,
 } from '@/components/ui'
-import type { BurnoutLevel, MemberContextLoad } from '@/lib/types/dashboard'
+import type { BurnoutLevel, ContextLoadData, MemberContextLoad } from '@/lib/types/dashboard'
+import DashboardWidgetEmpty from '@/components/dashboard/DashboardWidgetEmpty'
+import { hasBurnoutData } from '@/lib/dashboard/widgetDataAvailability'
 
 type Props = { members: MemberContextLoad[] }
 
@@ -49,6 +51,7 @@ function dangerAlertText(members: MemberContextLoad[]): string | null {
 }
 
 export default function BurnoutIndex({ members }: Props) {
+  const context: ContextLoadData = { members }
   const alertText = dangerAlertText(members)
   const showDangerAlert = members.some((m) => m.burnoutLevel === 'danger')
 
@@ -63,6 +66,8 @@ export default function BurnoutIndex({ members }: Props) {
       <CardBody className="space-y-4">
         {members.length === 0 ? (
           <p className="text-sm text-zinc-500">No team members to show.</p>
+        ) : !hasBurnoutData(context) ? (
+          <DashboardWidgetEmpty message="No burnout signals yet. The index needs tracked workload and meeting data." />
         ) : (
           <Table>
             <TableHeader>

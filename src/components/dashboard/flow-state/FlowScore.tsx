@@ -1,9 +1,11 @@
 'use client'
 
 import { Card, CardBody, CircularProgress, Chip, Tooltip } from '@/components/ui'
-import type { TeamFlowScorePart, TrendPoint } from '@/lib/types/dashboard'
+import type { FlowStateData, TeamFlowScorePart, TrendPoint } from '@/lib/types/dashboard'
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import { TeamFlowScoreTooltipBody } from './TeamFlowScoreTooltipBody'
+import DashboardWidgetEmpty from '@/components/dashboard/DashboardWidgetEmpty'
+import { hasFlowScoreData } from '@/lib/dashboard/widgetDataAvailability'
 
 type Props = {
   score: number
@@ -18,6 +20,23 @@ function scoreColor(score: number): 'success' | 'warning' | 'danger' {
 }
 
 export default function FlowScore({ score, trend, teamFlowScoreBreakdown }: Props) {
+  const flow: FlowStateData = {
+    teamFlowScore: score,
+    trend30d: trend,
+    members: [],
+    teamFlowScoreBreakdown,
+  }
+
+  if (!hasFlowScoreData(flow)) {
+    return (
+      <Card>
+        <CardBody>
+          <DashboardWidgetEmpty message="No focus data yet. Scores appear once work sessions are tracked today." />
+        </CardBody>
+      </Card>
+    )
+  }
+
   const color = scoreColor(score)
 
   const last7 = trend.slice(-7)

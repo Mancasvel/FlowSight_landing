@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { stripe } from '@/lib/stripe';
 import { getStripePriceId } from '@/lib/plans';
 import { mapCheckoutPlan } from '@/lib/plansCheckout';
+import { buildLicenseActivation } from '@/lib/licenseActivation';
 
 export async function POST(req: NextRequest) {
     try {
@@ -26,12 +27,14 @@ export async function POST(req: NextRequest) {
             .single();
 
         if (!license) {
+            const activation = buildLicenseActivation(planType, memberLimit);
             const { data: newLicense, error: licenseError } = await supabase
                 .from('licenses')
                 .insert({
                     owner_id: user.id,
-                    plan_type: mapped.dbPlanType,
-                    max_members: memberLimit === -1 ? 9999 : memberLimit,
+                    plan_id: activation.plan_id,
+                    plan_type: activation.plan_type,
+                    max_members: activation.max_members,
                     expires_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
                 })
                 .select('id, stripe_customer_id')

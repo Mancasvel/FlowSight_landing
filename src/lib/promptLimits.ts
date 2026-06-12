@@ -38,10 +38,9 @@ export async function getTeamPlan(
 
   if (!team?.license_id) return { planId: 'free', licenseId: null }
 
-  // Only columns that exist in production schema (no plan_id until migration is applied)
   const { data: license, error } = await supabase
     .from('licenses')
-    .select('plan_type, is_active, expires_at')
+    .select('plan_id, plan_type, max_members, is_active, expires_at')
     .eq('id', team.license_id)
     .single()
 

@@ -2,7 +2,9 @@
 
 import { Card, CardBody, Tooltip, Skeleton, Chip } from '@/components/ui'
 import { Timer, Flame, AlertTriangle } from 'lucide-react'
-import type { MemberFlowState } from '@/lib/types/dashboard'
+import type { FlowStateData, MemberFlowState } from '@/lib/types/dashboard'
+import DashboardWidgetEmpty from '@/components/dashboard/DashboardWidgetEmpty'
+import { hasKpiData } from '@/lib/dashboard/widgetDataAvailability'
 
 type Props = {
   members: MemberFlowState[]
@@ -11,6 +13,18 @@ type Props = {
 }
 
 export default function KPICards({ members, isLoaded = true }: Props) {
+  const flow: FlowStateData = { teamFlowScore: 0, trend30d: [], members }
+
+  if (isLoaded && !hasKpiData(flow)) {
+    return (
+      <Card>
+        <CardBody>
+          <DashboardWidgetEmpty message="No focus KPIs yet. Metrics appear once the team has tracked activity today." />
+        </CardBody>
+      </Card>
+    )
+  }
+
   const n = members.length
   const avgRecovery =
     n > 0 ? Math.round(members.reduce((s, m) => s + m.recoveryTimeAvg, 0) / n) : 0

@@ -1,5 +1,8 @@
 'use client';
 
+import DashboardWidgetEmpty from '@/components/dashboard/DashboardWidgetEmpty';
+import { hasWorkloadBalanceData } from '@/lib/dashboard/widgetDataAvailability';
+
 interface Member {
     id: string;
     name: string;
@@ -22,6 +25,21 @@ function getBarColor(hours: number, avg: number): string {
 }
 
 export default function WorkloadBalance({ members, onMemberClick }: WorkloadBalanceProps) {
+    const workloadMembers = members.map((m) => ({
+        id: m.id,
+        name: m.name,
+        avatar_url: m.avatar_url,
+        isOnline: m.isOnline,
+        hours: m.hours,
+        currentActivity: null,
+    }));
+
+    if (!hasWorkloadBalanceData(workloadMembers)) {
+        return (
+            <DashboardWidgetEmpty message="No workload tracked today. Member hours appear once sessions are logged." />
+        );
+    }
+
     const maxHours = Math.max(...members.map(m => m.hours), 1);
     const totalHours = members.reduce((sum, m) => sum + m.hours, 0);
     const avg = members.length > 0 ? totalHours / members.length : 0;
