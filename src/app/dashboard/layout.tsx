@@ -54,6 +54,7 @@ export default async function DashboardLayout({
 
   return (
     <DashboardShell
+      userId={shell.userId}
       displayName={shell.displayName}
       avatarUrl={shell.avatarUrl}
       role={shell.role}

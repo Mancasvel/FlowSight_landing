@@ -4,15 +4,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
 import { Paperclip, SendHorizonal, Sparkles } from 'lucide-react'
 import { Avatar } from '@/components/ui'
+import { useCoachChat } from '@/components/dashboard/CoachChatProvider'
 import type { ProactiveInsight } from '@/lib/buildProactiveInsights'
+import type { CoachChatMessage } from '@/lib/coachChat/types'
 
 const MAX_CHARS = 500
-
-type ChatMessage = {
-  id: string
-  role: 'assistant' | 'user'
-  content: string
-}
 
 type PromptUsage = {
   used: number
@@ -44,7 +40,8 @@ function fallbackReply(prompt: string, insights: ProactiveInsight[]): string {
 }
 
 export default function DashboardChat({ displayName, teamId, insights }: Props) {
-  const [messages, setMessages] = useState<ChatMessage[]>([])
+  const { activeMessages, saveMessages } = useCoachChat()
+  const messages = activeMessages
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
   const [usage, setUsage] = useState<PromptUsage | null>(null)
@@ -88,8 +85,9 @@ export default function DashboardChat({ displayName, teamId, insights }: Props) 
 
       setSending(true)
       setInput('')
-      const userMsg: ChatMessage = { id: `u-${Date.now()}`, role: 'user', content: trimmed }
-      setMessages((prev) => [...prev, userMsg])
+      const userMsg: CoachChatMessage = { id: `u-${Date.now()}`, role: 'user', content: trimmed }
+      const withUser = [...messages, userMsg]
+      const conversationId = saveMessages(withUser)
       scrollToBottom()
 
       try {
@@ -107,34 +105,37 @@ export default function DashboardChat({ displayName, teamId, insights }: Props) 
             (res.status === 429
               ? 'Monthly coach limit reached. Resets on the 1st.'
               : 'Could not reach the AI coach.')
-          setMessages((prev) => [
-            ...prev,
-            { id: `a-${Date.now()}`, role: 'assistant', content: errText },
-          ])
+          saveMessages(
+            [...withUser, { id: `a-${Date.now()}`, role: 'assistant', content: errText }],
+            conversationId
+          )
           if (data.usage) setUsage(data.usage)
           return
         }
 
-        setMessages((prev) => [
-          ...prev,
-          { id: `a-${Date.now()}`, role: 'assistant', content: data.reply },
-        ])
+        saveMessages(
+          [...withUser, { id: `a-${Date.now()}`, role: 'assistant', content: data.reply }],
+          conversationId
+        )
         if (data.usage) setUsage(data.usage)
       } catch {
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: `a-${Date.now()}`,
-            role: 'assistant',
-            content: fallbackReply(trimmed, insights),
-          },
-        ])
+        saveMessages(
+          [
+            ...withUser,
+            {
+              id: `a-${Date.now()}`,
+              role: 'assistant',
+              content: fallbackReply(trimmed, insights),
+            },
+          ],
+          conversationId
+        )
       } finally {
         setSending(false)
         scrollToBottom()
       }
     },
-    [insights, scrollToBottom, sending, teamId]
+    [insights, messages, saveMessages, scrollToBottom, sending, teamId]
   )
 
   const hasConversation = messages.length > 0

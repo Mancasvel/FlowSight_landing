@@ -23,6 +23,7 @@ export default async function AccountLayout({
 
   return (
     <DashboardShell
+      userId={shell.userId}
       displayName={shell.displayName}
       avatarUrl={shell.avatarUrl}
       role={shell.role}

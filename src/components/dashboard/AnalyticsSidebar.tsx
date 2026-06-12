@@ -2,7 +2,20 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { FileBarChart, Settings, Menu, X, ChevronsUpDown, Sparkles, LayoutDashboard } from 'lucide-react'
+import {
+  FileBarChart,
+  Settings,
+  Menu,
+  X,
+  ChevronsUpDown,
+  Sparkles,
+  LayoutDashboard,
+  ChevronDown,
+  Minus,
+  Plus,
+} from 'lucide-react'
+import { useCoachChat } from '@/components/dashboard/CoachChatProvider'
+import { formatCoachChatRelativeTime } from '@/lib/coachChat/formatRelativeTime'
 import { useState, useEffect, useCallback } from 'react'
 import { Avatar } from '@/components/ui'
 
@@ -83,6 +96,108 @@ function TeamSelector({
   )
 }
 
+function AiCoachNavItem({
+  pathname,
+  onNavigate,
+}: {
+  pathname: string
+  onNavigate?: () => void
+}) {
+  const router = useRouter()
+  const [expanded, setExpanded] = useState(false)
+  const {
+    conversations,
+    activeConversationId,
+    selectConversation,
+    startNewConversation,
+  } = useCoachChat()
+
+  const isActive = pathname === '/dashboard'
+  const pastChats = conversations.filter((c) => c.messages.length > 0)
+  const hasChats = pastChats.length > 0
+
+  function openChat(conversationId?: string) {
+    if (conversationId) selectConversation(conversationId)
+    else startNewConversation()
+    router.push('/dashboard')
+    onNavigate?.()
+  }
+
+  return (
+    <li>
+      <div
+        className={`group flex items-center rounded-lg transition-colors ${
+          isActive ? 'bg-zinc-100' : 'hover:bg-zinc-50'
+        }`}
+      >
+        <Link
+          href="/dashboard"
+          onClick={onNavigate}
+          className={`flex min-w-0 flex-1 items-center gap-2.5 py-2 pl-3 pr-1 text-sm ${
+            isActive ? 'font-medium text-zinc-900' : 'font-medium text-zinc-600 group-hover:text-zinc-900'
+          }`}
+        >
+          <Sparkles size={17} strokeWidth={1.75} className="shrink-0 text-zinc-400" />
+          <span className="truncate">AI Coach</span>
+        </Link>
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className="flex shrink-0 items-center self-stretch px-3 py-2 text-zinc-400 transition-colors hover:text-zinc-600"
+          aria-label={expanded ? 'Close chat history' : 'Open chat history'}
+          aria-expanded={expanded}
+        >
+          {expanded ? (
+            <Minus size={15} strokeWidth={2} />
+          ) : (
+            <ChevronDown size={15} strokeWidth={1.75} />
+          )}
+        </button>
+      </div>
+
+      {expanded && (
+        <ul className="mt-1 space-y-0.5 border-l border-zinc-100 pl-3 ml-5">
+          <li>
+            <button
+              type="button"
+              onClick={() => openChat()}
+              className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-[13px] text-zinc-500 transition-colors hover:bg-zinc-50 hover:text-zinc-800"
+            >
+              <Plus size={14} strokeWidth={1.75} className="shrink-0" />
+              New chat
+            </button>
+          </li>
+          {hasChats ? (
+            pastChats.map((chat) => {
+              const selected = isActive && activeConversationId === chat.id
+              return (
+                <li key={chat.id}>
+                  <button
+                    type="button"
+                    onClick={() => openChat(chat.id)}
+                    className={`w-full rounded-md px-2.5 py-2 text-left transition-colors ${
+                      selected
+                        ? 'bg-zinc-100 text-zinc-900'
+                        : 'text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900'
+                    }`}
+                  >
+                    <p className="truncate text-[13px] font-medium">{chat.title}</p>
+                    <p className="mt-0.5 text-[11px] text-zinc-400">
+                      {formatCoachChatRelativeTime(chat.updatedAt)}
+                    </p>
+                  </button>
+                </li>
+              )
+            })
+          ) : (
+            <li className="px-2.5 py-2 text-[12px] text-zinc-400">No chats yet</li>
+          )}
+        </ul>
+      )}
+    </li>
+  )
+}
+
 function DrawerContent({
   displayName,
   avatarUrl,
@@ -99,18 +214,16 @@ function DrawerContent({
   onNavigate?: () => void
   onSwitchTeam: (teamId: string) => void
 }) {
-  const primaryItems = [
-    { href: '/dashboard', label: 'AI Coach', icon: Sparkles },
-    ...(hasPersonalizedDashboard
-      ? [
-          {
-            href: '/account/my-dashboard',
-            label: personalizedDashboardTitle ?? 'My Dashboard',
-            icon: LayoutDashboard,
-          },
-        ]
-      : []),
-  ] as const
+  const dashboardItems = hasPersonalizedDashboard
+    ? [
+        {
+          href: '/account/my-dashboard',
+          label: personalizedDashboardTitle ?? 'My Dashboard',
+          icon: LayoutDashboard,
+        },
+      ]
+    : []
+
   return (
     <div className="flex h-full flex-col">
       <div className="border-b border-zinc-100/80 px-5 py-5">
@@ -130,12 +243,10 @@ function DrawerContent({
           <div>
             <p className="mb-3 px-1 text-[11px] font-medium tracking-wide text-zinc-400">Main</p>
             <ul className="space-y-1">
-              {primaryItems.map((item) => {
+              <AiCoachNavItem pathname={pathname} onNavigate={onNavigate} />
+              {dashboardItems.map((item) => {
                 const Icon = item.icon
-                const active =
-                  item.href === '/dashboard'
-                    ? pathname === '/dashboard'
-                    : isActive(pathname, item.href)
+                const active = isActive(pathname, item.href)
                 return (
                   <li key={item.href}>
                     <Link
