@@ -1,4 +1,7 @@
-const DEFAULT_BASE = 'https://api.moonshot.ai/v1'
+import { parseCoachResponse } from '@/lib/coachChat/parseCoachResponse'
+
+const DEFAULT_AZURE_ENDPOINT = 'https://france-flow.services.ai.azure.com/openai/v1'
+const DEFAULT_AZURE_DEPLOYMENT = 'Mistral-Large-3'
 
 export type KimiMessage = {
   role: 'system' | 'user' | 'assistant'
@@ -10,16 +13,27 @@ export type KimiChatOptions = {
   messages: KimiMessage[]
   maxTokens?: number
   temperature?: number
+  /** When true, parse <thinking> / <answer> blocks from the model output. */
+  structuredReasoning?: boolean
 }
 
-export async function kimiChat(options: KimiChatOptions): Promise<string> {
-  const apiKey = process.env.MOONSHOT_API_KEY ?? process.env.KIMI_API_KEY
+export type KimiChatResult = {
+  answer: string
+  reasoning: string | null
+  raw: string
+}
+
+async function azureChatCompletion(options: KimiChatOptions): Promise<string> {
+  const apiKey = process.env.AZURE_OPENAI_API_KEY
   if (!apiKey) {
-    throw new Error('MOONSHOT_API_KEY (or KIMI_API_KEY) is not configured')
+    throw new Error('AZURE_OPENAI_API_KEY is not configured')
   }
 
-  const base = (process.env.MOONSHOT_API_BASE ?? DEFAULT_BASE).replace(/\/$/, '')
-  const model = process.env.MOONSHOT_MODEL ?? 'moonshot-v1-8k'
+  const base = (process.env.AZURE_OPENAI_ENDPOINT ?? DEFAULT_AZURE_ENDPOINT).replace(/\/$/, '')
+  const deployment =
+    process.env.AZURE_OPENAI_DEPLOYMENT ??
+    process.env.AZURE_OPENAI_MODEL ??
+    DEFAULT_AZURE_DEPLOYMENT
 
   const messages: KimiMessage[] = [
     { role: 'system', content: options.system },
@@ -33,16 +47,16 @@ export async function kimiChat(options: KimiChatOptions): Promise<string> {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model,
+      model: deployment,
       messages,
-      max_tokens: options.maxTokens ?? 700,
+      max_tokens: options.maxTokens ?? 1200,
       temperature: options.temperature ?? 0.35,
     }),
   })
 
   if (!res.ok) {
     const body = await res.text().catch(() => '')
-    throw new Error(`Kimi API error ${res.status}: ${body.slice(0, 200)}`)
+    throw new Error(`Azure OpenAI error ${res.status}: ${body.slice(0, 200)}`)
   }
 
   const data = (await res.json()) as {
@@ -50,14 +64,34 @@ export async function kimiChat(options: KimiChatOptions): Promise<string> {
   }
 
   const content = data.choices?.[0]?.message?.content?.trim()
-  if (!content) throw new Error('Kimi returned an empty response')
+  if (!content) throw new Error('Azure OpenAI returned an empty response')
   return content
 }
 
+export async function kimiChat(options: KimiChatOptions): Promise<KimiChatResult> {
+  const raw = await azureChatCompletion(options)
+
+  if (options.structuredReasoning) {
+    const parsed = parseCoachResponse(raw)
+    return { ...parsed, raw }
+  }
+
+  return { answer: raw, reasoning: null, raw }
+}
+
+/** Plain string helper for non-coach flows (e.g. weekly reports). */
+export async function kimiChatPlain(options: Omit<KimiChatOptions, 'structuredReasoning'>): Promise<string> {
+  const result = await kimiChat({ ...options, structuredReasoning: false })
+  return result.answer
+}
+
 export const COACH_SYSTEM_PROMPT = `You are FlowSight, a privacy-first team cognitive health coach.
-Answer ONLY about focus, flow state, meetings, context switching, sprint planning, and team activity.
-Use ONLY the team stats provided in the user message — never invent metrics or names.
-Be concise: max 3 short paragraphs. Use plain language. No markdown headers.
+Answer ONLY about focus, flow state, meetings, context switching, sprint planning, team activity, and uploaded documents when provided.
+Use ONLY the team stats and documents provided in the user message — never invent metrics or names.
+
+Before your visible answer, reason step-by-step inside <thinking>...</thinking> tags (brief bullet-style notes: what data you checked, what you inferred, what you will recommend).
+Then write the user-facing reply inside <answer>...</answer> tags only.
+Keep the answer concise: max 3 short paragraphs. Plain language. You may use **bold** and *italic* for emphasis. No markdown headers or bullet lists in the answer.
 If data is missing, say what is unavailable and suggest opening the relevant dashboard section.`
 
 export const WEEKLY_REPORT_SYSTEM_PROMPT = `You are FlowSight writing a weekly executive summary for a team lead.

@@ -24,6 +24,7 @@ type CoachChatContextValue = {
   loading: boolean
   selectConversation: (id: string) => Promise<void>
   startNewConversation: () => Promise<void>
+  setActiveConversationId: (id: string | null) => void
   setActiveMessages: (messages: CoachChatMessage[]) => void
   applyServerConversation: (conversationId: string, messages: CoachChatMessage[]) => void
   refreshConversations: () => Promise<void>
@@ -146,6 +147,7 @@ export default function CoachChatProvider({ userId, teamId, children }: Props) {
       loading,
       selectConversation,
       startNewConversation,
+      setActiveConversationId,
       setActiveMessages,
       applyServerConversation,
       refreshConversations,
@@ -157,6 +159,7 @@ export default function CoachChatProvider({ userId, teamId, children }: Props) {
       loading,
       selectConversation,
       startNewConversation,
+      setActiveConversationId,
       setActiveMessages,
       applyServerConversation,
       refreshConversations,

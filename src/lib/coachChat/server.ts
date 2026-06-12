@@ -21,6 +21,7 @@ type DbMessage = {
   conversation_id: string
   role: 'user' | 'assistant'
   content: string
+  reasoning?: string | null
   created_at: string
 }
 
@@ -29,6 +30,7 @@ function mapMessage(row: DbMessage): CoachChatMessage {
     id: row.id,
     role: row.role,
     content: row.content,
+    reasoning: row.reasoning ?? null,
   }
 }
 
@@ -64,7 +66,7 @@ export async function listCoachConversationsFromDb(
   const ids = conversations.map((c) => c.id)
   const { data: messageRows, error: msgError } = await supabase
     .from('coach_messages')
-    .select('id, conversation_id, role, content, created_at')
+    .select('id, conversation_id, role, content, reasoning, created_at')
     .in('conversation_id', ids)
     .order('created_at', { ascending: true })
 
@@ -99,7 +101,7 @@ export async function getCoachConversationFromDb(
 
   const { data: messageRows, error: msgError } = await supabase
     .from('coach_messages')
-    .select('id, conversation_id, role, content, created_at')
+    .select('id, conversation_id, role, content, reasoning, created_at')
     .eq('conversation_id', conversationId)
     .order('created_at', { ascending: true })
 
@@ -149,6 +151,7 @@ export async function replaceCoachConversationMessages(
         conversation_id: conversationId,
         role: m.role,
         content: m.content,
+        ...(m.reasoning ? { reasoning: m.reasoning } : {}),
       }))
     )
     if (insertError) throw insertError

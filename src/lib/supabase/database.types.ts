@@ -496,6 +496,7 @@ export interface Database {
                     conversation_id: string;
                     role: 'user' | 'assistant';
                     content: string;
+                    reasoning: string | null;
                     created_at: string;
                 };
                 Insert: {
@@ -503,6 +504,7 @@ export interface Database {
                     conversation_id: string;
                     role: 'user' | 'assistant';
                     content: string;
+                    reasoning?: string | null;
                     created_at?: string;
                 };
                 Update: {
@@ -510,6 +512,45 @@ export interface Database {
                     conversation_id?: string;
                     role?: 'user' | 'assistant';
                     content?: string;
+                    reasoning?: string | null;
+                    created_at?: string;
+                };
+            };
+            coach_documents: {
+                Row: {
+                    id: string;
+                    conversation_id: string;
+                    user_id: string;
+                    team_id: string;
+                    file_name: string;
+                    mime_type: string;
+                    content_text: string;
+                    char_count: number;
+                    truncated: boolean;
+                    created_at: string;
+                };
+                Insert: {
+                    id?: string;
+                    conversation_id: string;
+                    user_id: string;
+                    team_id: string;
+                    file_name: string;
+                    mime_type?: string;
+                    content_text: string;
+                    char_count?: number;
+                    truncated?: boolean;
+                    created_at?: string;
+                };
+                Update: {
+                    id?: string;
+                    conversation_id?: string;
+                    user_id?: string;
+                    team_id?: string;
+                    file_name?: string;
+                    mime_type?: string;
+                    content_text?: string;
+                    char_count?: number;
+                    truncated?: boolean;
                     created_at?: string;
                 };
             };
@@ -527,6 +568,20 @@ export interface Database {
                 Returns: {
                     content: string;
                     role: string;
+                    rank: number;
+                }[];
+            };
+            match_coach_documents_fts: {
+                Args: {
+                    search_query: string;
+                    match_user_id: string;
+                    match_team_id: string;
+                    match_conversation_id?: string | null;
+                    match_count?: number;
+                };
+                Returns: {
+                    file_name: string;
+                    content: string;
                     rank: number;
                 }[];
             };

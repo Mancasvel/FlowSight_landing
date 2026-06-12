@@ -22,7 +22,12 @@ import {
   getCoachConversationFromDb,
   searchCoachMessageRag,
 } from '@/lib/coachChat/server'
-import { buildConversationHistoryBlock, buildRagContextBlock } from '@/lib/coachChat/ragContext'
+import { getCoachDocumentTexts } from '@/lib/coachChat/documentServer'
+import {
+  buildConversationHistoryBlock,
+  buildDocumentsContextBlock,
+  buildRagContextBlock,
+} from '@/lib/coachChat/ragContext'
 import { isSchemaMismatchError } from '@/lib/supabase/schemaCompat'
 
 export const dynamic = 'force-dynamic'
@@ -42,6 +47,8 @@ export async function POST(req: NextRequest) {
       message?: string
       teamId?: string
       conversationId?: string
+      documentIds?: string[]
+      inlineDocuments?: { fileName: string; text: string }[]
     }
     const message = body.message?.trim()
     const teamId = body.teamId
@@ -130,21 +137,53 @@ export async function POST(req: NextRequest) {
     const ragBlock = buildRagContextBlock(ragMatches)
     const historyBlock = buildConversationHistoryBlock(priorMessages)
 
+    let documentTexts: { fileName: string; text: string }[] = []
+    try {
+      const stored = await getCoachDocumentTexts(
+        supabase,
+        user.id,
+        teamId,
+        conversationId!,
+        body.documentIds
+      )
+      documentTexts = stored.map((d) => ({ fileName: d.fileName, text: d.text }))
+    } catch (docErr) {
+      if (!isSchemaMismatchError(docErr)) {
+        console.error('Coach document context error:', docErr)
+      }
+    }
+
+    if (Array.isArray(body.inlineDocuments)) {
+      for (const doc of body.inlineDocuments) {
+        if (doc?.fileName && doc?.text) {
+          documentTexts.push({ fileName: doc.fileName, text: doc.text })
+        }
+      }
+    }
+
+    const documentsBlock = buildDocumentsContextBlock(documentTexts)
+
     const promptParts = [
       `Team data:\n${contextJson}`,
+      documentsBlock,
       ragBlock,
       historyBlock,
       `Question: ${message}`,
     ].filter(Boolean)
 
-    let reply: string
+    let reply = ''
+    let reasoning: string | null = null
     try {
-      reply = await kimiChat({
+      const result = await kimiChat({
         system: COACH_SYSTEM_PROMPT,
         messages: [{ role: 'user', content: promptParts.join('\n\n') }],
+        structuredReasoning: true,
+        maxTokens: 1400,
       })
+      reply = result.answer
+      reasoning = result.reasoning
     } catch (err) {
-      console.error('Kimi chat error:', err)
+      console.error('Azure OpenAI chat error:', err)
       return NextResponse.json(
         { error: 'AI coach temporarily unavailable. Try again shortly.' },
         { status: 503 }
@@ -156,6 +195,7 @@ export async function POST(req: NextRequest) {
       id: `a-${Date.now()}`,
       role: 'assistant' as const,
       content: reply,
+      reasoning,
     }
 
     let savedConversation = conversation
@@ -181,6 +221,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       reply,
+      reasoning,
       conversationId,
       messages: savedConversation.messages,
       usage: {

@@ -6,7 +6,7 @@ import {
   getMeetingsData,
   getWorkflowData,
 } from '@/lib/dashboardData'
-import { kimiChat, WEEKLY_REPORT_SYSTEM_PROMPT } from '@/lib/kimi/client'
+import { kimiChatPlain, WEEKLY_REPORT_SYSTEM_PROMPT } from '@/lib/kimi/client'
 import { getPlan, planHasFullWeeklyReport, type PlanId } from '@/lib/plans'
 
 export type WeeklyReportSection = {
@@ -109,7 +109,7 @@ export async function buildWeeklyTeamReport(params: {
 
   if (includeAiNarrative && planHasFullWeeklyReport(planId)) {
     try {
-      const aiText = await kimiChat({
+      const aiText = await kimiChatPlain({
         system: WEEKLY_REPORT_SYSTEM_PROMPT,
         messages: [
           {
