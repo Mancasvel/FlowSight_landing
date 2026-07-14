@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 import { createServiceClient } from '@/lib/promptLimits';
 import { buildLicenseActivation } from '@/lib/licenseActivation';
+import { linkOwnerTeamsToLicense } from '@/lib/linkLicenseToTeams';
 
 export async function GET(req: NextRequest) {
     const searchParams = req.nextUrl.searchParams;
@@ -25,6 +26,7 @@ export async function GET(req: NextRequest) {
 
         const supabase = createServiceClient();
         const licenseId = session.metadata?.licenseId;
+        const ownerId = session.metadata?.userId;
         const planType = session.metadata?.planId ?? session.metadata?.planType;
         const maxMembers = session.metadata?.maxMembers
             ? parseInt(session.metadata.maxMembers)
@@ -64,6 +66,14 @@ export async function GET(req: NextRequest) {
         if (updateError) {
             console.error('Failed to update license:', updateError);
             return NextResponse.redirect(`${baseUrl}/dashboard/settings?error=update_failed`);
+        }
+
+        if (ownerId) {
+            try {
+                await linkOwnerTeamsToLicense(supabase, ownerId, licenseId);
+            } catch (linkError) {
+                console.error('Failed to link teams to license:', linkError);
+            }
         }
 
         // Redirect to onboarding page with success message

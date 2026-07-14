@@ -262,7 +262,9 @@ export default function SettingsPage() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    priceId: 'price_123456789', // Replace with strict ENV var in production
+                    planType: 'teams_pro',
+                    maxMembers: license?.max_members ?? 50,
+                    quantity: 1,
                 }),
             });
 
