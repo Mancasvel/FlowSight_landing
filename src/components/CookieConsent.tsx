@@ -1,11 +1,15 @@
 'use client'
 
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useConsent } from '@/context/ConsentContext'
 import { siteConfig } from '@/lib/site'
 
+const APP_ROUTE_PREFIXES = ['/dashboard', '/account']
+
 export function CookieConsent() {
+  const pathname = usePathname()
   const {
     hydrated,
     decided,
@@ -18,7 +22,11 @@ export function CookieConsent() {
     closePreferences,
   } = useConsent()
 
-  if (!hydrated) {
+  const isAppRoute = APP_ROUTE_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+  )
+
+  if (!hydrated || isAppRoute) {
     return null
   }
 

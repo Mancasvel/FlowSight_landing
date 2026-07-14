@@ -41,24 +41,6 @@ export function DownloadSectionContent({ release }: Props) {
                     </motion.p>
                 </div>
 
-                <motion.div
-                    initial={{ opacity: 0, y: 16 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    className="max-w-5xl mx-auto mb-16"
-                >
-                    <video
-                        className="w-full rounded-2xl border border-slate-200 bg-black shadow-2xl object-contain max-h-[min(60vh,640px)]"
-                        loop
-                        playsInline
-                        controls
-                        preload="metadata"
-                        aria-label="FlowSight desktop agent overview"
-                    >
-                        <source src="/enhanced.mp4" type="video/mp4" />
-                    </video>
-                </motion.div>
-
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
                     {/* Windows */}
                     <motion.div
