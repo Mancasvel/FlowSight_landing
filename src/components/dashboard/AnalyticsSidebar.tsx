@@ -13,6 +13,7 @@ import {
   ChevronDown,
   Minus,
   Plus,
+  LogOut,
 } from 'lucide-react'
 import CoachChatDeleteModal from '@/components/dashboard/CoachChatDeleteModal'
 import CoachChatListItem from '@/components/dashboard/CoachChatListItem'
@@ -21,13 +22,13 @@ import { useCoachChat } from '@/components/dashboard/CoachChatProvider'
 import type { CoachConversation } from '@/lib/coachChat/types'
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import { Avatar } from '@/components/ui'
+import { createClient } from '@/lib/supabase/client'
 
 type TeamOption = { id: string; name: string }
 
 type SidebarProps = {
   displayName: string
   avatarUrl: string | null
-  role: 'pm' | 'worker'
   teams: TeamOption[]
   activeTeamId: string | null
   personalizedDashboardTitle?: string | null
@@ -209,7 +210,6 @@ function AiCoachNavItem({
 function DrawerContent({
   displayName,
   avatarUrl,
-  role,
   teams,
   activeTeamId,
   personalizedDashboardTitle,
@@ -226,6 +226,8 @@ function DrawerContent({
   onRenameChat: (chat: CoachConversation) => void
   onDeleteChat: (chat: CoachConversation) => void
 }) {
+  const router = useRouter()
+  const [isSigningOut, setIsSigningOut] = useState(false)
   const dashboardItems = hasPersonalizedDashboard
     ? [
         {
@@ -235,6 +237,22 @@ function DrawerContent({
         },
       ]
     : []
+
+  async function handleLogout() {
+    if (isSigningOut) return
+
+    setIsSigningOut(true)
+    const { error } = await createClient().auth.signOut()
+
+    if (error) {
+      setIsSigningOut(false)
+      return
+    }
+
+    onNavigate?.()
+    router.replace('/login')
+    router.refresh()
+  }
 
   return (
     <div className="flex h-full flex-col">
@@ -313,11 +331,19 @@ function DrawerContent({
       </div>
 
       <div className="border-t border-zinc-100 px-5 py-4">
-        <div className="flex items-center gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-zinc-50">
+        <div className="flex items-start gap-3 rounded-lg px-2 py-2">
           <Avatar src={avatarUrl || undefined} name={displayName} size="sm" />
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium text-zinc-800">{displayName}</p>
-            <p className="text-[11px] text-zinc-400">{role === 'pm' ? 'Project Manager' : 'Member'}</p>
+            <button
+              type="button"
+              onClick={() => void handleLogout()}
+              disabled={isSigningOut}
+              className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-zinc-500 transition-colors hover:text-red-600 disabled:cursor-wait disabled:opacity-60"
+            >
+              <LogOut size={13} strokeWidth={1.75} />
+              {isSigningOut ? 'Logging out…' : 'Log out'}
+            </button>
           </div>
         </div>
       </div>
@@ -328,7 +354,6 @@ function DrawerContent({
 export default function DashboardSidebar({
   displayName,
   avatarUrl,
-  role,
   teams,
   activeTeamId,
   personalizedDashboardTitle,
@@ -466,7 +491,6 @@ export default function DashboardSidebar({
           <DrawerContent
             displayName={displayName}
             avatarUrl={avatarUrl}
-            role={role}
             teams={teams}
             activeTeamId={activeTeamId}
             personalizedDashboardTitle={personalizedDashboardTitle}
