@@ -26,10 +26,10 @@ export const releasesUrl = desktopReleasesUrl
  * Last-known-good values used only as an offline fallback, and, transitionally,
  * as the Linux source until `FLOWSIGHT_LINUX_REPO` publishes its first release.
  */
-export const FALLBACK_DESKTOP_RELEASE_TAG = 'v1.0.1' as const
+export const FALLBACK_DESKTOP_RELEASE_TAG = 'v3.6.0' as const
 /** Latest known tag on `Mancasvel/FlowSight_linux` (see releases/latest redirect). */
 export const FALLBACK_LINUX_RELEASE_TAG = 'v3.5.0' as const
-export const FALLBACK_AGENT_VERSION = '0.1.0' as const
+export const FALLBACK_AGENT_VERSION = '3.6.0' as const
 export const FALLBACK_LINUX_VERSION = '3.5.0' as const
 
 export type AgentDownloadUrls = {
@@ -41,7 +41,7 @@ export type AgentDownloadUrls = {
 }
 
 export type AgentRelease = {
-  /** Tauri bundle version for Windows/macOS (e.g. "0.1.0"). */
+  /** Tauri bundle version for Windows/macOS (e.g. "3.6.0"). */
   version: string
   /** Tauri bundle version for Linux when it differs from `version`. */
   linuxVersion?: string
