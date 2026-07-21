@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { Check, Loader2, CreditCard, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-import { PLANS, type PlanId } from '@/lib/plans';
+import { PLANS, type PlanId, getStripePriceId } from '@/lib/plans';
+import { isConfiguredStripePriceId } from '@/lib/stripeConfig';
 
 interface PricingPlan {
     id: PlanId;
@@ -20,7 +21,7 @@ const plans: PricingPlan[] = [
         id: 'individual_pro',
         name: PLANS.individual_pro.name,
         price: PLANS.individual_pro.priceEur,
-        priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_INDIVIDUAL_PRO || 'price_individual_pro',
+        priceId: getStripePriceId('individual_pro') ?? '',
         maxMembers: PLANS.individual_pro.maxMembers,
         features: [
             '150 AI coach prompts / month',
@@ -34,7 +35,7 @@ const plans: PricingPlan[] = [
         id: 'teams_simple',
         name: PLANS.teams_simple.name,
         price: PLANS.teams_simple.priceEur,
-        priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_TEAMS_SIMPLE || 'price_teams_simple',
+        priceId: getStripePriceId('teams_simple') ?? '',
         maxMembers: PLANS.teams_simple.maxMembers,
         features: [
             'Up to 10 team members',
@@ -48,7 +49,7 @@ const plans: PricingPlan[] = [
         id: 'teams_pro',
         name: PLANS.teams_pro.name,
         price: PLANS.teams_pro.priceEur,
-        priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_TEAMS_PRO || 'price_teams_pro',
+        priceId: getStripePriceId('teams_pro') ?? '',
         maxMembers: PLANS.teams_pro.maxMembers,
         popular: true,
         features: [
@@ -63,7 +64,7 @@ const plans: PricingPlan[] = [
         id: 'enterprise',
         name: PLANS.enterprise.name,
         price: PLANS.enterprise.priceEur,
-        priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ENTERPRISE || 'price_enterprise',
+        priceId: getStripePriceId('enterprise') ?? '',
         maxMembers: PLANS.enterprise.maxMembers,
         features: [
             '500 prompts / seat + 2000 team pool',
@@ -88,6 +89,10 @@ export default function DashboardPricingPage() {
 
     const handlePurchase = async () => {
         if (!selectedPlan) return;
+        if (!isConfiguredStripePriceId(selectedPlan.priceId)) {
+            setError('Checkout is not configured for this plan yet. Contact support.');
+            return;
+        }
 
         setLoading(selectedPlan.id);
         setError(null);
@@ -97,7 +102,6 @@ export default function DashboardPricingPage() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    priceId: selectedPlan.priceId,
                     planType: selectedPlan.id,
                     maxMembers: selectedPlan.maxMembers === -1 ? 9999 : selectedPlan.maxMembers,
                     quantity: selectedPlan.id === 'individual_pro' ? 1 : quantity,
@@ -191,14 +195,17 @@ export default function DashboardPricingPage() {
 
                         <button
                             onClick={() => handlePlanSelect(plan)}
+                            disabled={!isConfiguredStripePriceId(plan.priceId)}
                             className={`w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2
-                                ${plan.popular
+                                ${!isConfiguredStripePriceId(plan.priceId)
+                                    ? 'bg-dashboard-bg border border-dashboard-border text-dashboard-muted cursor-not-allowed opacity-60'
+                                    : plan.popular
                                     ? 'bg-indigo-600 text-white hover:bg-indigo-700'
                                     : 'bg-dashboard-bg border border-dashboard-border text-dashboard-text hover:bg-dashboard-border'
                                 }
                             `}
                         >
-                            Select {plan.name}
+                            {isConfiguredStripePriceId(plan.priceId) ? `Select ${plan.name}` : 'Unavailable'}
                         </button>
                     </div>
                 ))}
@@ -281,7 +288,7 @@ export default function DashboardPricingPage() {
             )}
 
             <div className="text-center text-sm text-dashboard-muted space-y-2">
-                <p>All plans include a 14-day free trial. Cancel anytime.</p>
+                <p>Secure checkout powered by Stripe. Billed monthly. Cancel anytime.</p>
                 <p>Recipient emails and digest settings are encrypted at rest (AES-256-GCM).</p>
             </div>
         </div>

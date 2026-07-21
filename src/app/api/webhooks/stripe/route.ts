@@ -1,13 +1,14 @@
 import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
-import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/promptLimits';
 import { buildLicenseActivation } from '@/lib/licenseActivation';
+import { linkOwnerTeamsToLicense } from '@/lib/linkLicenseToTeams';
 import Stripe from 'stripe';
 
 async function activateLicense(params: {
   licenseId: string;
+  ownerId?: string | null;
   subscriptionId: string;
   planType?: string | null;
   maxMembers?: number;
@@ -18,7 +19,7 @@ async function activateLicense(params: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const expirationDate = new Date((subscription as any).current_period_end * 1000).toISOString();
 
-  await supabase.from('licenses').update({
+  const { error } = await supabase.from('licenses').update({
     stripe_subscription_id: params.subscriptionId,
     plan_id: activation.plan_id,
     plan_type: activation.plan_type,
@@ -26,6 +27,12 @@ async function activateLicense(params: {
     is_active: activation.is_active,
     expires_at: expirationDate,
   }).eq('id', params.licenseId);
+
+  if (error) throw error;
+
+  if (params.ownerId) {
+    await linkOwnerTeamsToLicense(supabase, params.ownerId, params.licenseId);
+  }
 }
 
 export async function POST(req: Request) {
@@ -51,6 +58,7 @@ export async function POST(req: Request) {
         const session = event.data.object as Stripe.Checkout.Session;
         const subscriptionId = session.subscription as string;
         const licenseId = session.metadata?.licenseId;
+        const ownerId = session.metadata?.userId;
         const planType = session.metadata?.planId ?? session.metadata?.planType;
         const maxMembers = session.metadata?.maxMembers ? parseInt(session.metadata.maxMembers) : undefined;
 
@@ -58,7 +66,7 @@ export async function POST(req: Request) {
             return new NextResponse('Missing licenseId in metadata', { status: 400 });
         }
 
-        await activateLicense({ licenseId, subscriptionId, planType, maxMembers });
+        await activateLicense({ licenseId, ownerId, subscriptionId, planType, maxMembers });
     }
 
     if (event.type === 'invoice.payment_succeeded') {

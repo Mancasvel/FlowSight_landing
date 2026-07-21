@@ -19,7 +19,6 @@ export default function DashboardShell({
   userId,
   displayName,
   avatarUrl,
-  role,
   teams,
   activeTeamId,
   personalizedDashboardTitle,
@@ -38,7 +37,6 @@ export default function DashboardShell({
         <DashboardSidebar
           displayName={displayName}
           avatarUrl={avatarUrl}
-          role={role}
           teams={teams}
           activeTeamId={activeTeamId}
           personalizedDashboardTitle={personalizedDashboardTitle}

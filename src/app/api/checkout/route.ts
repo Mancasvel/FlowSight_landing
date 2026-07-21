@@ -2,9 +2,9 @@ import Stripe from 'stripe';
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { stripe } from '@/lib/stripe';
-import { getStripePriceId } from '@/lib/plans';
 import { mapCheckoutPlan } from '@/lib/plansCheckout';
 import { buildLicenseActivation } from '@/lib/licenseActivation';
+import { resolveCheckoutPriceId } from '@/lib/stripeConfig';
 
 export async function POST(req: NextRequest) {
     try {
@@ -15,10 +15,20 @@ export async function POST(req: NextRequest) {
             return new NextResponse('Unauthorized', { status: 401 });
         }
 
-        const { priceId, planType = 'teams_pro', maxMembers, quantity = 1 } = await req.json();
+        const { planType = 'teams_pro', maxMembers, quantity = 1 } = await req.json();
         const mapped = mapCheckoutPlan(planType);
         const seatCount = Math.max(1, Number(quantity) || 1);
         const memberLimit = maxMembers ?? mapped.maxMembers;
+        const resolvedPriceId = resolveCheckoutPriceId(mapped.planId);
+
+        if (!resolvedPriceId) {
+            return new NextResponse(
+                JSON.stringify({
+                    error: 'Stripe price is not configured for this plan. Set the live NEXT_PUBLIC_STRIPE_PRICE_* env vars.',
+                }),
+                { status: 503, headers: { 'Content-Type': 'application/json' } }
+            );
+        }
 
         let { data: license } = await supabase
             .from('licenses')
@@ -63,37 +73,10 @@ export async function POST(req: NextRequest) {
             await supabase.from('licenses').update({ stripe_customer_id: customerId }).eq('id', license.id);
         }
 
-        const stripePriceFromEnv = getStripePriceId(mapped.planId);
-        const resolvedPriceId =
-            priceId &&
-            priceId.startsWith('price_') &&
-            !['price_basic', 'price_pro', 'price_enterprise'].includes(priceId)
-                ? priceId
-                : stripePriceFromEnv;
-
-        let lineItem: Stripe.Checkout.SessionCreateParams.LineItem;
-
-        if (resolvedPriceId) {
-            lineItem = {
-                price: resolvedPriceId,
-                quantity: seatCount,
-            };
-        } else {
-            lineItem = {
-                price_data: {
-                    currency: 'eur',
-                    product_data: {
-                        name: `FlowSight ${mapped.name}`,
-                        description: `Monthly subscription — ${mapped.name}`,
-                    },
-                    unit_amount: mapped.priceCents,
-                    recurring: {
-                        interval: 'month' as const,
-                    },
-                },
-                quantity: seatCount,
-            };
-        }
+        const lineItem: Stripe.Checkout.SessionCreateParams.LineItem = {
+            price: resolvedPriceId,
+            quantity: seatCount,
+        };
 
         const session = await stripe.checkout.sessions.create({
             customer: customerId,
