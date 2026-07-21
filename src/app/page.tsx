@@ -13,6 +13,9 @@ import { Lock } from 'lucide-react'
 
 import { absoluteUrl, siteConfig } from '@/lib/site'
 
+/** Refresh download URLs often; GitHub release metadata is cached separately (1h). */
+export const revalidate = 300
+
 export const metadata: Metadata = {
   title: 'Privacy-first AI for high performers · cognitive health & deep focus',
   description: siteConfig.description,

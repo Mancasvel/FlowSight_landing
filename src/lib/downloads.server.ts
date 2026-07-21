@@ -107,48 +107,113 @@ function linuxAssetKind(name: string): '.deb' | '.AppImage' | null {
 
 // ---------- desktop (Windows + macOS) ---------------------------------------
 
+/** Windows/macOS may ship from the main repo or the Linux repo during migration. */
+const DESKTOP_RELEASE_REPOS = [FLOWSIGHT_DESKTOP_REPO, FLOWSIGHT_LINUX_REPO] as const
+
 const DESKTOP_MATCHERS: ReadonlyArray<{
   key: keyof AgentDownloadUrls
   test: (name: string) => boolean
 }> = [
-  { key: 'windowsExe', test: (n) => n.endsWith('_x64-setup.exe') },
-  { key: 'windowsMsi', test: (n) => n.endsWith('_x64_en-US.msi') },
-  { key: 'macDmgAarch64', test: (n) => n.endsWith('_aarch64.dmg') },
+  { key: 'windowsExe', test: (n) => /_x64-setup\.exe$/i.test(n) },
+  { key: 'windowsMsi', test: (n) => /_x64_en-US\.msi$/i.test(n) },
+  { key: 'macDmgAarch64', test: (n) => /_aarch64\.dmg$/i.test(n) },
 ]
+
+function compareSemverTags(a: string, b: string): number {
+  const parse = (tag: string): [number, number, number] => {
+    const match = tag.replace(/^v/i, '').match(/^(\d+)\.(\d+)\.(\d+)/)
+    if (!match) return [0, 0, 0]
+    return [Number(match[1]), Number(match[2]), Number(match[3])]
+  }
+  const left = parse(a)
+  const right = parse(b)
+  for (let i = 0; i < 3; i++) {
+    if (left[i] !== right[i]) return left[i] - right[i]
+  }
+  return 0
+}
+
+function sliceFromDesktopRelease(release: GithubRelease): ReleaseSlice | null {
+  const urls: AgentDownloadUrls = {}
+  let version: string | undefined
+  for (const asset of release.assets ?? []) {
+    for (const matcher of DESKTOP_MATCHERS) {
+      if (matcher.test(asset.name)) {
+        urls[matcher.key] = asset.browser_download_url
+        version ??= parseAgentVersion(asset.name)
+      }
+    }
+  }
+  if (!urls.windowsExe && !urls.windowsMsi && !urls.macDmgAarch64) return null
+  return {
+    tag: release.tag_name,
+    version: version ?? release.tag_name.replace(/^v/i, ''),
+    urls,
+  }
+}
+
+function pickBestDesktopRelease(releases: GithubRelease[]): GithubRelease | undefined {
+  const byTag = new Map<string, GithubRelease>()
+  for (const release of releases) {
+    const existing = byTag.get(release.tag_name)
+    if (
+      !existing ||
+      new Date(release.published_at).getTime() >
+        new Date(existing.published_at).getTime()
+    ) {
+      byTag.set(release.tag_name, release)
+    }
+  }
+
+  return [...byTag.values()].sort(
+    (a, b) =>
+      compareSemverTags(b.tag_name, a.tag_name) ||
+      new Date(b.published_at).getTime() - new Date(a.published_at).getTime()
+  )[0]
+}
+
+async function collectDesktopReleaseCandidates(): Promise<GithubRelease[]> {
+  const perRepo = await Promise.all(
+    DESKTOP_RELEASE_REPOS.map(async (repo) => {
+      const [latest, releases] = await Promise.all([
+        fetchLatestRelease(repo),
+        fetchReleases(repo),
+      ])
+      return { latest, releases: sortedStableReleases(releases) }
+    })
+  )
+
+  const candidates: GithubRelease[] = []
+  for (const { latest, releases } of perRepo) {
+    if (latest && !latest.draft && !latest.prerelease) {
+      candidates.push(latest)
+    }
+    candidates.push(...releases)
+  }
+  return candidates.filter((release) => sliceFromDesktopRelease(release) !== null)
+}
 
 async function resolveDesktopSlice(): Promise<ReleaseSlice> {
   const pinnedTag = process.env.NEXT_PUBLIC_AGENT_RELEASE_TAG
   try {
-    const releases = await fetchReleases(FLOWSIGHT_DESKTOP_REPO)
-    const candidates = sortedStableReleases(releases)
+    const candidates = await collectDesktopReleaseCandidates()
 
     const release = pinnedTag
       ? candidates.find((r) => r.tag_name === pinnedTag)
-      : candidates.find((r) =>
-          (r.assets ?? []).some((a) =>
-            DESKTOP_MATCHERS.some((m) => m.test(a.name))
-          )
-        )
+      : pickBestDesktopRelease(candidates)
     if (!release) {
       throw new Error(
         pinnedTag
-          ? `pinned desktop tag ${pinnedTag} not found`
+          ? `pinned desktop tag ${pinnedTag} not found with Win/Mac assets`
           : 'no desktop release ships Windows/macOS assets'
       )
     }
 
-    const urls: AgentDownloadUrls = {}
-    let version: string | undefined
-    for (const asset of release.assets ?? []) {
-      for (const matcher of DESKTOP_MATCHERS) {
-        if (matcher.test(asset.name)) {
-          urls[matcher.key] = asset.browser_download_url
-          version ??= parseAgentVersion(asset.name)
-        }
-      }
+    const slice = sliceFromDesktopRelease(release)
+    if (!slice) {
+      throw new Error(`release ${release.tag_name} has no Win/Mac assets`)
     }
-
-    return { tag: release.tag_name, version, urls }
+    return slice
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     console.warn(
@@ -299,16 +364,20 @@ export type DesktopReleaseAssets = {
 export async function getDesktopUpdaterRelease(): Promise<DesktopReleaseAssets | null> {
   const pinnedTag = process.env.NEXT_PUBLIC_AGENT_RELEASE_TAG
   try {
-    const releases = await fetchReleases(FLOWSIGHT_DESKTOP_REPO)
-    const candidates = sortedStableReleases(releases)
+    const perRepo = await Promise.all(
+      DESKTOP_RELEASE_REPOS.map(async (repo) =>
+        sortedStableReleases(await fetchReleases(repo))
+      )
+    )
+    const sigCandidates = perRepo
+      .flat()
+      .filter((r) => (r.assets ?? []).some((a) => a.name.endsWith('.sig')))
 
     // The updater needs a release that contains at least one `.sig`; otherwise
     // signature verification on the client would fail anyway.
     const release = pinnedTag
-      ? candidates.find((r) => r.tag_name === pinnedTag)
-      : candidates.find((r) =>
-          (r.assets ?? []).some((a) => a.name.endsWith('.sig'))
-        )
+      ? sigCandidates.find((r) => r.tag_name === pinnedTag)
+      : pickBestDesktopRelease(sigCandidates)
     if (!release) return null
 
     const assets = release.assets ?? []
