@@ -1,6 +1,6 @@
 # FlowSight Landing Page
 
-A modern, high-performance landing page for **FlowSight** - the privacy-first AI project manager that runs locally on your device. Built with Next.js 14, TypeScript, Tailwind CSS, and Framer Motion.
+A modern, high-performance landing page for **FlowSight** - the privacy-first AI project manager that runs locally on your device. Built with Next.js 16, TypeScript, Tailwind CSS, and Framer Motion.
 
 ## 🚀 Features
 
