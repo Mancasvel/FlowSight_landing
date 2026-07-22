@@ -37,7 +37,7 @@ export default function CoachChatDeleteModal({
         <AlertDialogHeader>
           <AlertDialogTitle>Delete chat?</AlertDialogTitle>
           <AlertDialogDescription>
-            <span className="font-medium text-zinc-700">&ldquo;{title}&rdquo;</span> and all its
+            <span className="font-medium text-zinc-700">"{title}"</span> and all its
             messages will be permanently removed. This can&apos;t be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>

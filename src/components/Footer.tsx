@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { Twitter, Github, Linkedin, Mail } from 'lucide-react';
+import { Github, Linkedin } from 'lucide-react';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -21,13 +21,10 @@ export default function Footer() {
               Local AI for cognitive health and proof of work.
             </p>
             <div className="flex gap-4">
-              <a href="#" className="text-zinc-400 hover:text-indigo-600 transition-colors" aria-label="Twitter">
-                <Twitter size={20} />
-              </a>
-              <a href="#" className="text-zinc-400 hover:text-indigo-600 transition-colors" aria-label="GitHub">
+              <a href="https://github.com/Mancasvel?tab=repositories" target="_blank" rel="noopener noreferrer" className="text-zinc-400 hover:text-indigo-600 transition-colors" aria-label="GitHub">
                 <Github size={20} />
               </a>
-              <a href="#" className="text-zinc-400 hover:text-indigo-600 transition-colors" aria-label="LinkedIn">
+              <a href="https://www.linkedin.com/company/flow-sight/" target="_blank" rel="noopener noreferrer" className="text-zinc-400 hover:text-indigo-600 transition-colors" aria-label="LinkedIn">
                 <Linkedin size={20} />
               </a>
             </div>
@@ -62,7 +59,7 @@ export default function Footer() {
               <li><Link href="/gdpr" className="hover:text-indigo-600 transition-colors">GDPR / Data protection</Link></li>
               <li><Link href="/terms-of-service" className="hover:text-indigo-600 transition-colors">Terms of Service</Link></li>
               <li><Link href="/security" className="hover:text-indigo-600 transition-colors">Security</Link></li>
-              <li><Link href="/legal-security" className="hover:text-indigo-600 transition-colors">Trust &amp; security</Link></li>
+              <li><Link href="/legal-security" className="hover:text-indigo-600 transition-colors">Trust & security</Link></li>
             </ul>
           </div>
         </div>

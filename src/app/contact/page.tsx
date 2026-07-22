@@ -1,153 +1,152 @@
-import Navigation from '@/components/Navigation'
-import Footer from '@/components/Footer'
+import Link from 'next/link'
+import { Lock, Mail, MessageSquare, HelpCircle } from 'lucide-react'
 
 export default function ContactPage() {
   return (
-    <>
-      <Navigation />
-      <main className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
-        {/* Hero Section */}
-        <section className="relative pt-20 pb-16 sm:pb-24 overflow-hidden">
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute top-20 left-10 w-72 h-72 bg-teal-500/10 rounded-full blur-3xl"></div>
-            <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
+    <main className="min-h-screen bg-white font-sans selection:bg-cyan-100 selection:text-cyan-900 bg-[linear-gradient(to_right,rgba(15,23,42,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.045)_1px,transparent_1px)] [background-size:32px_32px]">
+      <header className="fixed top-0 left-0 z-50 w-full border-b border-slate-200/60 bg-white/70 px-6 py-4 backdrop-blur-md">
+        <div className="relative mx-auto flex max-w-7xl items-center justify-between">
+          <Link href="/" className="text-lg font-bold tracking-tighter text-secondary-navy">
+            Flow<span className="text-primary-teal">Sight</span>
+          </Link>
+          <div className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-1.5 text-xs font-medium text-slate-400 md:flex">
+            <Lock className="h-3 w-3" aria-hidden />
+            <span>privacy-first, local, yours forever</span>
           </div>
+          <Link
+            href="/login"
+            className="rounded-full bg-gradient-to-r from-primary-cyan to-primary-teal px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:-translate-y-0.5 hover:from-primary-teal hover:to-primary-cyan hover:shadow-lg"
+          >
+            Sign in
+          </Link>
+        </div>
+      </header>
 
-          <div className="relative z-10 container-max px-4 sm:px-6 lg:px-12">
-            <div className="text-center mb-12 md:mb-16">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
-                Get in
-                <span className="block bg-gradient-to-r from-teal-400 to-blue-400 bg-clip-text text-transparent">
-                  Touch
-                </span>
-              </h1>
+      {/* Hero */}
+      <section className="pt-36 pb-24 md:pt-44 md:pb-32">
+        <div className="container px-4 md:px-6 mx-auto text-center">
+          <h1 className="font-serif text-4xl md:text-6xl font-bold text-secondary-navy mb-6">
+            Get in
+            <span className="block bg-gradient-to-r from-primary-cyan to-primary-teal bg-clip-text text-transparent pt-2 pb-3">
+              Touch
+            </span>
+          </h1>
+          <p className="text-lg text-slate-500 leading-relaxed max-w-3xl mx-auto">
+            Questions about local AI, cognitive analytics, or enterprise proof of work programs? We read every note, especially from
+            workers, People teams, and marketplace operators.
+          </p>
+        </div>
+      </section>
 
-              <p className="text-lg sm:text-xl text-gray-400 leading-relaxed max-w-3xl mx-auto px-4">
-                Questions about local AI, cognitive analytics, or enterprise proof of work programs? We read every note, especially from
-                workers, People teams, and marketplace operators.
-              </p>
-            </div>
-          </div>
-        </section>
+      {/* Contact */}
+      <section className="pb-24">
+        <div className="container px-4 md:px-6 mx-auto">
+          <div className="max-w-5xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
 
-        {/* Contact Form */}
-        <section className="py-16 sm:py-24">
-          <div className="container-max px-4 sm:px-6 lg:px-12">
-            <div className="max-w-4xl mx-auto">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+              {/* Contact Info */}
+              <div>
+                <h2 className="font-serif text-3xl font-bold text-secondary-navy mb-8">Contact Information</h2>
 
-                {/* Contact Info */}
-                <div>
-                  <h2 className="text-2xl sm:text-3xl font-bold text-white mb-8">Contact Information</h2>
-
-                  <div className="space-y-6">
-                    <div className="flex items-start space-x-4">
-                      <div className="w-12 h-12 bg-teal-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                        <svg className="w-6 h-6 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                        </svg>
+                <div className="space-y-6">
+                  {[
+                    {
+                      icon: Mail,
+                      title: 'Email',
+                      desc: 'hello@flowsight.com',
+                      gradient: 'from-cyan-500/20 to-teal-500/20',
+                    },
+                    {
+                      icon: MessageSquare,
+                      title: 'Live Chat',
+                      desc: 'Available 9 AM to 6 PM EST',
+                      gradient: 'from-blue-500/20 to-indigo-500/20',
+                    },
+                    {
+                      icon: HelpCircle,
+                      title: 'Support',
+                      desc: 'Technical support and documentation',
+                      gradient: 'from-purple-500/20 to-pink-500/20',
+                    },
+                  ].map((item) => (
+                    <div key={item.title} className="flex items-start gap-4">
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-gradient-to-br ${item.gradient}`}>
+                        <item.icon className="w-6 h-6 text-slate-600" />
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-white mb-1">Email</h3>
-                        <p className="text-gray-400">hello@flowsight.com</p>
+                        <h3 className="text-lg font-bold text-secondary-navy mb-1">{item.title}</h3>
+                        <p className="text-slate-500 leading-relaxed">{item.desc}</p>
                       </div>
                     </div>
-
-                    <div className="flex items-start space-x-4">
-                      <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                        <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
-                        </svg>
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-semibold text-white mb-1">Live Chat</h3>
-                        <p className="text-gray-400">Available 9 AM to 6 PM EST</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start space-x-4">
-                      <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                        <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-semibold text-white mb-1">Support</h3>
-                        <p className="text-gray-400">Technical support and documentation</p>
-                      </div>
-                    </div>
-                  </div>
+                  ))}
                 </div>
+              </div>
 
-                {/* Contact Form */}
-                <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-2xl p-6 sm:p-8 border border-slate-700/50">
-                  <h3 className="text-xl font-bold text-white mb-6">Send us a Message</h3>
+              {/* Contact Form */}
+              <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-lg">
+                <h3 className="text-xl font-bold text-secondary-navy mb-6">Send us a Message</h3>
 
-                  <form className="space-y-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-400 mb-2">First Name</label>
-                        <input
-                          type="text"
-                          className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-teal-500 transition-colors"
-                          placeholder="John"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-400 mb-2">Last Name</label>
-                        <input
-                          type="text"
-                          className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-teal-500 transition-colors"
-                          placeholder="Doe"
-                        />
-                      </div>
-                    </div>
-
+                <form className="space-y-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-400 mb-2">Email</label>
+                      <label className="block text-sm font-medium text-slate-500 mb-2">First Name</label>
                       <input
-                        type="email"
-                        className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-teal-500 transition-colors"
-                        placeholder="john@example.com"
+                        type="text"
+                        className="w-full px-4 py-3 border border-slate-200 rounded-xl text-secondary-navy placeholder-slate-400 focus:outline-none focus:border-primary-teal transition-colors"
+                        placeholder="John"
                       />
                     </div>
-
                     <div>
-                      <label className="block text-sm font-medium text-gray-400 mb-2">Subject</label>
-                      <select className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-teal-500 transition-colors">
-                        <option>General Inquiry</option>
-                        <option>Technical Support</option>
-                        <option>Sales</option>
-                        <option>Partnership</option>
-                        <option>Press</option>
-                      </select>
+                      <label className="block text-sm font-medium text-slate-500 mb-2">Last Name</label>
+                      <input
+                        type="text"
+                        className="w-full px-4 py-3 border border-slate-200 rounded-xl text-secondary-navy placeholder-slate-400 focus:outline-none focus:border-primary-teal transition-colors"
+                        placeholder="Doe"
+                      />
                     </div>
+                  </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-400 mb-2">Message</label>
-                      <textarea
-                        rows={4}
-                        className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-teal-500 transition-colors resize-none"
-                        placeholder="Tell us how we can help..."
-                      ></textarea>
-                    </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-500 mb-2">Email</label>
+                    <input
+                      type="email"
+                      className="w-full px-4 py-3 border border-slate-200 rounded-xl text-secondary-navy placeholder-slate-400 focus:outline-none focus:border-primary-teal transition-colors"
+                      placeholder="john@example.com"
+                    />
+                  </div>
 
-                    <button
-                      type="submit"
-                      className="w-full bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 hover:shadow-xl hover:shadow-teal-500/25 transform hover:-translate-y-1"
-                    >
-                      Send Message
-                    </button>
-                  </form>
-                </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-500 mb-2">Subject</label>
+                    <select className="w-full px-4 py-3 border border-slate-200 rounded-xl text-secondary-navy focus:outline-none focus:border-primary-teal transition-colors">
+                      <option>General Inquiry</option>
+                      <option>Technical Support</option>
+                      <option>Sales</option>
+                      <option>Partnership</option>
+                      <option>Press</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-500 mb-2">Message</label>
+                    <textarea
+                      rows={4}
+                      className="w-full px-4 py-3 border border-slate-200 rounded-xl text-secondary-navy placeholder-slate-400 focus:outline-none focus:border-primary-teal transition-colors resize-none"
+                      placeholder="Tell us how we can help..."
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full rounded-full bg-gradient-to-r from-primary-cyan to-primary-teal px-6 py-3.5 text-base font-semibold text-white shadow-md transition-all hover:-translate-y-0.5 hover:shadow-lg"
+                  >
+                    Send Message
+                  </button>
+                </form>
               </div>
             </div>
           </div>
-        </section>
-      </main>
-      <Footer />
-    </>
+        </div>
+      </section>
+    </main>
   )
 }
-
-

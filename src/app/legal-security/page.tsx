@@ -1,139 +1,134 @@
 import Link from 'next/link'
-import Navigation from '@/components/Navigation'
-import Footer from '@/components/Footer'
+import { Lock } from 'lucide-react'
 
 export default function LegalSecurityPage() {
   return (
-    <>
-      <Navigation />
-      <main className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
-        {/* Hero Section */}
-        <section className="relative pt-20 pb-16 sm:pb-24 overflow-hidden">
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute top-20 left-10 w-72 h-72 bg-teal-500/10 rounded-full blur-3xl"></div>
-            <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
+    <main className="min-h-screen bg-white font-sans selection:bg-cyan-100 selection:text-cyan-900 bg-[linear-gradient(to_right,rgba(15,23,42,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.045)_1px,transparent_1px)] [background-size:32px_32px]">
+      <header className="fixed top-0 left-0 z-50 w-full border-b border-slate-200/60 bg-white/70 px-6 py-4 backdrop-blur-md">
+        <div className="relative mx-auto flex max-w-7xl items-center justify-between">
+          <Link href="/" className="text-lg font-bold tracking-tighter text-secondary-navy">
+            Flow<span className="text-primary-teal">Sight</span>
+          </Link>
+          <div className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-1.5 text-xs font-medium text-slate-400 md:flex">
+            <Lock className="h-3 w-3" aria-hidden />
+            <span>privacy-first, local, yours forever</span>
           </div>
+          <Link
+            href="/login"
+            className="rounded-full bg-gradient-to-r from-primary-cyan to-primary-teal px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:-translate-y-0.5 hover:from-primary-teal hover:to-primary-cyan hover:shadow-lg"
+          >
+            Sign in
+          </Link>
+        </div>
+      </header>
 
-          <div className="relative z-10 container-max px-4 sm:px-6 lg:px-12">
-            <div className="text-center mb-12 md:mb-16">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
-                Security
-                <span className="block bg-gradient-to-r from-teal-400 to-blue-400 bg-clip-text text-transparent">
-                  Overview
-                </span>
-              </h1>
-              <p className="text-lg sm:text-xl text-gray-400 leading-relaxed max-w-3xl mx-auto px-4">
-                How FlowSight keeps cognitive analytics local, how optional sharing is governed, and how we talk about GDPR / SOC 2 readiness with straight answers.
-              </p>
-            </div>
-          </div>
-        </section>
+      {/* Hero */}
+      <section className="pt-36 pb-16 md:pt-44 md:pb-24">
+        <div className="container px-4 md:px-6 mx-auto text-center">
+          <h1 className="font-serif text-4xl md:text-6xl font-bold text-secondary-navy mb-6">
+            Security
+            <span className="block bg-gradient-to-r from-primary-cyan to-primary-teal bg-clip-text text-transparent pt-2 pb-3">
+              Overview
+            </span>
+          </h1>
+          <p className="text-lg text-slate-500 leading-relaxed max-w-3xl mx-auto">
+            How FlowSight keeps cognitive analytics local, how optional sharing is governed, and how we talk about GDPR / SOC 2 readiness with straight answers.
+          </p>
+        </div>
+      </section>
 
-        {/* Security Overview */}
-        <section className="py-16 sm:py-24">
-          <div className="container-max px-4 sm:px-6 lg:px-12">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-
-              <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-2xl p-6 border border-slate-700/50">
-                <div className="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center mb-6">
-                  <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      {/* Security Overview */}
+      <section className="pb-24">
+        <div className="container px-4 md:px-6 mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[
+              {
+                title: 'Local-first cognitive context',
+                desc: 'Screen-derived context is designed to stay on the worker device. Account, billing, and explicitly published proof of work payloads follow our privacy programme and DPA.',
+                gradient: 'from-green-500/20 to-emerald-500/20',
+              },
+              {
+                title: 'Local processing',
+                desc: 'Core analysis is architected to run on your machine. Network features use encrypted connections where applicable.',
+                gradient: 'from-blue-500/20 to-indigo-500/20',
+              },
+              {
+                title: 'Risk-based security reviews',
+                desc: 'We apply access controls, monitoring, vulnerability management, and vendor reviews proportionate to risk.',
+                gradient: 'from-purple-500/20 to-pink-500/20',
+              },
+            ].map((item) => (
+              <div key={item.title} className={`rounded-2xl border border-slate-200 bg-gradient-to-br ${item.gradient} p-8 shadow-lg`}>
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-6 bg-white/80 shadow-sm">
+                  <svg className="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-bold text-white mb-3">Local-first cognitive context</h3>
-                <p className="text-gray-400 leading-relaxed">
-                  Screen-derived context is designed to stay on the worker device. Account, billing, and explicitly published proof of work payloads follow our privacy programme and DPA.
-                </p>
+                <h3 className="text-lg font-bold text-secondary-navy mb-4">{item.title}</h3>
+                <p className="text-slate-500 leading-relaxed">{item.desc}</p>
               </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-              <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-2xl p-6 border border-slate-700/50">
-                <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center mb-6">
-                  <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-bold text-white mb-3">Local processing</h3>
-                <p className="text-gray-400 leading-relaxed">
-                  Core analysis is architected to run on your machine. Network features use encrypted connections where applicable.
-                </p>
-              </div>
+      {/* Compliance */}
+      <section className="py-24 bg-slate-50">
+        <div className="container px-4 md:px-6 mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="font-serif text-3xl md:text-5xl font-bold text-secondary-navy mb-4">
+              GDPR & trust programme (SOC 2 aligned)
+            </h2>
+            <p className="text-slate-500 max-w-3xl mx-auto text-sm sm:text-base leading-relaxed">
+              We describe our practices accurately: compliance is an ongoing programme of controls, policies, and contracts, not a one-line badge.
+            </p>
+          </div>
 
-              <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-2xl p-6 border border-slate-700/50">
-                <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center mb-6">
-                  <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-bold text-white mb-3">Risk-based security reviews</h3>
-                <p className="text-gray-400 leading-relaxed">
-                  We apply access controls, monitoring, vulnerability management, and vendor reviews proportionate to risk.
-                </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            <div className="rounded-2xl border border-primary-teal/20 bg-white p-8 shadow-lg">
+              <div className="text-2xl font-bold text-primary-teal mb-4">GDPR</div>
+              <p className="text-slate-500 leading-relaxed mb-4">
+                We support EU/EEA/UK data protection requirements with transparent notices, lawful bases, data subject rights, subprocessors assessments, and international transfer safeguards (such as Standard Contractual Clauses where applicable).
+              </p>
+              <div className="flex flex-wrap gap-3 text-sm">
+                <Link href="/privacy-policy" className="text-primary-teal hover:text-cyan-600 underline underline-offset-2">Privacy Policy</Link>
+                <Link href="/cookie-policy" className="text-primary-teal hover:text-cyan-600 underline underline-offset-2">Cookie Policy</Link>
+                <Link href="/gdpr" className="text-primary-teal hover:text-cyan-600 underline underline-offset-2">GDPR overview</Link>
               </div>
             </div>
-          </div>
-        </section>
 
-        {/* Compliance, accurate positioning (no implied ISO/HIPAA certification) */}
-        <section className="py-16 sm:py-24 bg-slate-900/50">
-          <div className="container-max px-4 sm:px-6 lg:px-12">
-            <div className="text-center mb-12 md:mb-16">
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-4">
-                GDPR &amp; trust programme (SOC 2 aligned)
-              </h2>
-              <p className="text-gray-400 max-w-3xl mx-auto text-sm sm:text-base">
-                We describe our practices accurately: compliance is an ongoing programme of controls, policies, and contracts, not a one-line badge.
+            <div className="rounded-2xl border border-blue-500/20 bg-white p-8 shadow-lg">
+              <div className="text-2xl font-bold text-blue-500 mb-4">SOC 2 readiness</div>
+              <p className="text-slate-500 leading-relaxed mb-4">
+                We align internal controls with the AICPA Trust Services Criteria (Security, and where applicable Availability and Confidentiality) as part of a roadmap toward independent assurance. A SOC 2 Type II report, when available, is typically provided to customers under confidentiality, it does not replace your own legal or compliance review.
+              </p>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Industry-specific regimes (for example HIPAA or ISO 27001 certification) require separate contractual and technical measures; contact us if your organisation needs a regulated deployment.
               </p>
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-              <div className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-2xl p-8 border border-teal-500/20">
-                <div className="text-2xl font-bold text-teal-400 mb-4">GDPR</div>
-                <p className="text-gray-400 leading-relaxed mb-4">
-                  We support EU/EEA/UK data protection requirements with transparent notices, lawful bases, data subject rights, subprocessors assessments, and international transfer safeguards (such as Standard Contractual Clauses where applicable).
-                </p>
-                <div className="flex flex-wrap gap-3 text-sm">
-                  <Link href="/privacy-policy" className="text-teal-400 hover:text-teal-300 underline underline-offset-2">Privacy Policy</Link>
-                  <Link href="/cookie-policy" className="text-teal-400 hover:text-teal-300 underline underline-offset-2">Cookie Policy</Link>
-                  <Link href="/gdpr" className="text-teal-400 hover:text-teal-300 underline underline-offset-2">GDPR overview</Link>
-                </div>
-              </div>
-
-              <div className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-2xl p-8 border border-blue-500/20">
-                <div className="text-2xl font-bold text-blue-400 mb-4">SOC 2 readiness</div>
-                <p className="text-gray-400 leading-relaxed mb-4">
-                  We align internal controls with the AICPA Trust Services Criteria (Security, and where applicable Availability and Confidentiality) as part of a roadmap toward independent assurance. A SOC 2 Type II report, when available, is typically provided to customers under confidentiality, it does not replace your own legal or compliance review.
-                </p>
-                <p className="text-xs text-gray-500 leading-relaxed">
-                  Industry-specific regimes (for example HIPAA or ISO 27001 certification) require separate contractual and technical measures; contact us if your organisation needs a regulated deployment.
-                </p>
-              </div>
-            </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Contact */}
-        <section className="py-16 sm:py-24">
-          <div className="container-max px-4 sm:px-6 lg:px-12">
-            <div className="bg-gradient-to-r from-teal-900/20 to-blue-900/20 rounded-3xl p-8 sm:p-12 md:p-16 border border-teal-500/20">
-              <div className="text-center">
-                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-6">
-                  Security Questions?
-                </h2>
-                <p className="text-lg text-gray-400 mb-8 max-w-2xl mx-auto">
-                  Have questions about FlowSight's security practices or compliance?
-                  Our team is here to help.
-                </p>
-                <a href="/contact" className="bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white font-semibold px-8 py-4 rounded-xl transition-all duration-200 hover:shadow-xl hover:shadow-teal-500/25 transform hover:-translate-y-1">
-                  Contact Security Team
-                </a>
-              </div>
-            </div>
+      {/* Contact */}
+      <section className="py-24">
+        <div className="container px-4 md:px-6 mx-auto">
+          <div className="rounded-3xl bg-gradient-to-r from-secondary-navy to-slate-800 p-12 md:p-16 shadow-xl text-center">
+            <h2 className="font-serif text-3xl md:text-5xl font-bold text-white mb-6">
+              Security Questions?
+            </h2>
+            <p className="text-lg text-slate-300 leading-relaxed mb-10 max-w-2xl mx-auto">
+              Have questions about FlowSight's security practices or compliance? Our team is here to help.
+            </p>
+            <Link
+              href="/contact"
+              className="rounded-full bg-gradient-to-r from-primary-cyan to-primary-teal px-8 py-4 text-base font-semibold text-white shadow-md transition-all hover:-translate-y-0.5 hover:shadow-lg"
+            >
+              Contact Security Team
+            </Link>
           </div>
-        </section>
-      </main>
-      <Footer />
-    </>
+        </div>
+      </section>
+    </main>
   )
 }
-
-

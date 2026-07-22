@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import Navigation from '@/components/Navigation'
+import { Lock } from 'lucide-react'
 import { getBlogPostBySlug, getBlogSlugs } from '@/lib/blog/posts'
 import { siteConfig, absoluteUrl } from '@/lib/site'
 import { ArticleJsonLd } from '@/components/seo/ArticleJsonLd'
@@ -60,49 +60,61 @@ export default async function BlogPostPage({ params }: Props) {
   return (
     <>
       <ArticleJsonLd post={post} url={url} />
-      <Navigation />
-      <main className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 pb-24">
-        <article className="relative pt-24 pb-8">
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute top-20 left-10 w-72 h-72 bg-teal-500/10 rounded-full blur-3xl" />
-            <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
+      <main className="min-h-screen bg-white font-sans selection:bg-cyan-100 selection:text-cyan-900 bg-[linear-gradient(to_right,rgba(15,23,42,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.045)_1px,transparent_1px)] [background-size:32px_32px]">
+        <header className="fixed top-0 left-0 z-50 w-full border-b border-slate-200/60 bg-white/70 px-6 py-4 backdrop-blur-md">
+          <div className="relative mx-auto flex max-w-7xl items-center justify-between">
+            <Link href="/" className="text-lg font-bold tracking-tighter text-secondary-navy">
+              Flow<span className="text-primary-teal">Sight</span>
+            </Link>
+            <div className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-1.5 text-xs font-medium text-slate-400 md:flex">
+              <Lock className="h-3 w-3" aria-hidden />
+              <span>privacy-first, local, yours forever</span>
+            </div>
+            <Link
+              href="/login"
+              className="rounded-full bg-gradient-to-r from-primary-cyan to-primary-teal px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:-translate-y-0.5 hover:from-primary-teal hover:to-primary-cyan hover:shadow-lg"
+            >
+              Sign in
+            </Link>
           </div>
+        </header>
 
-          <div className="relative z-10 container-max px-4 sm:px-6 lg:px-12 max-w-3xl mx-auto">
-            <nav className="text-xs text-gray-500 mb-8" aria-label="Breadcrumb">
+        <article className="pt-32 pb-24">
+          <div className="container px-4 md:px-6 mx-auto max-w-3xl">
+            <nav className="text-xs text-slate-400 mb-8" aria-label="Breadcrumb">
               <ol className="flex flex-wrap items-center gap-2">
                 <li>
-                  <Link href="/" className="hover:text-teal-400 transition-colors">
+                  <Link href="/" className="hover:text-primary-teal transition-colors text-slate-500">
                     Home
                   </Link>
                 </li>
                 <li aria-hidden>/</li>
                 <li>
-                  <Link href="/blog" className="hover:text-teal-400 transition-colors">
+                  <Link href="/blog" className="hover:text-primary-teal transition-colors text-slate-500">
                     Blog
                   </Link>
                 </li>
                 <li aria-hidden>/</li>
-                <li className="text-gray-400 truncate max-w-[12rem] sm:max-w-none">{post.title}</li>
+                <li className="text-slate-400 truncate max-w-[12rem] sm:max-w-none">{post.title}</li>
               </ol>
             </nav>
 
-            <p className="text-teal-400 text-xs font-semibold uppercase tracking-wide mb-3">{categoryLabel(post.category)}</p>
-            <h1 className="text-3xl sm:text-4xl font-bold text-white leading-tight mb-6">{post.title}</h1>
-            <p className="text-gray-400 text-sm mb-8">
+            <p className="text-primary-teal text-xs font-semibold uppercase tracking-wide mb-3">{categoryLabel(post.category)}</p>
+            <h1 className="font-serif text-3xl sm:text-4xl font-bold text-secondary-navy mb-6">{post.title}</h1>
+            <p className="text-slate-400 text-sm mb-8">
               <time dateTime={post.publishedAt}>{post.publishedAt}</time>
               <span className="mx-2">·</span>
               {post.readTimeMin} min read
             </p>
 
-            <p className="text-lg text-gray-300 leading-relaxed mb-12 border-l-2 border-teal-500/50 pl-4">{post.excerpt}</p>
+            <p className="text-lg text-slate-500 leading-relaxed mb-12 border-l-2 border-primary-teal/50 pl-4">{post.excerpt}</p>
 
-            <div className="prose prose-invert prose-headings:text-white prose-p:text-gray-300 prose-p:leading-relaxed max-w-none">
+            <div className="prose prose-slate max-w-none">
               {post.sections.map((section) => (
                 <section key={section.heading} className="mb-10">
-                  <h2 className="text-xl font-semibold text-white mb-4">{section.heading}</h2>
+                  <h2 className="text-xl font-bold text-secondary-navy mb-4">{section.heading}</h2>
                   {section.paragraphs.map((p, i) => (
-                    <p key={i} className="mb-4 text-gray-300 leading-relaxed">
+                    <p key={i} className="mb-4 text-slate-500 leading-relaxed">
                       {p}
                     </p>
                   ))}
@@ -110,9 +122,9 @@ export default async function BlogPostPage({ params }: Props) {
               ))}
             </div>
 
-            <div className="mt-14 pt-8 border-t border-slate-700">
-              <p className="text-sm text-gray-400 mb-4">Explore more on the blog</p>
-              <Link href="/blog" className="text-teal-400 hover:text-teal-300 font-medium text-sm">
+            <div className="mt-14 pt-8 border-t border-slate-200">
+              <p className="text-sm text-slate-400 mb-4">Explore more on the blog</p>
+              <Link href="/blog" className="text-primary-teal hover:text-cyan-600 font-medium text-sm">
                 ← All posts
               </Link>
             </div>

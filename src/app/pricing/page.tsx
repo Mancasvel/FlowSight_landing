@@ -1,222 +1,68 @@
-'use client'
-
-import Navigation from '@/components/Navigation'
-import Footer from '@/components/Footer'
-import BetaSignupModal from '@/components/BetaSignupModal'
-import { useBetaModal } from '@/hooks/useBetaModal'
-
-export default function PricingPage() {
-  const { isOpen, openModal, closeModal } = useBetaModal()
-  const pricing = [
-    {
-      tier: "Basic",
-      price: "€12/user/mo",
-      features: {
-        "Local AI on device + open codebase": "Included",
-        "Cognitive + focus digest": "Daily email",
-        "Local session history": "7 days",
-        "Proof-of-work exports": "Manual templates",
-        "Burnout & overload signals": "Core heuristics",
-        "Client sharing controls": "Self-serve links",
-        "Marketplace / API program": "Not included",
-        "SSO (SAML)": "No",
-        "Support": "Community + docs"
-      },
-      cta: "Create Free Account",
-      ctaClass: "border-2 border-slate-600 text-gray-300 hover:border-teal-500 hover:text-teal-400 font-semibold px-6 py-3 rounded-xl transition-all duration-200"
-    },
-    {
-      tier: "Pro",
-      price: "€19/user/mo",
-      features: {
-        "Local AI on device + open codebase": "Included + faster builds",
-        "Cognitive + focus digest": "Realtime + weekly recap",
-        "Local session history": "365 days",
-        "Proof-of-work exports": "Automated weekly PDF",
-        "Burnout & overload signals": "Predictive alerts",
-        "Client sharing controls": "Branded portals",
-        "Marketplace / API program": "Coming soon",
-        "SSO (SAML)": "Roadmap",
-        "Support": "Priority email (< 8h)"
-      },
-      cta: "Start 14-Day Trial",
-      ctaClass: "bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white font-semibold px-6 py-3 rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-teal-500/25",
-      popular: true
-    },
-    {
-      tier: "Enterprise",
-      price: "Custom",
-      features: {
-        "Local AI on device + open codebase": "Custom rollout images",
-        "Cognitive + focus digest": "Exec + HR analytics",
-        "Local session history": "Unlimited + legal hold",
-        "Proof-of-work exports": "White-label + API",
-        "Burnout & overload signals": "Custom models",
-        "Client sharing controls": "Granular policy engine",
-        "Marketplace / API program": "B2B2B integrations",
-        "SSO (SAML)": "Yes + SCIM",
-        "Support": "Slack + solutions engineer"
-      },
-      cta: "Contact Sales",
-      ctaClass: "border-2 border-slate-600 text-gray-300 hover:border-teal-500 hover:text-teal-400 font-semibold px-6 py-3 rounded-xl transition-all duration-200"
-    }
-  ]
-
-  const features = Object.keys(pricing[0].features)
-
+import Link from 'next/link'
+import { Lock } from 'lucide-react'
+import { Pricing } from '@/components/Pricing'
+import { ClosingCTA } from '@/components/redesign/ClosingCTA'
+import { DownloadActionsProvider } from '@/context/DownloadActionsContext'
+import { getLatestAgentRelease } from '@/lib/downloads.server'
+export default async function PricingPage() {
+  const release = await getLatestAgentRelease()
   return (
-    <>
-      <Navigation />
-      <main className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
-        {/* Hero Section */}
-        <section className="relative pt-20 pb-16 sm:pb-24 overflow-hidden">
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute top-20 left-10 w-72 h-72 bg-teal-500/10 rounded-full blur-3xl"></div>
-            <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
+    <DownloadActionsProvider release={release}>
+      <main className="min-h-screen bg-white font-sans selection:bg-cyan-100 selection:text-cyan-900 bg-[linear-gradient(to_right,rgba(15,23,42,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.045)_1px,transparent_1px)] [background-size:32px_32px]">
+        <header className="fixed top-0 left-0 z-50 w-full border-b border-slate-200/60 bg-white/70 px-6 py-4 backdrop-blur-md">
+          <div className="relative mx-auto flex max-w-7xl items-center justify-between">
+            <Link href="/" className="text-lg font-bold tracking-tighter text-secondary-navy">
+              Flow<span className="text-primary-teal">Sight</span>
+            </Link>
+
+            <div className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-1.5 text-xs font-medium text-slate-400 md:flex">
+              <Lock className="h-3 w-3" aria-hidden />
+              <span>privacy-first, local, yours forever</span>
+            </div>
+
+            <Link
+              href="/login"
+              className="rounded-full bg-gradient-to-r from-primary-cyan to-primary-teal px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:-translate-y-0.5 hover:from-primary-teal hover:to-primary-cyan hover:shadow-lg"
+            >
+              Sign in
+            </Link>
           </div>
+        </header>
 
-          <div className="relative z-10 container-max px-4 sm:px-6 lg:px-12">
-            <div className="text-center mb-10 md:mb-16">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
-                Invest in cognition, not spyware seats
-              </h1>
-            </div>
-          </div>
-        </section>
+        <Pricing />
 
-        {/* Pricing - Desktop Table */}
-        <section className="pb-16 sm:pb-24">
-          <div className="container-max px-4 sm:px-6 lg:px-12">
-            <div className="hidden lg:block overflow-x-auto">
-              <table className="w-full bg-slate-800/50 backdrop-blur-sm rounded-lg shadow-sm border border-slate-700">
-                <thead>
-                  <tr className="border-b border-slate-700">
-                    <th className="text-left p-6 font-bold text-white">Feature</th>
-                    {pricing.map((tier, index) => (
-                      <th key={index} className="text-center p-6">
-                        <div className="space-y-2">
-                          <div className="text-lg font-bold text-white">{tier.tier}</div>
-                          <div className="text-2xl font-bold text-teal-400">{tier.price}</div>
-                          {tier.popular && (
-                            <div className="text-xs bg-teal-500 text-white px-2 py-1 rounded-full inline-block">
-                              Most Popular
-                            </div>
-                          )}
-                        </div>
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {features.map((feature, featureIndex) => (
-                    <tr key={feature} className={featureIndex % 2 === 0 ? 'bg-slate-800/30' : 'bg-slate-800/50'}>
-                      <td className="p-6 font-medium text-white">{feature}</td>
-                      {pricing.map((tier, tierIndex) => (
-                        <td key={tierIndex} className="p-6 text-center text-gray-400">
-                          {tier.features[feature as keyof typeof tier.features]}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+        <section id="faq" className="py-24">
+          <div className="container px-4 md:px-6 mx-auto max-w-3xl">
+            <h2 className="font-serif text-3xl md:text-5xl font-bold text-center mb-16 text-secondary-navy">
+              Frequently Asked Questions
+            </h2>
 
-            {/* Pricing - Mobile Cards */}
-            <div className="lg:hidden space-y-4 sm:space-y-6">
-              {pricing.map((tier, index) => (
-                <div key={index} className={`bg-slate-800/50 backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-lg border ${tier.popular ? 'border-teal-500' : 'border-slate-700'} p-4 sm:p-6`}>
-                  <div className="text-center mb-4 sm:mb-6">
-                    <div className="flex items-center justify-center mb-2">
-                      <h3 className="text-lg sm:text-xl font-bold text-white mr-2 sm:mr-3">{tier.tier}</h3>
-                      {tier.popular && (
-                        <div className="text-xs bg-teal-500 text-white px-2 sm:px-3 py-1 rounded-full">
-                          Most Popular
-                        </div>
-                      )}
-                    </div>
-                    <div className="text-2xl sm:text-3xl font-bold text-teal-400 mb-3 sm:mb-4">{tier.price}</div>
-                  </div>
-
-                  <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
-                    {features.map((feature, featureIndex) => (
-                      <div key={featureIndex} className="flex justify-between items-center py-1.5 sm:py-2 border-b border-slate-700 last:border-b-0">
-                        <span className="text-xs sm:text-sm font-medium text-gray-300">{feature}</span>
-                        <span className="text-xs sm:text-sm text-gray-400 text-right ml-2">{tier.features[feature as keyof typeof tier.features]}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <button
-                    onClick={tier.cta !== "Contact Sales" ? openModal : undefined}
-                    className={tier.ctaClass + " w-full text-sm sm:text-base"}
-                  >
-                    {tier.cta}
-                  </button>
-                </div>
-              ))}
-            </div>
-
-            {/* CTA Buttons - Desktop Only */}
-            <div className="hidden lg:flex justify-center gap-4 mt-12">
-              {pricing.map((tier, index) => (
-                <button
-                  key={index}
-                  onClick={tier.cta !== "Contact Sales" ? openModal : undefined}
-                  className={tier.ctaClass}
-                >
-                  {tier.cta}
-                </button>
-              ))}
-            </div>
-
-            {/* Pricing Note */}
-            <div className="text-center mt-6 sm:mt-8 px-4">
-              <p className="text-sm sm:text-base text-gray-400">
-                Annual billing available (save 20%). Volume discounts for teams 500+.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* FAQ Section */}
-        <section className="py-16 sm:py-24 bg-slate-900/50">
-          <div className="container-max px-4 sm:px-6 lg:px-12">
-            <div className="text-center mb-12 md:mb-16">
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-6">
-                Frequently Asked Questions
-              </h2>
-            </div>
-
-            <div className="max-w-3xl mx-auto space-y-6">
-              <div className="bg-slate-800/50 rounded-xl p-6">
-                <h3 className="text-lg font-semibold text-white mb-3">Can I change plans anytime?</h3>
-                <p className="text-gray-400">Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately.</p>
+            <div className="space-y-6">
+              <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-lg">
+                <h3 className="text-lg font-bold text-secondary-navy mb-3">Can I change plans anytime?</h3>
+                <p className="text-slate-500">Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately.</p>
               </div>
 
-              <div className="bg-slate-800/50 rounded-xl p-6">
-                <h3 className="text-lg font-semibold text-white mb-3">Is there a free trial?</h3>
-                <p className="text-gray-400">Yes, we offer a 14-day free trial for all paid plans with full access to all features.</p>
+              <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-lg">
+                <h3 className="text-lg font-bold text-secondary-navy mb-3">Is there a free trial?</h3>
+                <p className="text-slate-500">Yes, we offer a 14-day free trial for all paid plans with full access to all features.</p>
               </div>
 
-              <div className="bg-slate-800/50 rounded-xl p-6">
-                <h3 className="text-lg font-semibold text-white mb-3">What payment methods do you accept?</h3>
-                <p className="text-gray-400">We accept all major credit cards, PayPal, and bank transfers for annual plans.</p>
+              <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-lg">
+                <h3 className="text-lg font-bold text-secondary-navy mb-3">What payment methods do you accept?</h3>
+                <p className="text-slate-500">We accept all major credit cards, PayPal, and bank transfers for annual plans.</p>
               </div>
 
-              <div className="bg-slate-800/50 rounded-xl p-6">
-                <h3 className="text-lg font-semibold text-white mb-3">Do you offer discounts for teams?</h3>
-                <p className="text-gray-400">Yes, we offer volume discounts for teams of 10 or more. Contact our sales team for details.</p>
+              <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-lg">
+                <h3 className="text-lg font-bold text-secondary-navy mb-3">Do you offer discounts for teams?</h3>
+                <p className="text-slate-500">Yes, we offer volume discounts for teams of 10 or more. Contact our sales team for details.</p>
               </div>
             </div>
           </div>
         </section>
+
+        <ClosingCTA />
       </main>
-
-      {/* Beta Signup Modal */}
-      <BetaSignupModal isOpen={isOpen} onClose={closeModal} />
-
-      <Footer />
-    </>
+    </DownloadActionsProvider>
   )
 }

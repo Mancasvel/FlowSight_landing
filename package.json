@@ -38,6 +38,9 @@
     "tailwind-merge": "~3.4.0",
     "unpdf": "~1.4.0"
   },
+  "pnpm": {
+    "onlyBuiltDependencies": ["sharp"]
+  },
   "devDependencies": {
     "@types/node": "~20.19.0",
     "@types/react": "~18.3.0",

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
-import Navigation from '@/components/Navigation'
-import Footer from '@/components/Footer'
+import Link from 'next/link'
+import { Lock } from 'lucide-react'
 import { siteConfig } from '@/lib/site'
 
 export const metadata: Metadata = {
@@ -10,78 +10,90 @@ export const metadata: Metadata = {
 
 export default function GdprPage() {
   return (
-    <>
-      <Navigation />
-      <main className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
-        <section className="relative pt-20 pb-12 sm:pb-16 overflow-hidden">
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute top-20 left-10 w-72 h-72 bg-teal-500/10 rounded-full blur-3xl" />
-            <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
+    <main className="min-h-screen bg-white font-sans selection:bg-cyan-100 selection:text-cyan-900 bg-[linear-gradient(to_right,rgba(15,23,42,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.045)_1px,transparent_1px)] [background-size:32px_32px]">
+      <header className="fixed top-0 left-0 z-50 w-full border-b border-slate-200/60 bg-white/70 px-6 py-4 backdrop-blur-md">
+        <div className="relative mx-auto flex max-w-7xl items-center justify-between">
+          <Link href="/" className="text-lg font-bold tracking-tighter text-secondary-navy">
+            Flow<span className="text-primary-teal">Sight</span>
+          </Link>
+          <div className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-1.5 text-xs font-medium text-slate-400 md:flex">
+            <Lock className="h-3 w-3" aria-hidden />
+            <span>privacy-first, local, yours forever</span>
           </div>
-          <div className="relative z-10 container-max px-4 sm:px-6 lg:px-12 text-center">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight mb-4">
-              Data protection &{' '}
-              <span className="bg-gradient-to-r from-teal-400 to-blue-400 bg-clip-text text-transparent">GDPR</span>
-            </h1>
-            <p className="text-lg text-gray-400 max-w-3xl mx-auto px-4">
-              Practical information about Regulation (EU) 2016/679 and how we support transparency, security, and your rights.
-            </p>
-          </div>
-        </section>
+          <Link
+            href="/login"
+            className="rounded-full bg-gradient-to-r from-primary-cyan to-primary-teal px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:-translate-y-0.5 hover:from-primary-teal hover:to-primary-cyan hover:shadow-lg"
+          >
+            Sign in
+          </Link>
+        </div>
+      </header>
 
-        <section className="py-12 sm:py-20">
-          <div className="container-max px-4 sm:px-6 lg:px-12">
-            <div className="max-w-4xl mx-auto prose prose-lg prose-invert prose-headings:text-white prose-a:text-teal-400">
-              <div className="space-y-8 text-gray-300">
+      <section className="pt-36 pb-12 md:pt-44 md:pb-16">
+        <div className="container px-4 md:px-6 mx-auto text-center">
+          <h1 className="font-serif text-4xl md:text-6xl font-bold text-secondary-navy mb-6">
+            Data protection &
+            <span className="block bg-gradient-to-r from-primary-cyan to-primary-teal bg-clip-text text-transparent pt-2 pb-3">
+              GDPR
+            </span>
+          </h1>
+          <p className="text-lg text-slate-500 leading-relaxed max-w-3xl mx-auto">
+            Practical information about Regulation (EU) 2016/679 and how we support transparency, security, and your rights.
+          </p>
+        </div>
+      </section>
 
-                <div className="bg-slate-800/50 rounded-xl p-6 border border-slate-700/50">
-                  <h2 className="text-xl font-bold text-white mt-0">Our approach</h2>
-                  <p className="mb-0">
-                    {siteConfig.legalName} designs {siteConfig.name} with privacy-by-design principles: minimisation, transparency, and strong security. This page summarises how EU GDPR fits into that programme. The full legal details are in our{' '}
-                    <a href="/privacy-policy">Privacy Policy</a> and <a href="/cookie-policy">Cookie Policy</a>.
-                  </p>
-                </div>
+      <section className="pb-24">
+        <div className="container px-4 md:px-6 mx-auto">
+          <div className="max-w-4xl mx-auto">
+            <div className="space-y-8 text-slate-500">
 
-                <div className="bg-slate-800/50 rounded-xl p-6 border border-slate-700/50">
-                  <h2 className="text-xl font-bold text-white mt-0">Controller vs processor</h2>
-                  <p>
-                    For our website, accounts, and general service operation, we typically act as a <strong>controller</strong> for personal data we determine the purposes and means of processing.
-                  </p>
-                  <p className="mb-0">
-                    For enterprise deployments, we may act as a <strong>processor</strong> on your instructions under a Data Processing Agreement (DPA). Commercial customers should rely on their contract and DPA for organisational obligations.
-                  </p>
-                </div>
+              <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-lg">
+                <h2 className="text-xl font-bold text-secondary-navy mb-4">Our approach</h2>
+                <p className="leading-relaxed mb-0">
+                  {siteConfig.legalName} designs {siteConfig.name} with privacy-by-design principles: minimisation, transparency, and strong security. This page summarises how EU GDPR fits into that programme. The full legal details are in our{' '}
+                  <a href="/privacy-policy" className="text-primary-teal hover:text-cyan-600">Privacy Policy</a> and <a href="/cookie-policy" className="text-primary-teal hover:text-cyan-600">Cookie Policy</a>.
+                </p>
+              </div>
 
-                <div className="bg-slate-800/50 rounded-xl p-6 border border-slate-700/50">
-                  <h2 className="text-xl font-bold text-white mt-0">Exercising your GDPR rights</h2>
-                  <p>
-                    You may request access, rectification, erasure, restriction, portability, or object to certain processing, and withdraw consent where processing is consent-based. Email{' '}
-                    <a href={`mailto:${siteConfig.privacyEmail}`}>{siteConfig.privacyEmail}</a> with your request and enough information to verify your identity (we may ask proportionate follow-up questions to protect account security).
-                  </p>
-                  <p className="mb-0 text-sm text-gray-500">
-                    Under Art. 12(3) GDPR we aim to respond within one month, extendable by two further months in complex cases with notice.
-                  </p>
-                </div>
+              <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-lg">
+                <h2 className="text-xl font-bold text-secondary-navy mb-4">Controller vs processor</h2>
+                <p className="leading-relaxed mb-4">
+                  For our website, accounts, and general service operation, we typically act as a <strong className="text-secondary-navy">controller</strong> for personal data we determine the purposes and means of processing.
+                </p>
+                <p className="leading-relaxed mb-0">
+                  For enterprise deployments, we may act as a <strong className="text-secondary-navy">processor</strong> on your instructions under a Data Processing Agreement (DPA). Commercial customers should rely on their contract and DPA for organisational obligations.
+                </p>
+              </div>
 
-                <div className="bg-slate-800/50 rounded-xl p-6 border border-slate-700/50">
-                  <h2 className="text-xl font-bold text-white mt-0">Supervisory authority</h2>
-                  <p className="mb-0">
-                    You have the right to lodge a complaint with a supervisory authority, in particular in the EU Member State of your habitual residence, place of work, or of an alleged infringement. A list of EU authorities is maintained by the European Data Protection Board (EDPB).
-                  </p>
-                </div>
+              <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-lg">
+                <h2 className="text-xl font-bold text-secondary-navy mb-4">Exercising your GDPR rights</h2>
+                <p className="leading-relaxed mb-4">
+                  You may request access, rectification, erasure, restriction, portability, or object to certain processing, and withdraw consent where processing is consent-based. Email{' '}
+                  <a href={`mailto:${siteConfig.privacyEmail}`} className="text-primary-teal hover:text-cyan-600">{siteConfig.privacyEmail}</a> with your request and enough information to verify your identity (we may ask proportionate follow-up questions to protect account security).
+                </p>
+                <p className="text-sm text-slate-400 mb-0 leading-relaxed">
+                  Under Art. 12(3) GDPR we aim to respond within one month, extendable by two further months in complex cases with notice.
+                </p>
+              </div>
 
-                <div className="bg-slate-800/50 rounded-xl p-6 border border-slate-700/50">
-                  <h2 className="text-xl font-bold text-white mt-0">SOC 2 readiness (trust programme)</h2>
-                  <p className="mb-0">
-                    We maintain a security programme aligned with the AICPA Trust Services Criteria (Security, and where applicable Availability and Confidentiality) as a roadmap toward independent assurance. A SOC 2 report, when available, is typically shared with customers under confidentiality; it is not a substitute for your own legal or compliance assessment. See also our <a href="/legal-security">Trust &amp; security overview</a>.
-                  </p>
-                </div>
+              <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-lg">
+                <h2 className="text-xl font-bold text-secondary-navy mb-4">Supervisory authority</h2>
+                <p className="leading-relaxed mb-0">
+                  You have the right to lodge a complaint with a supervisory authority, in particular in the EU Member State of your habitual residence, place of work, or of an alleged infringement. A list of EU authorities is maintained by the European Data Protection Board (EDPB).
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-lg">
+                <h2 className="text-xl font-bold text-secondary-navy mb-4">SOC 2 readiness (trust programme)</h2>
+                <p className="leading-relaxed mb-0">
+                  We maintain a security programme aligned with the AICPA Trust Services Criteria (Security, and where applicable Availability and Confidentiality) as a roadmap toward independent assurance. A SOC 2 report, when available, is typically shared with customers under confidentiality; it is not a substitute for your own legal or compliance assessment. See also our <a href="/legal-security" className="text-primary-teal hover:text-cyan-600">Trust & security overview</a>.
+                </p>
               </div>
             </div>
           </div>
-        </section>
-      </main>
-      <Footer />
-    </>
+        </div>
+      </section>
+    </main>
   )
 }

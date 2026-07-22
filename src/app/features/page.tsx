@@ -24,7 +24,7 @@ export default function FeaturesPage() {
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
                 Everything you need to
                 <span className="block bg-gradient-to-r from-teal-400 to-blue-400 bg-clip-text text-transparent">
-                  protect focus &amp; prove output
+                  protect focus & prove output
                 </span>
               </h1>
 
@@ -163,7 +163,7 @@ export default function FeaturesPage() {
                 <div className="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
                   <span className="text-2xl font-bold text-purple-400">3</span>
                 </div>
-                <h3 className="text-xl font-bold text-white mb-4">Review &amp; share</h3>
+                <h3 className="text-xl font-bold text-white mb-4">Review & share</h3>
                 <p className="text-gray-400">
                   When you are ready, ship a polished proof of work packet to clients or platform ops. Everything else remains on device history.
                 </p>
