@@ -4,6 +4,7 @@ import OnboardingWizard from '@/components/onboarding/OnboardingWizard'
 import { resolvePlanId, getPlan } from '@/lib/plans'
 import { resolveModeFromPlan } from '@/lib/onboarding/questions'
 import { getActiveTeamId } from '@/lib/getActiveTeamId'
+import { userHasActivePaidLicense } from '@/lib/license/hasActivePaidLicense'
 import { teamHasDashboardPreferences } from '@/lib/onboarding/hasDashboardPreferences'
 
 export default async function AccountOnboardingPage() {
@@ -16,6 +17,9 @@ export default async function AccountOnboardingPage() {
 
   const teamId = await getActiveTeamId(user.id)
   if (!teamId) redirect('/dashboard/onboarding')
+
+  const hasPaidLicense = await userHasActivePaidLicense(user.id, teamId)
+  if (!hasPaidLicense) redirect('/dashboard')
 
   const hasPreferences = await teamHasDashboardPreferences(teamId)
   if (hasPreferences) redirect('/account/my-dashboard')

@@ -10,6 +10,8 @@ import {
   getWorkflowData,
 } from '@/lib/dashboardData'
 import ChatDashboard from '@/components/dashboard/ChatDashboard'
+import UpgradePromptDashboard from '@/components/dashboard/UpgradePromptDashboard'
+import { userHasActivePaidLicense } from '@/lib/license/hasActivePaidLicense'
 
 export default async function DashboardPage() {
   const headerStore = await headers()
@@ -27,6 +29,11 @@ export default async function DashboardPage() {
     profile?.display_name ?? headerStore.get('x-user-name') ?? 'there'
 
   const teamId = await getActiveTeamId(userId)
+  const hasPaidLicense = await userHasActivePaidLicense(userId, teamId)
+
+  if (!hasPaidLicense) {
+    return <UpgradePromptDashboard displayName={displayName} />
+  }
 
   if (!teamId) {
     return (

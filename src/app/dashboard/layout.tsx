@@ -3,6 +3,7 @@ import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import DashboardShell from '@/components/dashboard/DashboardShell'
 import { loadDashboardShellProps } from '@/lib/dashboard/loadShellProps'
+import { userHasActivePaidLicense } from '@/lib/license/hasActivePaidLicense'
 import { userNeedsDashboardOnboarding } from '@/lib/onboarding/hasDashboardPreferences'
 
 export const dynamic = 'force-dynamic'
@@ -36,7 +37,10 @@ export default async function DashboardLayout({
     }
   }
 
+  const hasPaidLicense = await userHasActivePaidLicense(shell.userId, shell.activeTeamId)
+
   const needsPreferences =
+    hasPaidLicense &&
     shell.activeTeamId &&
     !isOnboarding &&
     !isPricing &&

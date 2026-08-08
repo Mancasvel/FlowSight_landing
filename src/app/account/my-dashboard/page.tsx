@@ -11,6 +11,7 @@ import {
 import { getStoredDashboardPreferences } from '@/lib/onboarding/getDashboardPreferences'
 import { getWorkloadMembersForTeam } from '@/lib/onboarding/getWorkloadMembers'
 import PersonalizedDashboardView from '@/components/dashboard/personalized/PersonalizedDashboardView'
+import { userHasActivePaidLicense } from '@/lib/license/hasActivePaidLicense'
 
 export default async function MyDashboardPage() {
   const shell = await loadDashboardShellProps()
@@ -26,7 +27,8 @@ export default async function MyDashboardPage() {
 
   const preferences = await getStoredDashboardPreferences(teamId)
   if (!preferences) {
-    redirect('/account/onboarding')
+    const hasPaidLicense = await userHasActivePaidLicense(shell.userId, teamId)
+    redirect(hasPaidLicense ? '/account/onboarding' : '/dashboard')
   }
 
   const now = new Date()
