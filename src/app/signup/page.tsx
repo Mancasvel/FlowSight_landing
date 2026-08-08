@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense, FormEvent } from 'react';
+import { useState, Suspense, FormEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -13,89 +13,98 @@ import {
     AuthDivider,
     AuthErrorBanner,
     AuthField,
+    AuthSuccessBanner,
 } from '@/components/auth/AuthFormFields';
 
-function LoginContent() {
+function SignupContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [isLoading, setIsLoading] = useState(false);
     const [oauthLoading, setOauthLoading] = useState(false);
     const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
+    const [fullName, setFullName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const supabase = createClient();
 
-    useEffect(() => {
-        const authError = searchParams.get('error');
-        if (authError === 'auth_failed') {
-            setError('Authentication failed. Please try again.');
-        } else if (authError === 'not_pm') {
-            setError('Access denied. This portal is for Project Managers only.');
-        } else if (authError === 'jira_auth_failed') {
-            setError('Jira authentication failed. Please try again.');
-        } else if (authError === 'token_exchange_failed') {
-            setError('Failed to authenticate with Jira. Please try again.');
-        } else if (authError === 'jira_resources_failed') {
-            setError('Could not access your Jira workspace. Please check permissions.');
-        } else if (authError === 'jira_user_failed') {
-            setError('Could not retrieve your Jira user information.');
-        } else if (authError === 'profile_creation_failed') {
-            setError('Failed to create your profile. Please try again.');
-        }
-    }, [searchParams]);
-
-    const buildSignupHref = () => {
+    const buildLoginHref = () => {
         const params = new URLSearchParams();
         const returnTo = searchParams.get('returnTo');
         const plan = searchParams.get('plan');
         if (returnTo) params.set('returnTo', returnTo);
         if (plan) params.set('plan', plan);
         const query = params.toString();
-        return query ? `/signup?${query}` : '/signup';
+        return query ? `/login?${query}` : '/login';
     };
 
-    const handleEmailSignIn = async (event: FormEvent<HTMLFormElement>) => {
+    const handleEmailSignUp = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        setIsLoading(true);
         setError('');
+        setSuccess('');
+
+        if (password.length < 8) {
+            setError('Password must be at least 8 characters.');
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            setError('Passwords do not match.');
+            return;
+        }
+
+        setIsLoading(true);
 
         const normalizedEmail = email.trim().toLowerCase();
+        const trimmedName = fullName.trim();
 
-        const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        const { data, error: signUpError } = await supabase.auth.signUp({
             email: normalizedEmail,
             password,
+            options: {
+                data: {
+                    full_name: trimmedName,
+                },
+                emailRedirectTo: getAuthCallbackUrl(searchParams),
+            },
         });
 
-        if (signInError) {
-            setError(
-                signInError.message === 'Invalid login credentials'
-                    ? 'Invalid email or password. Please try again.'
-                    : signInError.message
-            );
+        if (signUpError) {
+            setError(signUpError.message);
             setIsLoading(false);
             return;
         }
 
         if (!data.user) {
-            setError('Sign in failed. Please try again.');
+            setError('Account creation failed. Please try again.');
             setIsLoading(false);
             return;
         }
 
-        const { error: profileError } = await ensureProfile(supabase, data.user);
-        if (profileError) {
-            setError('Failed to set up your profile. Please try again.');
-            setIsLoading(false);
+        if (data.session) {
+            const { error: profileError } = await ensureProfile(supabase, data.user);
+            if (profileError) {
+                setError('Account created, but profile setup failed. Please sign in.');
+                setIsLoading(false);
+                return;
+            }
+
+            router.replace(getPostAuthRedirect(searchParams));
+            router.refresh();
             return;
         }
 
-        router.replace(getPostAuthRedirect(searchParams));
-        router.refresh();
+        setSuccess(
+            'Account created. Check your email to confirm your address, then sign in.'
+        );
+        setIsLoading(false);
     };
 
-    const handleGoogleSignIn = async () => {
+    const handleGoogleSignUp = async () => {
         setOauthLoading(true);
         setError('');
+        setSuccess('');
 
         const { error: oauthError } = await supabase.auth.signInWithOAuth({
             provider: 'google',
@@ -110,22 +119,6 @@ function LoginContent() {
         }
     };
 
-    const handleJiraSignIn = () => {
-        setOauthLoading(true);
-        setError('');
-
-        const clientId = process.env.NEXT_PUBLIC_JIRA_CLIENT_ID;
-        const redirectUri = encodeURIComponent(`${window.location.origin}/api/auth/jira/callback`);
-        const scope = encodeURIComponent('read:jira-user read:jira-work offline_access');
-        const state = crypto.randomUUID();
-
-        sessionStorage.setItem('jira_oauth_state', state);
-
-        const authUrl = `https://auth.atlassian.com/authorize?audience=api.atlassian.com&client_id=${clientId}&scope=${scope}&redirect_uri=${redirectUri}&state=${state}&response_type=code&prompt=consent`;
-
-        window.location.href = authUrl;
-    };
-
     const isBusy = isLoading || oauthLoading;
 
     return (
@@ -138,17 +131,29 @@ function LoginContent() {
             <div className="dashboard-card p-8 backdrop-blur-xl bg-dashboard-card/80">
                 <div className="space-y-6">
                     <AuthErrorBanner message={error} />
+                    <AuthSuccessBanner message={success} />
 
                     <div className="text-center">
                         <h2 className="text-lg font-semibold text-dashboard-text mb-2">
-                            Welcome back
+                            Create your account
                         </h2>
                         <p className="text-sm text-dashboard-muted">
-                            Sign in to access your team&apos;s productivity dashboard
+                            Start managing your team&apos;s productivity with FlowSight
                         </p>
                     </div>
 
-                    <form onSubmit={handleEmailSignIn} className="space-y-4">
+                    <form onSubmit={handleEmailSignUp} className="space-y-4">
+                        <AuthField
+                            id="fullName"
+                            label="Full name"
+                            type="text"
+                            autoComplete="name"
+                            placeholder="Jane Doe"
+                            value={fullName}
+                            onChange={(event) => setFullName(event.target.value)}
+                            required
+                            disabled={isBusy}
+                        />
                         <AuthField
                             id="email"
                             label="Email"
@@ -164,22 +169,26 @@ function LoginContent() {
                             id="password"
                             label="Password"
                             type="password"
-                            autoComplete="current-password"
-                            placeholder="Enter your password"
+                            autoComplete="new-password"
+                            placeholder="At least 8 characters"
                             value={password}
                             onChange={(event) => setPassword(event.target.value)}
                             required
+                            minLength={8}
                             disabled={isBusy}
                         />
-
-                        <div className="flex justify-end">
-                            <Link
-                                href="/forgot-password"
-                                className="text-sm text-primary-blue hover:underline"
-                            >
-                                Forgot password?
-                            </Link>
-                        </div>
+                        <AuthField
+                            id="confirmPassword"
+                            label="Confirm password"
+                            type="password"
+                            autoComplete="new-password"
+                            placeholder="Repeat your password"
+                            value={confirmPassword}
+                            onChange={(event) => setConfirmPassword(event.target.value)}
+                            required
+                            minLength={8}
+                            disabled={isBusy}
+                        />
 
                         <button
                             type="submit"
@@ -189,10 +198,10 @@ function LoginContent() {
                             {isLoading ? (
                                 <>
                                     <Loader2 className="animate-spin" size={20} />
-                                    Signing in...
+                                    Creating account...
                                 </>
                             ) : (
-                                'Sign in with email'
+                                'Create account'
                             )}
                         </button>
                     </form>
@@ -200,7 +209,7 @@ function LoginContent() {
                     <AuthDivider />
 
                     <button
-                        onClick={handleGoogleSignIn}
+                        onClick={handleGoogleSignUp}
                         disabled={isBusy}
                         className="w-full py-3 px-4 bg-white border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-blue/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-3"
                     >
@@ -233,51 +242,20 @@ function LoginContent() {
                             </>
                         )}
                     </button>
-
-                    <button
-                        onClick={handleJiraSignIn}
-                        disabled={isBusy}
-                        className="w-full py-3 px-4 bg-[#0052CC] border border-[#0052CC] rounded-lg text-white font-medium hover:bg-[#0747A6] focus:outline-none focus:ring-2 focus:ring-[#0052CC]/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-3"
-                    >
-                        {oauthLoading ? (
-                            <>
-                                <Loader2 className="animate-spin" size={20} />
-                                Redirecting...
-                            </>
-                        ) : (
-                            <>
-                                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                                    <path d="M11.571 11.513H0a5.218 5.218 0 0 0 5.232 5.215h2.13v2.057A5.215 5.215 0 0 0 12.575 24V12.518a1.005 1.005 0 0 0-1.005-1.005zm5.723-5.756H5.736a5.215 5.215 0 0 0 5.215 5.214h2.129v2.058a5.218 5.218 0 0 0 5.215 5.214V6.762a1.005 1.005 0 0 0-1.001-1.005zM23.013 0H11.455a5.215 5.215 0 0 0 5.215 5.215h2.129v2.057A5.215 5.215 0 0 0 24 12.483V1.005A1.005 1.005 0 0 0 23.013 0z" />
-                                </svg>
-                                Continue with Jira
-                            </>
-                        )}
-                    </button>
-
-                    <div className="text-center text-sm text-dashboard-muted">
-                        <p>
-                            Install the FlowSight desktop agent for local cognitive analytics and client ready exports
-                        </p>
-                    </div>
                 </div>
             </div>
 
             <p className="text-center mt-6 text-sm text-dashboard-muted">
-                Don&apos;t have an account?{' '}
-                <Link href={buildSignupHref()} className="text-primary-blue hover:underline">
-                    Create one
-                </Link>
-                {' · '}
-                Need a license?{' '}
-                <Link href="/#pricing" className="text-primary-blue hover:underline">
-                    View pricing
+                Already have an account?{' '}
+                <Link href={buildLoginHref()} className="text-primary-blue hover:underline">
+                    Sign in
                 </Link>
             </p>
         </motion.div>
     );
 }
 
-function LoginFallback() {
+function SignupFallback() {
     return (
         <div className="w-full max-w-md relative z-10">
             <div className="dashboard-card p-8 backdrop-blur-xl bg-dashboard-card/80 flex items-center justify-center">
@@ -287,11 +265,11 @@ function LoginFallback() {
     );
 }
 
-export default function LoginPage() {
+export default function SignupPage() {
     return (
         <AuthLayout>
-            <Suspense fallback={<LoginFallback />}>
-                <LoginContent />
+            <Suspense fallback={<SignupFallback />}>
+                <SignupContent />
             </Suspense>
         </AuthLayout>
     );

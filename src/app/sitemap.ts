@@ -22,6 +22,7 @@ const staticPaths = [
   '/api-reference',
   '/team',
   '/login',
+  '/signup',
 ]
 
 export default function sitemap(): MetadataRoute.Sitemap {

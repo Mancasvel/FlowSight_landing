@@ -61,7 +61,8 @@ export async function middleware(request: NextRequest) {
         supabaseResponse.headers.set('x-pathname', request.nextUrl.pathname);
     }
 
-    if (request.nextUrl.pathname === '/login') {
+    const authEntryPaths = ['/login', '/signup', '/forgot-password'];
+    if (authEntryPaths.includes(request.nextUrl.pathname)) {
         if (user) {
             const url = request.nextUrl.clone();
             url.pathname = '/dashboard';
@@ -73,5 +74,12 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-    matcher: ['/dashboard/:path*', '/account/:path*', '/login', '/api/chat/:path*'],
+    matcher: [
+        '/dashboard/:path*',
+        '/account/:path*',
+        '/login',
+        '/signup',
+        '/forgot-password',
+        '/api/chat/:path*',
+    ],
 };
