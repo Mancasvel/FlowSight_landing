@@ -22,3 +22,13 @@ export function buildLicenseActivation(
     is_active: true,
   }
 }
+
+/** Placeholder license row before Stripe payment completes — must stay inactive/free. */
+export function buildPendingLicenseInsert() {
+  return {
+    plan_id: null,
+    plan_type: 'starter' as const,
+    max_members: 1,
+    is_active: false,
+  }
+}

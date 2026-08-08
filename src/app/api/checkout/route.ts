@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { stripe } from '@/lib/stripe';
 import { mapCheckoutPlan } from '@/lib/plansCheckout';
-import { buildLicenseActivation } from '@/lib/licenseActivation';
+import { buildPendingLicenseInsert } from '@/lib/licenseActivation';
 import { resolveCheckoutPriceId } from '@/lib/stripeConfig';
 
 export async function POST(req: NextRequest) {
@@ -37,15 +37,12 @@ export async function POST(req: NextRequest) {
             .single();
 
         if (!license) {
-            const activation = buildLicenseActivation(planType, memberLimit);
+            const pending = buildPendingLicenseInsert();
             const { data: newLicense, error: licenseError } = await supabase
                 .from('licenses')
                 .insert({
                     owner_id: user.id,
-                    plan_id: activation.plan_id,
-                    plan_type: activation.plan_type,
-                    max_members: activation.max_members,
-                    expires_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+                    ...pending,
                 })
                 .select('id, stripe_customer_id')
                 .single();
