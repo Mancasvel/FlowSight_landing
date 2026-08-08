@@ -2,9 +2,11 @@ import { PLANS, type PlanId, getStripePriceId } from '@/lib/plans';
 import { isConfiguredStripePriceId } from '@/lib/stripeConfig';
 import { PricingClient, type PricingPlanView } from './PricingClient';
 
-const CHECKOUT_PLAN_IDS: PlanId[] = ['individual_pro', 'teams_simple', 'teams_pro', 'enterprise'];
+const CHECKOUT_PLAN_IDS = ['individual_pro', 'teams_simple', 'teams_pro', 'enterprise'] as const satisfies readonly PlanId[];
 
-const PLAN_FEATURES: Record<(typeof CHECKOUT_PLAN_IDS)[number], string[]> = {
+type CheckoutPlanId = (typeof CHECKOUT_PLAN_IDS)[number];
+
+const PLAN_FEATURES: Record<CheckoutPlanId, string[]> = {
     individual_pro: [
         '150 AI coach prompts / month',
         'Personal weekly PDF digest',

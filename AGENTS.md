@@ -4,7 +4,7 @@
 
 ```bash
 pnpm dev       # Next.js dev server (Webpack; Turbopack disabled on Windows)
-pnpm build     # Production build
+pnpm build     # Production build (Webpack; Turbopack disabled on Windows)
 pnpm start     # Start production server
 pnpm lint      # ESLint flat config (eslint.config.mjs) — max-warnings 100
 ```
