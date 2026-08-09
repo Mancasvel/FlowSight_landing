@@ -3,14 +3,13 @@ import { stripe } from '@/lib/stripe';
 import { createServiceClient } from '@/lib/promptLimits';
 import { buildLicenseActivation } from '@/lib/licenseActivation';
 import { linkOwnerTeamsToLicense } from '@/lib/linkLicenseToTeams';
+import { appUrl } from '@/lib/appUrl';
 
 export async function GET(req: NextRequest) {
     const searchParams = req.nextUrl.searchParams;
     const sessionId = searchParams.get('session_id');
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-
     if (!sessionId) {
-        return NextResponse.redirect(`${baseUrl}/dashboard/settings?error=no_session`);
+        return NextResponse.redirect(appUrl('/dashboard/settings?error=no_session'));
     }
 
     try {
@@ -21,7 +20,7 @@ export async function GET(req: NextRequest) {
 
         // Verify payment was successful
         if (session.payment_status !== 'paid') {
-            return NextResponse.redirect(`${baseUrl}/dashboard/settings?error=payment_incomplete`);
+            return NextResponse.redirect(appUrl('/dashboard/settings?error=payment_incomplete'));
         }
 
         const supabase = createServiceClient();
@@ -35,7 +34,7 @@ export async function GET(req: NextRequest) {
 
         if (!licenseId) {
             console.error('No licenseId in session metadata');
-            return NextResponse.redirect(`${baseUrl}/dashboard/settings?error=no_license`);
+            return NextResponse.redirect(appUrl('/dashboard/settings?error=no_license'));
         }
 
         // Get subscription details for expiration date
@@ -65,7 +64,7 @@ export async function GET(req: NextRequest) {
 
         if (updateError) {
             console.error('Failed to update license:', updateError);
-            return NextResponse.redirect(`${baseUrl}/dashboard/settings?error=update_failed`);
+            return NextResponse.redirect(appUrl('/dashboard/settings?error=update_failed'));
         }
 
         if (ownerId) {
@@ -77,9 +76,9 @@ export async function GET(req: NextRequest) {
         }
 
         // Redirect to onboarding page with success message
-        return NextResponse.redirect(`${baseUrl}/dashboard/onboarding?success=true`);
+        return NextResponse.redirect(appUrl('/dashboard/onboarding?success=true'));
     } catch (error) {
         console.error('Checkout success error:', error);
-        return NextResponse.redirect(`${baseUrl}/dashboard/settings?error=verification_failed`);
+        return NextResponse.redirect(appUrl('/dashboard/settings?error=verification_failed'));
     }
 }

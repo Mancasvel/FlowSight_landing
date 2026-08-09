@@ -5,6 +5,7 @@ import { stripe } from '@/lib/stripe';
 import { mapCheckoutPlan } from '@/lib/plansCheckout';
 import { buildPendingLicenseInsert } from '@/lib/licenseActivation';
 import { resolveCheckoutPriceId } from '@/lib/stripeConfig';
+import { appUrl } from '@/lib/appUrl';
 
 export async function POST(req: NextRequest) {
     try {
@@ -79,8 +80,8 @@ export async function POST(req: NextRequest) {
             customer: customerId,
             line_items: [lineItem],
             mode: 'subscription',
-            success_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard/pricing?canceled=true`,
+            success_url: appUrl('/api/checkout/success?session_id={CHECKOUT_SESSION_ID}'),
+            cancel_url: appUrl('/dashboard/pricing?canceled=true'),
             allow_promotion_codes: true,
             subscription_data: {
                 metadata: {
