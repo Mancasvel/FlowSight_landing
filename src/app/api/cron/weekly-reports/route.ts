@@ -135,15 +135,8 @@ export async function GET(request: Request) {
         continue
       }
 
-      const report = await buildWeeklyTeamReport({
-        teamId,
-        teamName: team.name,
-        planId,
-        weekStart,
-        weekEnd,
-        includeAiNarrative: planHasFullWeeklyReport(planId),
-      })
-
+      // Resolve recipients before building the (potentially AI-backed) report so
+      // a team with nobody to email doesn't burn DB reads / LLM calls for nothing.
       const { data: ownerAuth } = await supabase.auth.admin.getUserById(team.owner_id)
       const ownerEmail = ownerAuth?.user?.email
 
@@ -156,6 +149,16 @@ export async function GET(request: Request) {
         results.push({ teamId, status: 'skipped_no_recipients' })
         continue
       }
+
+      const report = await buildWeeklyTeamReport({
+        teamId,
+        teamName: team.name,
+        planId,
+        weekStart,
+        weekEnd,
+        includeAiNarrative: planHasFullWeeklyReport(planId),
+        supabase,
+      })
 
       const subject = weeklyReportSubject(report)
       await sendEmail({

@@ -11,7 +11,8 @@
     "dev": "next dev --webpack",
     "build": "next build --webpack",
     "start": "next start",
-    "lint": "eslint . --max-warnings 100"
+    "lint": "eslint . --max-warnings 100",
+    "preview:weekly-report": "tsx scripts/generate-weekly-report-preview.ts"
   },
   "dependencies": {
     "@microsoft/clarity": "~1.0.2",
@@ -39,7 +40,10 @@
     "unpdf": "~1.4.0"
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["sharp"]
+    "onlyBuiltDependencies": [
+      "sharp",
+      "esbuild"
+    ]
   },
   "devDependencies": {
     "@types/node": "~20.19.0",
@@ -53,6 +57,7 @@
     "eslint-config-next": "~16.2.6",
     "postcss": "~8.5.0",
     "tailwindcss": "~3.4.0",
+    "tsx": "~4.23.12",
     "typescript": "~5.9.3"
   }
 }

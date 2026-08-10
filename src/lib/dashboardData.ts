@@ -1,3 +1,4 @@
+import type { SupabaseClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 import { getTicket, getTicketChangelog } from '@/lib/jira'
 import type {
@@ -202,8 +203,12 @@ function filterTeamMemberRowsWithProfile(rows: TeamMemberWithProfileRow[]) {
 
 // ============ getFlowStateData ============
 
-async function fetchFlowStateData(teamId: string, date: Date): Promise<FlowStateData> {
-  const supabase = await createClient()
+async function fetchFlowStateData(
+  teamId: string,
+  date: Date,
+  client?: SupabaseClient
+): Promise<FlowStateData> {
+  const supabase = client ?? (await createClient())
   const dateStr = toDateStr(date)
 
   const thirtyDaysAgo = new Date(date)
@@ -484,8 +489,19 @@ async function fetchFlowStateData(teamId: string, date: Date): Promise<FlowState
   return { teamFlowScore, trend30d, members: memberResults, teamFlowScoreBreakdown }
 }
 
-export async function getFlowStateData(teamId: string, date: Date): Promise<FlowStateData> {
-  return fetchFlowStateData(teamId, date)
+/**
+ * Fetch a team's flow-state data. Pass an explicit `client` (e.g. a service-role
+ * client) when calling from a context without a user session/cookies, such as the
+ * weekly-reports cron — the default cookie-based client resolves `auth.uid()` to
+ * null there, and RLS policies on `work_sessions`/`activity_reports` silently
+ * return zero rows.
+ */
+export async function getFlowStateData(
+  teamId: string,
+  date: Date,
+  client?: SupabaseClient
+): Promise<FlowStateData> {
+  return fetchFlowStateData(teamId, date, client)
 }
 
 // ============ getContextLoadData ============
@@ -493,9 +509,10 @@ export async function getFlowStateData(teamId: string, date: Date): Promise<Flow
 export async function getContextLoadData(
   teamId: string,
   weekStart: Date,
-  weekEnd: Date
+  weekEnd: Date,
+  client?: SupabaseClient
 ): Promise<ContextLoadData> {
-  const supabase = await createClient()
+  const supabase = client ?? (await createClient())
   const startStr = toDateStr(weekStart)
   const endStr = toDateStr(weekEnd)
 
@@ -679,8 +696,12 @@ export async function getContextLoadData(
 
 // ============ getPlanningData ============
 
-export async function getPlanningData(teamId: string, sprintCount = 4): Promise<PlanningData> {
-  const supabase = await createClient()
+export async function getPlanningData(
+  teamId: string,
+  sprintCount = 4,
+  client?: SupabaseClient
+): Promise<PlanningData> {
+  const supabase = client ?? (await createClient())
 
   const [commitmentsRes, membersRes] = await Promise.all([
     supabase
@@ -911,9 +932,10 @@ export async function getPlanningData(teamId: string, sprintCount = 4): Promise<
 export async function getMeetingsData(
   teamId: string,
   weekStart: Date,
-  weekEnd: Date
+  weekEnd: Date,
+  client?: SupabaseClient
 ): Promise<MeetingsData> {
-  const supabase = await createClient()
+  const supabase = client ?? (await createClient())
   const startStr = toDateStr(weekStart)
   const endStr = toDateStr(weekEnd)
 
@@ -1138,8 +1160,12 @@ export async function getMeetingsData(
 
 // ============ getWorkflowData ============
 
-export async function getWorkflowData(teamId: string, date: Date): Promise<WorkflowData> {
-  const supabase = await createClient()
+export async function getWorkflowData(
+  teamId: string,
+  date: Date,
+  client?: SupabaseClient
+): Promise<WorkflowData> {
+  const supabase = client ?? (await createClient())
   const dateStr = toDateStr(date)
 
   const [reportsRes, sessionsRes, membersRes] = await Promise.all([

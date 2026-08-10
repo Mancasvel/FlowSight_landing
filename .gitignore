@@ -179,3 +179,9 @@ brain/
 
 # Local seed outputs (generated licenses, etc.)
 seed-output/
+
+# Local preview artifacts (pnpm preview:weekly-report) — never commit generated reports
+test-weekly-report-preview.html
+test-weekly-report-preview.txt
+test-weekly-report-preview.pdf
+test-weekly-report-preview-screenshot.png

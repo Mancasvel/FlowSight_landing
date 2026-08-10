@@ -40,7 +40,7 @@ Copy `.env.local.example` → `.env.local`. For local dev, use **staging/clone**
 
 Defined in `vercel.json` — not runnable locally:
 - `GET /api/cron/check-expiration` — daily 3am
-- `GET /api/cron/weekly-reports` — weekly Monday 1am
+- `GET /api/cron/weekly-reports` — runs hourly, every day; each run gates itself per-team against that team's configured `digest_day`/`digest_time`/`digest_timezone` (see `isDigestDueToday` in the route). It must fire hourly across all 7 days (not just Monday) because teams can pick any digest day in Settings.
 Crons send `Authorization: Bearer <CRON_SECRET>`.
 
 ## Linting
