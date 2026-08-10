@@ -6,6 +6,10 @@ import { mapCheckoutPlan } from '@/lib/plansCheckout';
 import { buildPendingLicenseInsert } from '@/lib/licenseActivation';
 import { resolveCheckoutPriceId } from '@/lib/stripeConfig';
 import { appUrl } from '@/lib/appUrl';
+import {
+    isStripeMissingCustomerError,
+    resolveOrCreateStripeCustomer,
+} from '@/lib/stripeCustomer';
 
 export async function POST(req: NextRequest) {
     try {
@@ -56,27 +60,14 @@ export async function POST(req: NextRequest) {
             license = newLicense;
         }
 
-        let customerId = license.stripe_customer_id;
-
-        if (!customerId) {
-            const customer = await stripe.customers.create({
-                email: user.email || undefined,
-                metadata: {
-                    userId: user.id,
-                    licenseId: license.id,
-                }
-            });
-            customerId = customer.id;
-
-            await supabase.from('licenses').update({ stripe_customer_id: customerId }).eq('id', license.id);
-        }
+        let customerId = await resolveOrCreateStripeCustomer(license, user, supabase);
 
         const lineItem: Stripe.Checkout.SessionCreateParams.LineItem = {
             price: resolvedPriceId,
             quantity: seatCount,
         };
 
-        const session = await stripe.checkout.sessions.create({
+        const sessionParams: Stripe.Checkout.SessionCreateParams = {
             customer: customerId,
             line_items: [lineItem],
             mode: 'subscription',
@@ -98,7 +89,31 @@ export async function POST(req: NextRequest) {
                 planType: mapped.planId,
                 planId: mapped.planId,
             },
-        });
+        };
+
+        let session: Stripe.Checkout.Session;
+        try {
+            session = await stripe.checkout.sessions.create(sessionParams);
+        } catch (error) {
+            if (!isStripeMissingCustomerError(error)) {
+                throw error;
+            }
+
+            await supabase
+                .from('licenses')
+                .update({ stripe_customer_id: null })
+                .eq('id', license.id);
+
+            customerId = await resolveOrCreateStripeCustomer(
+                { ...license, stripe_customer_id: null },
+                user,
+                supabase
+            );
+            session = await stripe.checkout.sessions.create({
+                ...sessionParams,
+                customer: customerId,
+            });
+        }
 
         return NextResponse.json({ url: session.url });
     } catch (error) {
