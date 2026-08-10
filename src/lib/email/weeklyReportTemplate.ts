@@ -1,12 +1,5 @@
 import type { WeeklyTeamReport } from '@/lib/buildWeeklyTeamReport'
-
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-}
+import { escapeHtml } from './escapeHtml'
 
 export function weeklyReportHtml(report: WeeklyTeamReport): string {
   const sectionsHtml = report.sections

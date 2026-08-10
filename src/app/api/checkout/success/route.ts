@@ -1,11 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 import { createServiceClient } from '@/lib/promptLimits';
+import { createClient } from '@/lib/supabase/server';
 import { buildLicenseActivation } from '@/lib/licenseActivation';
 import { linkOwnerTeamsToLicense } from '@/lib/linkLicenseToTeams';
 import { appUrl } from '@/lib/appUrl';
 
+/**
+ * This route is intentionally excluded from the middleware matcher (it must work purely
+ * off the Stripe `session_id`, without requiring a valid app session). Because of that,
+ * no request ever refreshes the user's Supabase auth cookies while control is here — if the
+ * access token expired during the Stripe checkout (card entry, 3-D Secure, etc.), it would
+ * still be stale when we redirect into a middleware-protected route like `/dashboard`.
+ * Touching the cookie-aware SSR client here (same pattern as `src/app/auth/callback/route.ts`)
+ * forces Supabase to refresh + persist the session cookies on this response before we redirect,
+ * so the user lands on the dashboard already authenticated instead of being bounced to /login.
+ */
+async function refreshSessionCookies(): Promise<void> {
+    try {
+        const supabase = await createClient();
+        await supabase.auth.getUser();
+    } catch (error) {
+        console.error('Failed to refresh session during checkout success:', error);
+    }
+}
+
 export async function GET(req: NextRequest) {
+    await refreshSessionCookies();
+
     const searchParams = req.nextUrl.searchParams;
     const sessionId = searchParams.get('session_id');
     if (!sessionId) {
@@ -75,8 +97,8 @@ export async function GET(req: NextRequest) {
             }
         }
 
-        // Redirect to onboarding page with success message
-        return NextResponse.redirect(appUrl('/dashboard/onboarding?success=true'));
+        // Redirect straight to the dashboard — session cookies were already refreshed above.
+        return NextResponse.redirect(appUrl('/dashboard?success=true'));
     } catch (error) {
         console.error('Checkout success error:', error);
         return NextResponse.redirect(appUrl('/dashboard/settings?error=verification_failed'));

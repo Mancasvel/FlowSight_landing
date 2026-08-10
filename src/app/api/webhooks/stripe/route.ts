@@ -4,6 +4,8 @@ import { stripe } from '@/lib/stripe';
 import { createServiceClient } from '@/lib/promptLimits';
 import { buildLicenseActivation } from '@/lib/licenseActivation';
 import { linkOwnerTeamsToLicense } from '@/lib/linkLicenseToTeams';
+import { getPlan, type PlanId } from '@/lib/plans';
+import { sendPurchaseThankYouEmail } from '@/lib/email/sendPurchaseThankYouEmail';
 import Stripe from 'stripe';
 
 async function activateLicense(params: {
@@ -12,7 +14,7 @@ async function activateLicense(params: {
   subscriptionId: string;
   planType?: string | null;
   maxMembers?: number;
-}) {
+}): Promise<{ planId: PlanId }> {
   const supabase = createServiceClient();
   const activation = buildLicenseActivation(params.planType, params.maxMembers);
   const subscription = await stripe.subscriptions.retrieve(params.subscriptionId);
@@ -32,6 +34,28 @@ async function activateLicense(params: {
 
   if (params.ownerId) {
     await linkOwnerTeamsToLicense(supabase, params.ownerId, params.licenseId);
+  }
+
+  return { planId: activation.plan_id };
+}
+
+/**
+ * Fire-and-forget the "thank you for going Pro" email. Wrapped so a Resend outage or
+ * missing address never turns a successful payment webhook into a failed one (which
+ * would make Stripe retry delivery and could double-activate side effects).
+ */
+async function notifyPurchaseThankYou(ownerId: string | null | undefined, planId: PlanId): Promise<void> {
+  if (!ownerId) return;
+
+  try {
+    const supabase = createServiceClient();
+    const { data: ownerAuth } = await supabase.auth.admin.getUserById(ownerId);
+    const ownerEmail = ownerAuth?.user?.email;
+    if (!ownerEmail) return;
+
+    await sendPurchaseThankYouEmail({ to: ownerEmail, planName: getPlan(planId).name });
+  } catch (error) {
+    console.error('Failed to send purchase thank-you email:', error);
   }
 }
 
@@ -66,7 +90,8 @@ export async function POST(req: Request) {
             return new NextResponse('Missing licenseId in metadata', { status: 400 });
         }
 
-        await activateLicense({ licenseId, ownerId, subscriptionId, planType, maxMembers });
+        const { planId } = await activateLicense({ licenseId, ownerId, subscriptionId, planType, maxMembers });
+        await notifyPurchaseThankYou(ownerId, planId);
     }
 
     if (event.type === 'invoice.payment_succeeded') {
