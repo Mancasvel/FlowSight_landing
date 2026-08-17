@@ -13,7 +13,13 @@ const DownloadUpdateSubscriberSchema = new mongoose.Schema(
     source: {
       type: String,
       required: true,
-      enum: ['download-windows', 'download-linux-deb', 'download-linux-appimage'],
+      enum: [
+        'download-windows',
+        'download-macos',
+        'download-macos-intel',
+        'download-linux-deb',
+        'download-linux-appimage',
+      ],
     },
   },
   { timestamps: true }

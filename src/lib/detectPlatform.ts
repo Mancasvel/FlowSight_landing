@@ -21,7 +21,7 @@ export function downloadLabelForPlatform(platform: DetectedPlatform): string {
     case 'windows':
       return 'Download for Windows'
     case 'macos':
-      return 'Notify me for macOS'
+      return 'Download for macOS'
     case 'linux':
       return 'Download for Linux'
     default:

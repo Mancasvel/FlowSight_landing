@@ -46,6 +46,7 @@ export async function GET(request: NextRequest) {
       downloadClicks: {
         windows: byKey['download-windows'] ?? 0,
         macos: byKey['download-macos'] ?? 0,
+        macosIntel: byKey['download-macos-intel'] ?? 0,
         linuxDeb: byKey['download-linux-deb'] ?? 0,
         linuxAppImage: byKey['download-linux-appimage'] ?? 0,
       },

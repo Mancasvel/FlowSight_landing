@@ -1,10 +1,15 @@
 'use client'
 
 import { useState } from 'react'
-import { Bell, Download, Monitor, Terminal } from 'lucide-react'
+import { Bell, Download, Monitor, Terminal, Apple } from 'lucide-react'
 import { Modal, ModalBody, ModalHeader } from '@/components/ui/Modal'
 
-export type DownloadUpdateSource = 'download-windows' | 'download-linux-deb' | 'download-linux-appimage'
+export type DownloadUpdateSource =
+  | 'download-windows'
+  | 'download-macos'
+  | 'download-macos-intel'
+  | 'download-linux-deb'
+  | 'download-linux-appimage'
 
 type DownloadUpdatesModalProps = {
   isOpen: boolean
@@ -20,6 +25,16 @@ const PLATFORM_COPY: Record<
     title: 'Your Windows download is starting',
     subtitle: 'FlowSight for Windows',
     icon: Monitor,
+  },
+  'download-macos': {
+    title: 'Your macOS download is starting',
+    subtitle: 'FlowSight for Apple Silicon',
+    icon: Apple,
+  },
+  'download-macos-intel': {
+    title: 'Your macOS download is starting',
+    subtitle: 'FlowSight for Intel Mac',
+    icon: Apple,
   },
   'download-linux-deb': {
     title: 'Your Linux download is starting',

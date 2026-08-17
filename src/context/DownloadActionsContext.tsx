@@ -17,7 +17,6 @@ import {
 } from '@/lib/detectPlatform'
 import { trackDownloadClick } from '@/lib/trackDownloadClick'
 import { triggerDownload } from '@/lib/triggerDownload'
-import { MacWaitlistModal } from '@/components/MacWaitlistModal'
 import {
   DownloadUpdatesModal,
   type DownloadUpdateSource,
@@ -27,9 +26,9 @@ type DownloadActionsContextValue = {
   platform: DetectedPlatform
   downloadLabel: string
   linuxHasAssets: boolean
+  macHasAssets: boolean
   downloadForPlatform: () => void
   downloadFile: (url: string | undefined, trackKey: DownloadUpdateSource) => void
-  openMacWaitlist: () => void
 }
 
 const DownloadActionsContext = createContext<DownloadActionsContextValue | null>(null)
@@ -47,11 +46,11 @@ type Props = {
 }
 
 export function DownloadActionsProvider({ release, children }: Props) {
-  const { downloadUrls, linuxReleaseUrl } = release
+  const { downloadUrls, linuxReleaseUrl, macReleaseUrl } = release
   const linuxHasAssets = Boolean(downloadUrls.linuxDeb || downloadUrls.linuxAppImage)
+  const macHasAssets = Boolean(downloadUrls.macDmgAarch64 || downloadUrls.macDmgX64)
 
   const [platform, setPlatform] = useState<DetectedPlatform>('unknown')
-  const [macModalOpen, setMacModalOpen] = useState(false)
   const [updatesModal, setUpdatesModal] = useState<{
     open: boolean
     source: DownloadUpdateSource
@@ -64,12 +63,6 @@ export function DownloadActionsProvider({ release, children }: Props) {
     setPlatform(detectPlatform())
   }, [])
 
-  useEffect(() => {
-    if (window.location.hash === '#download-mac') {
-      setMacModalOpen(true)
-    }
-  }, [])
-
   const downloadFile = useCallback((url: string | undefined, trackKey: DownloadUpdateSource) => {
     if (!url) return
     trackDownloadClick(trackKey)
@@ -77,15 +70,15 @@ export function DownloadActionsProvider({ release, children }: Props) {
     setUpdatesModal({ open: true, source: trackKey })
   }, [])
 
-  const openMacWaitlist = useCallback(() => {
-    trackDownloadClick('download-macos')
-    setMacModalOpen(true)
-  }, [])
-
   const openLinuxRelease = useCallback(() => {
     trackDownloadClick('download-linux-deb')
     window.open(linuxReleaseUrl, '_blank', 'noopener,noreferrer')
   }, [linuxReleaseUrl])
+
+  const openMacRelease = useCallback(() => {
+    trackDownloadClick('download-macos')
+    window.open(macReleaseUrl, '_blank', 'noopener,noreferrer')
+  }, [macReleaseUrl])
 
   const downloadLinux = useCallback(() => {
     if (linuxHasAssets) {
@@ -99,13 +92,25 @@ export function DownloadActionsProvider({ release, children }: Props) {
     openLinuxRelease()
   }, [downloadFile, downloadUrls.linuxAppImage, downloadUrls.linuxDeb, linuxHasAssets, openLinuxRelease])
 
+  const downloadMac = useCallback(() => {
+    if (macHasAssets) {
+      const url = downloadUrls.macDmgAarch64 ?? downloadUrls.macDmgX64
+      const trackKey: DownloadUpdateSource = downloadUrls.macDmgAarch64
+        ? 'download-macos'
+        : 'download-macos-intel'
+      downloadFile(url, trackKey)
+      return
+    }
+    openMacRelease()
+  }, [downloadFile, downloadUrls.macDmgAarch64, downloadUrls.macDmgX64, macHasAssets, openMacRelease])
+
   const downloadForPlatform = useCallback(() => {
     switch (platform) {
       case 'windows':
         downloadFile(downloadUrls.windowsExe, 'download-windows')
         break
       case 'macos':
-        openMacWaitlist()
+        downloadMac()
         break
       case 'linux':
         downloadLinux()
@@ -114,24 +119,23 @@ export function DownloadActionsProvider({ release, children }: Props) {
         scrollToDownloadSection()
         break
     }
-  }, [downloadFile, downloadLinux, downloadUrls.windowsExe, openMacWaitlist, platform])
+  }, [downloadFile, downloadLinux, downloadMac, downloadUrls.windowsExe, platform])
 
   const value = useMemo<DownloadActionsContextValue>(
     () => ({
       platform,
       downloadLabel: downloadLabelForPlatform(platform),
       linuxHasAssets,
+      macHasAssets,
       downloadForPlatform,
       downloadFile,
-      openMacWaitlist,
     }),
-    [downloadFile, downloadForPlatform, linuxHasAssets, openMacWaitlist, platform]
+    [downloadFile, downloadForPlatform, linuxHasAssets, macHasAssets, platform]
   )
 
   return (
     <DownloadActionsContext.Provider value={value}>
       {children}
-      <MacWaitlistModal isOpen={macModalOpen} onClose={() => setMacModalOpen(false)} />
       <DownloadUpdatesModal
         isOpen={updatesModal.open}
         source={updatesModal.source}

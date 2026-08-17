@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Apple, Bell, Download, Monitor, Terminal } from "lucide-react";
+import { Apple, Download, Monitor, Terminal } from "lucide-react";
 import type { AgentRelease } from "@/lib/downloads";
 import { trackDownloadClick } from "@/lib/trackDownloadClick";
 import { useDownloadActions } from "@/context/DownloadActionsContext";
@@ -11,10 +11,22 @@ type Props = {
 };
 
 export function DownloadSectionContent({ release }: Props) {
-    const { desktopTag, linuxTag, linuxReleaseUrl, version, linuxVersion, downloadUrls } = release;
+    const {
+        desktopTag,
+        macTag,
+        linuxTag,
+        macReleaseUrl,
+        linuxReleaseUrl,
+        version,
+        macVersion,
+        linuxVersion,
+        downloadUrls,
+    } = release;
+    const macDisplayVersion = macVersion ?? version;
     const linuxDisplayVersion = linuxVersion ?? version;
+    const macHasAssets = Boolean(downloadUrls.macDmgAarch64 || downloadUrls.macDmgX64);
     const linuxHasAssets = Boolean(downloadUrls.linuxDeb || downloadUrls.linuxAppImage);
-    const { downloadFile, openMacWaitlist } = useDownloadActions();
+    const { downloadFile } = useDownloadActions();
 
     return (
         <section id="download" className="py-24 overflow-hidden relative">
@@ -67,7 +79,7 @@ export function DownloadSectionContent({ release }: Props) {
                         <p className="mt-4 text-xs text-slate-400">v{version} • .exe installer • release {desktopTag}</p>
                     </motion.div>
 
-                    {/* macOS — waitlist instead of download */}
+                    {/* macOS */}
                     <motion.div
                         id="download-mac"
                         initial={{ opacity: 0, y: 20 }}
@@ -81,16 +93,58 @@ export function DownloadSectionContent({ release }: Props) {
                             <Apple className="text-slate-700 w-8 h-8" />
                         </div>
                         <h3 className="text-2xl font-bold text-secondary-navy mb-2">macOS</h3>
-                        <p className="text-slate-500 mb-8">Apple Silicon (M1 / M2 / M3 / M4) — coming soon</p>
-                        <button
-                            type="button"
-                            onClick={openMacWaitlist}
-                            className="w-full py-4 bg-slate-100 hover:bg-slate-200 text-secondary-navy rounded-xl font-medium flex items-center justify-center gap-2 transition-all group border border-slate-200"
-                        >
-                            <Bell className="w-5 h-5 group-hover:translate-y-0.5 transition-transform" />
-                            Notify me when ready
-                        </button>
-                        <p className="mt-4 text-xs text-slate-400">macOS version in progress</p>
+                        <p className="text-slate-500 mb-6">
+                            {downloadUrls.macDmgAarch64 && downloadUrls.macDmgX64
+                                ? 'macOS 13+ · Apple Silicon and Intel'
+                                : downloadUrls.macDmgX64
+                                  ? 'macOS 13+ · Intel'
+                                  : 'macOS 13+ · Apple Silicon (M1 / M2 / M3 / M4)'}
+                        </p>
+                        {macHasAssets ? (
+                            <>
+                                {downloadUrls.macDmgAarch64 ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => downloadFile(downloadUrls.macDmgAarch64, "download-macos")}
+                                        className={`w-full py-4 bg-gradient-to-r from-primary-cyan to-primary-teal hover:from-primary-teal hover:to-primary-cyan text-white rounded-xl font-medium flex items-center justify-center gap-2 transition-all group shadow-md hover:shadow-lg${downloadUrls.macDmgX64 ? ' mb-3' : ''}`}
+                                    >
+                                        <Download className="w-5 h-5 group-hover:translate-y-0.5 transition-transform" />
+                                        Download Apple Silicon
+                                    </button>
+                                ) : null}
+                                {downloadUrls.macDmgX64 ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => downloadFile(downloadUrls.macDmgX64, "download-macos-intel")}
+                                        className={
+                                            downloadUrls.macDmgAarch64
+                                                ? 'w-full py-3 text-sm text-secondary-navy rounded-xl font-medium flex items-center justify-center gap-2 border border-slate-200 hover:bg-slate-50 transition-colors'
+                                                : 'w-full py-4 bg-gradient-to-r from-primary-cyan to-primary-teal hover:from-primary-teal hover:to-primary-cyan text-white rounded-xl font-medium flex items-center justify-center gap-2 transition-all group shadow-md hover:shadow-lg'
+                                        }
+                                    >
+                                        <Download className={downloadUrls.macDmgAarch64 ? 'w-4 h-4' : 'w-5 h-5 group-hover:translate-y-0.5 transition-transform'} />
+                                        {downloadUrls.macDmgAarch64 ? 'Intel Mac (.dmg)' : 'Download for Intel Mac'}
+                                    </button>
+                                ) : null}
+                            </>
+                        ) : (
+                            <>
+                                <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-4">
+                                    macOS binaries for {macTag} are not attached to the GitHub release yet. Open the release page to download when CI finishes.
+                                </p>
+                                <a
+                                    href={macReleaseUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={() => trackDownloadClick("download-macos")}
+                                    className="w-full py-4 bg-gradient-to-r from-primary-cyan to-primary-teal hover:from-primary-teal hover:to-primary-cyan text-white rounded-xl font-medium flex items-center justify-center gap-2 transition-all group shadow-md hover:shadow-lg"
+                                >
+                                    <Download className="w-5 h-5 group-hover:translate-y-0.5 transition-transform" />
+                                    View release on GitHub
+                                </a>
+                            </>
+                        )}
+                        <p className="mt-4 text-xs text-slate-400">v{macDisplayVersion} • .dmg installer • release {macTag}</p>
                     </motion.div>
 
                     {/* Linux */}

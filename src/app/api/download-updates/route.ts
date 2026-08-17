@@ -4,7 +4,13 @@ import DownloadUpdateSubscriber from '@/models/DownloadUpdateSubscriber'
 
 export const dynamic = 'force-dynamic'
 
-const VALID_SOURCES = new Set(['download-windows', 'download-linux-deb', 'download-linux-appimage'])
+const VALID_SOURCES = new Set([
+  'download-windows',
+  'download-macos',
+  'download-macos-intel',
+  'download-linux-deb',
+  'download-linux-appimage',
+])
 
 export async function POST(request: NextRequest) {
   try {
