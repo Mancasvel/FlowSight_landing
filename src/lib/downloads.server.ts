@@ -129,6 +129,8 @@ function linuxAssetKind(name: string): '.deb' | '.AppImage' | null {
 
 /** Windows may still ship from the main repo or the Linux repo during migration. */
 const WINDOWS_RELEASE_REPOS = [FLOWSIGHT_DESKTOP_REPO, FLOWSIGHT_LINUX_REPO] as const
+/** Linux may still have older .deb/.AppImage on the main desktop repo. */
+const LINUX_RELEASE_REPOS = [FLOWSIGHT_LINUX_REPO, FLOWSIGHT_DESKTOP_REPO] as const
 const UPDATER_RELEASE_REPOS = [
   FLOWSIGHT_DESKTOP_REPO,
   FLOWSIGHT_MAC_REPO,
@@ -384,6 +386,9 @@ function sliceFromRelease(release: GithubRelease): ReleaseSlice | null {
       .map((a) => parseAgentVersion(a.name))
       .find((v): v is string => Boolean(v))
 
+  // Ignore leftover 0.x Linux bundles still attached to old desktop tags.
+  if (version?.startsWith('0.')) return null
+
   return {
     tag: release.tag_name,
     version,
@@ -411,51 +416,63 @@ function emptyLinuxSlice(tag: string, version?: string): ReleaseSlice {
   }
 }
 
+async function collectLinuxReleaseCandidates(forceRefresh = false): Promise<GithubRelease[]> {
+  const perRepo = await Promise.all(
+    LINUX_RELEASE_REPOS.map(async (repo) => {
+      const [latest, releases] = await Promise.all([
+        fetchLatestRelease(repo, forceRefresh),
+        fetchReleases(repo, forceRefresh),
+      ])
+      return { latest, releases: sortedStableReleases(releases) }
+    })
+  )
+
+  const candidates: GithubRelease[] = []
+  for (const { latest, releases } of perRepo) {
+    if (latest && !latest.draft && !latest.prerelease) {
+      candidates.push(latest)
+    }
+    candidates.push(...releases)
+  }
+  return candidates.filter((release) => sliceFromRelease(release) !== null)
+}
+
 async function resolveLinuxSlice(forceRefresh = false): Promise<ReleaseSlice> {
   const pinnedTag = process.env.NEXT_PUBLIC_AGENT_LINUX_RELEASE_TAG
   try {
-    if (pinnedTag) {
-      const releases = await fetchReleases(FLOWSIGHT_LINUX_REPO, forceRefresh)
-      const release = sortedStableReleases(releases).find((r) => r.tag_name === pinnedTag)
-      if (!release) {
-        throw new Error(`pinned Linux tag ${pinnedTag} not found on ${FLOWSIGHT_LINUX_REPO}`)
-      }
+    const candidates = await collectLinuxReleaseCandidates(forceRefresh)
+
+    const release = pinnedTag
+      ? candidates.find((r) => r.tag_name === pinnedTag)
+      : pickBestDesktopRelease(candidates)
+
+    if (release) {
       const slice = sliceFromRelease(release)
       if (slice) return slice
-      console.warn(
-        `[downloads.server] Linux tag ${pinnedTag} exists on ${FLOWSIGHT_LINUX_REPO} but has no .deb/.AppImage assets yet.`
+    }
+
+    if (pinnedTag) {
+      throw new Error(`pinned Linux tag ${pinnedTag} not found with .deb/.AppImage assets`)
+    }
+
+    // Latest tag may exist without binaries yet — skip it and keep looking
+    // already happened via candidates. If nothing had assets, keep the newest
+    // FlowSight_linux tag for the footer until the hourly cron finds files.
+    const latestLinux = await fetchLatestRelease(FLOWSIGHT_LINUX_REPO, forceRefresh)
+    if (latestLinux && !latestLinux.draft) {
+      return emptyLinuxSlice(
+        latestLinux.tag_name,
+        latestLinux.tag_name.replace(/^v/i, '')
       )
-      return emptyLinuxSlice(release.tag_name)
     }
 
-    const [latest, releases] = await Promise.all([
-      fetchLatestRelease(FLOWSIGHT_LINUX_REPO, forceRefresh),
-      fetchReleases(FLOWSIGHT_LINUX_REPO, forceRefresh),
-    ])
-    const stable = sortedStableReleases(releases)
-    const ordered: GithubRelease[] = []
-    if (latest && !latest.draft && !latest.prerelease) {
-      ordered.push(latest)
-    }
-    ordered.push(...stable)
-
-    const slice = firstSliceWithAssets(ordered, sliceFromRelease)
-    if (slice) return slice
-
-    if (latest && !latest.draft) {
-      console.warn(
-        `[downloads.server] Latest Linux release ${latest.tag_name} on ${FLOWSIGHT_LINUX_REPO} has no .deb/.AppImage assets yet.`
-      )
-      return emptyLinuxSlice(latest.tag_name)
-    }
-
-    throw new Error(`no Linux release ships .deb/.AppImage on ${FLOWSIGHT_LINUX_REPO}`)
+    throw new Error(`no Linux release ships .deb/.AppImage`)
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     console.warn(
-      `[downloads.server] Linux resolver could not load assets from ${FLOWSIGHT_LINUX_REPO} (${message}).`
+      `[downloads.server] Linux resolver could not load assets (${message}).`
     )
-    return emptyLinuxSlice(FALLBACK_LINUX_RELEASE_TAG)
+    return emptyLinuxSlice(FALLBACK_LINUX_RELEASE_TAG, FALLBACK_LINUX_VERSION)
   }
 }
 

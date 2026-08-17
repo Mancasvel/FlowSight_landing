@@ -164,39 +164,42 @@ export function DownloadSectionContent({ release }: Props) {
                         <p className="text-slate-500 mb-6">Ubuntu 22.04+, Fedora 40+, or Debian 12 (amd64)</p>
                         {linuxHasAssets ? (
                             <>
-                                <button
-                                    type="button"
-                                    onClick={() => downloadFile(downloadUrls.linuxDeb, "download-linux-deb")}
-                                    className="w-full py-4 bg-gradient-to-r from-slate-700 to-slate-900 hover:from-slate-800 hover:to-black text-white rounded-xl font-medium flex items-center justify-center gap-2 transition-all group shadow-md hover:shadow-lg mb-3"
-                                >
-                                    <Download className="w-5 h-5 group-hover:translate-y-0.5 transition-transform" />
-                                    Download .deb
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => downloadFile(downloadUrls.linuxAppImage, "download-linux-appimage")}
-                                    className="w-full py-3 text-sm text-secondary-navy rounded-xl font-medium flex items-center justify-center gap-2 border border-slate-200 hover:bg-slate-50 transition-colors"
-                                >
-                                    <Download className="w-4 h-4" />
-                                    AppImage (portable)
-                                </button>
+                                {downloadUrls.linuxDeb ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => downloadFile(downloadUrls.linuxDeb, "download-linux-deb")}
+                                        className={`w-full py-4 bg-gradient-to-r from-slate-700 to-slate-900 hover:from-slate-800 hover:to-black text-white rounded-xl font-medium flex items-center justify-center gap-2 transition-all group shadow-md hover:shadow-lg${downloadUrls.linuxAppImage ? ' mb-3' : ''}`}
+                                    >
+                                        <Download className="w-5 h-5 group-hover:translate-y-0.5 transition-transform" />
+                                        Download .deb
+                                    </button>
+                                ) : null}
+                                {downloadUrls.linuxAppImage ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => downloadFile(downloadUrls.linuxAppImage, "download-linux-appimage")}
+                                        className={
+                                            downloadUrls.linuxDeb
+                                                ? 'w-full py-3 text-sm text-secondary-navy rounded-xl font-medium flex items-center justify-center gap-2 border border-slate-200 hover:bg-slate-50 transition-colors'
+                                                : 'w-full py-4 bg-gradient-to-r from-slate-700 to-slate-900 hover:from-slate-800 hover:to-black text-white rounded-xl font-medium flex items-center justify-center gap-2 transition-all group shadow-md hover:shadow-lg'
+                                        }
+                                    >
+                                        <Download className={downloadUrls.linuxDeb ? 'w-4 h-4' : 'w-5 h-5 group-hover:translate-y-0.5 transition-transform'} />
+                                        {downloadUrls.linuxDeb ? 'AppImage (portable)' : 'Download AppImage'}
+                                    </button>
+                                ) : null}
                             </>
                         ) : (
-                            <>
-                                <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-4">
-                                    Linux binaries for {linuxTag} are not attached to the GitHub release yet. Open the release page to download when CI finishes.
-                                </p>
-                                <a
-                                    href={linuxReleaseUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    onClick={() => trackDownloadClick("download-linux-deb")}
-                                    className="w-full py-4 bg-gradient-to-r from-slate-700 to-slate-900 hover:from-slate-800 hover:to-black text-white rounded-xl font-medium flex items-center justify-center gap-2 transition-all group shadow-md hover:shadow-lg"
-                                >
-                                    <Download className="w-5 h-5 group-hover:translate-y-0.5 transition-transform" />
-                                    View release on GitHub
-                                </a>
-                            </>
+                            <a
+                                href={linuxReleaseUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={() => trackDownloadClick("download-linux-deb")}
+                                className="w-full py-4 bg-gradient-to-r from-slate-700 to-slate-900 hover:from-slate-800 hover:to-black text-white rounded-xl font-medium flex items-center justify-center gap-2 transition-all group shadow-md hover:shadow-lg"
+                            >
+                                <Download className="w-5 h-5 group-hover:translate-y-0.5 transition-transform" />
+                                Download for Linux
+                            </a>
                         )}
                         <p className="mt-4 text-xs text-slate-400">v{linuxDisplayVersion} • .deb or AppImage • release {linuxTag}</p>
                     </motion.div>
