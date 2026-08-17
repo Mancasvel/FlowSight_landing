@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { Paperclip, SendHorizonal, Sparkles } from 'lucide-react'
+import { Paperclip, SendHorizonal } from 'lucide-react'
 import CoachProseContent from '@/components/dashboard/CoachProseContent'
 
 type Props = {
@@ -46,7 +46,6 @@ Choose a plan that fits your team — setup takes just a few minutes after check
                       href="/dashboard/pricing"
                       className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-[14px] font-medium text-white shadow-sm transition-colors hover:bg-indigo-700"
                     >
-                      <Sparkles className="h-4 w-4" strokeWidth={1.75} />
                       Upgrade to Pro
                     </Link>
                     <Link

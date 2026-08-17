@@ -570,7 +570,7 @@ export default function SettingsPage() {
                             onClick={handleUpgrade}
                             className="px-4 py-2 bg-gradient-to-r from-accent-orange to-accent-red text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity"
                         >
-                            ⚡ Upgrade to Professional
+                            Upgrade to Professional
                         </button>
                     </div>
                 )}
